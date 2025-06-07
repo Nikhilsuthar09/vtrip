@@ -1,10 +1,63 @@
-import { View, Text } from 'react-native'
+import { useFonts } from "expo-font";
+import * as SplashScreen from "expo-splash-screen";
+import AuthScreen from "./src/AuthScreen";
+import { Inter_700Bold, Inter_300Light, Inter_500Medium, Inter_400Regular, Inter_600SemiBold } from "@expo-google-fonts/inter";
+import { useEffect, useState } from "react";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { NavigationContainer } from '@react-navigation/native';
+import HomeScreen from "./src/HomeScreen";
+import Signup from "./src/Signup";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "./firebaseConfig";
 
-export default function App(){
-  return (
-    <View>
-      <Text>App</Text>
-    </View>
+SplashScreen.preventAutoHideAsync();
+
+const Stack = createNativeStackNavigator();
+
+function RootStack(){
+  const [isLoggedIn, setisLoggedIn] = useState(false)
+  onAuthStateChanged(auth, (user) => {
+    if(user){
+      setisLoggedIn(true)
+    }
+    else{
+      setisLoggedIn(false)
+    }
+  })
+  return(
+    <Stack.Navigator screenOptions={{animation:'fade'}}>
+      {isLoggedIn?(
+        <Stack.Screen name="Home" component={HomeScreen}/>
+        ):(
+      <Stack.Screen name="Login" component={AuthScreen} options={{headerShown:false}}/> 
+        )}
+      <Stack.Screen name="SignUp" component={Signup} options={{headerShown:false}}/> 
+       
+    </Stack.Navigator>
   )
 }
+export default function App() {
+  const [loaded,error] = useFonts({
+    Inter_700Bold,
+    Inter_300Light,
+    Inter_500Medium,
+    Inter_400Regular,
+    Inter_600SemiBold
+  });
+  useEffect(() => {
+    if(loaded || error){
+      SplashScreen.hideAsync();
+    }
+  }, [loaded, error])
+  
+  if(!loaded && !error){
+    return null;
+  }
+  
 
+  return(
+    <NavigationContainer>
+        <RootStack />
+    </NavigationContainer>
+  )
+}
