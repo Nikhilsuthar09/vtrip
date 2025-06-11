@@ -18,8 +18,6 @@ import { auth } from "../firebaseConfig";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { useNavigation } from "expo-router";
 
-const currentauth = getAuth()
-console.log(currentauth.currentUser)
 const signin = async (email, password) => {
   Keyboard.dismiss();
   // input validation
