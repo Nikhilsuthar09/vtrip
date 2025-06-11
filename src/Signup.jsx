@@ -10,7 +10,7 @@ import {
   StyleSheet,
   Keyboard,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { LinearGradient } from "expo-linear-gradient";
 import { COLOR, FONT_SIZE, FONTS } from "./Theme";
 import AntDesign from "@expo/vector-icons/AntDesign";
@@ -86,9 +86,9 @@ const signup = async (email, password, name) => {
 };
 
 export default function Signup() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
+  const email = useRef("");
+  const password = useRef("");
+  const name = useRef("");
   const [showPassword, setShowPassword] = useState(false);
   const navigation = useNavigation();
 
@@ -132,16 +132,14 @@ export default function Signup() {
                 <Text style={styles.label}>Full Name</Text>
                 <TextInput
                   style={styles.input}
-                  onChangeText={setName}
-                  value={name}
+                  onChangeText={(value)=> name.current = value}
                 />
               </View>
               <View>
                 <Text style={styles.label}>Email</Text>
                 <TextInput
                   style={styles.input}
-                  onChangeText={setEmail}
-                  value={email}
+                  onChangeText={(value) => email.current = value}
                   autoCorrect={false}
                 />
               </View>
@@ -150,8 +148,7 @@ export default function Signup() {
                 <View style={styles.passwordContainer}>
                   <TextInput
                     style={styles.passwordInput}
-                    onChangeText={setPassword}
-                    value={password}
+                    onChangeText={(value)=> password.current= value}
                     secureTextEntry={!showPassword}
                     autoCorrect={false}
                     underlineColorAndroid="transparent"
@@ -166,7 +163,7 @@ export default function Signup() {
                 </View>
               </View>
             </View>
-            <Pressable onPress={() => signup(email, password, name)}>
+            <Pressable onPress={() => signup(email.current, password.current, name.current)}>
               <View style={styles.loginbuttonContainer}>
                 <Text style={styles.loginbuttontext}>Register</Text>
               </View>

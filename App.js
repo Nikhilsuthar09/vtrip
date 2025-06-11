@@ -16,7 +16,8 @@ const Stack = createNativeStackNavigator();
 
 function RootStack(){
   const [isLoggedIn, setisLoggedIn] = useState(false)
-  onAuthStateChanged(auth, (user) => {
+  useEffect(() => {
+    onAuthStateChanged(auth, (user) => {
     if(user){
       setisLoggedIn(true)
     }
@@ -24,6 +25,9 @@ function RootStack(){
       setisLoggedIn(false)
     }
   })
+  }, [])
+  
+  
   return(
     <Stack.Navigator screenOptions={{animation:'fade'}}>
       {isLoggedIn?(
