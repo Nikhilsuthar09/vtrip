@@ -14,7 +14,7 @@ import React, { useRef, useState } from "react";
 import { LinearGradient } from "expo-linear-gradient";
 import { COLOR, FONT_SIZE, FONTS } from "./Theme";
 import AntDesign from "@expo/vector-icons/AntDesign";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, signOut } from "firebase/auth";
 import { auth } from "../firebaseConfig";
 import { useNavigation } from "expo-router";
 
@@ -68,6 +68,8 @@ const signup = async (email, password, name) => {
     );
     // Signed in
     const user = userCredential.user;
+    console.log(user);
+    await signOut(auth)
   } catch (error) {
     let errorMessage = "Authentication failed. Please try again";
     if (error.code === "auth/invalid-email") {
@@ -108,10 +110,9 @@ export default function Signup() {
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.loginContainer}>
-
-          <Pressable onPress={() => navigation.goBack()}>
-          <AntDesign name="arrowleft" size={24} color={COLOR.textPrimary}/>
-          </Pressable>
+            <Pressable onPress={() => navigation.goBack()}>
+              <AntDesign name="arrowleft" size={24} color={COLOR.textPrimary} />
+            </Pressable>
             <View style={styles.logintitle}>
               <Text style={styles.loginText}>Sign up </Text>
               <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -120,7 +121,11 @@ export default function Signup() {
                 </Text>
                 <Pressable onPress={() => navigation.goBack()}>
                   <Text
-                    style={ { color: COLOR.secondary, fontFamily:FONTS.semiBold, fontSize:FONT_SIZE.caption }}
+                    style={{
+                      color: COLOR.secondary,
+                      fontFamily: FONTS.semiBold,
+                      fontSize: FONT_SIZE.caption,
+                    }}
                   >
                     Login
                   </Text>
@@ -132,14 +137,14 @@ export default function Signup() {
                 <Text style={styles.label}>Full Name</Text>
                 <TextInput
                   style={styles.input}
-                  onChangeText={(value)=> name.current = value}
+                  onChangeText={(value) => (name.current = value)}
                 />
               </View>
               <View>
                 <Text style={styles.label}>Email</Text>
                 <TextInput
                   style={styles.input}
-                  onChangeText={(value) => email.current = value}
+                  onChangeText={(value) => (email.current = value)}
                   autoCorrect={false}
                 />
               </View>
@@ -148,22 +153,29 @@ export default function Signup() {
                 <View style={styles.passwordContainer}>
                   <TextInput
                     style={styles.passwordInput}
-                    onChangeText={(value)=> password.current= value}
+                    onChangeText={(value) => (password.current = value)}
                     secureTextEntry={!showPassword}
                     autoCorrect={false}
                     underlineColorAndroid="transparent"
                   />
-                  <Pressable onPress={togglePasswordVisibility} style={styles.eyeIcon}>
-                    <AntDesign 
-                      name={showPassword ? "eye" : "eyeo"} 
-                      size={20} 
-                      color={COLOR.grey} 
+                  <Pressable
+                    onPress={togglePasswordVisibility}
+                    style={styles.eyeIcon}
+                  >
+                    <AntDesign
+                      name={showPassword ? "eye" : "eyeo"}
+                      size={20}
+                      color={COLOR.grey}
                     />
                   </Pressable>
                 </View>
               </View>
             </View>
-            <Pressable onPress={() => signup(email.current, password.current, name.current)}>
+            <Pressable
+              onPress={() =>
+                signup(email.current, password.current, name.current)
+              }
+            >
               <View style={styles.loginbuttonContainer}>
                 <Text style={styles.loginbuttontext}>Register</Text>
               </View>
@@ -228,12 +240,12 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZE.body,
   },
   passwordContainer: {
-    position: 'relative',
+    position: "relative",
     width: 275,
   },
   passwordInput: {
     height: 46,
-    width: '100%',
+    width: "100%",
     borderWidth: 1,
     borderColor: COLOR.stroke,
     borderRadius: 10,
@@ -245,7 +257,7 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZE.body,
   },
   eyeIcon: {
-    position: 'absolute',
+    position: "absolute",
     right: 12,
     top: 13,
     padding: 2,
