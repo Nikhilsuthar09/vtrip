@@ -17,23 +17,12 @@ import AntDesign from "@expo/vector-icons/AntDesign";
 import { auth } from "../firebaseConfig";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { useNavigation } from "expo-router";
+import { handleFirebaseAuthErrors, handleLoginValidation } from "./AuthHandlers";
 
 const signin = async (email, password) => {
   Keyboard.dismiss();
   // input validation
-  if (!email.trim()) {
-    Alert.alert("Please enter your email");
-    return;
-  }
-  if (!password.trim()) {
-    Alert.alert("Please enter your password");
-    return;
-  }
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
-    Alert.alert("Please enter a valid email address");
-    return;
-  }
+ if(!handleLoginValidation(email, password)) return 
 
   try {
     const userCredential = await signInWithEmailAndPassword(
@@ -45,21 +34,9 @@ const signin = async (email, password) => {
     const user = userCredential.user;
     // console.log(user)
   } catch (error) {
-    let errorMessage = "Authentication failed. Please try again";
-    if (error.code === "auth/invalid-email") {
-      errorMessage = "Please enter  valid email address";
-    } else if (error.code === "auth/user-not-found") {
-      errorMessage = "No account found with this email";
-    } else if (error.code === "auth/wrong-password") {
-      errorMessage = "Incorrect password. Please try again";
-    } else if (error.code === "auth/invalid-credential") {
-      errorMessage =
-        "Incorrect email or password. Please check your credentials and try again";
-    } else if (error.code === "auth/network-request-failed") {
-      errorMessage = "Network error. Please check your internet connection";
-    }
+    const errorMessage = handleFirebaseAuthErrors(error)
+    console.log(errorMessage);
     Alert.alert("Error ", errorMessage);
-    console.log(error.message);
   }
 };
 

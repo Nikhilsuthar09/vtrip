@@ -17,48 +17,13 @@ import AntDesign from "@expo/vector-icons/AntDesign";
 import { createUserWithEmailAndPassword, signOut } from "firebase/auth";
 import { auth } from "../firebaseConfig";
 import { useNavigation } from "expo-router";
+import { handleFirebaseAuthErrors, handleSignupValidation } from "./AuthHandlers";
 
 const signup = async (email, password, name) => {
   Keyboard.dismiss();
   // input validation
-  if (!email.trim()) {
-    Alert.alert("Please enter your email");
-    return;
-  }
-  if (!password.trim()) {
-    Alert.alert("Please enter your password");
-    return;
-  }
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
-    Alert.alert("Please enter a valid email address");
-    return;
-  }
-  // Validate lowercase letters
-  const lowerCaseLetters = /[a-z]/g;
-  if (!password.match(lowerCaseLetters)) {
-    Alert.alert("Password must contain atleast 1 lower");
-    return;
-  }
-
-  // Validate capital letters
-  const upperCaseLetters = /[A-Z]/g;
-  if (!password.match(upperCaseLetters)) {
-    Alert.alert("Password must contain alteast one upper case");
-    return;
-  }
-
-  // Validate numbers
-  const numbers = /[0-9]/g;
-  if (!password.match(numbers)) {
-    Alert.alert("Password must contain alteast one number");
-    return;
-  }
-
-  // Validate length
-  if (password.length <= 8) {
-    Alert.alert("Password must contain alteast 8 characters");
-    return;
+  if(!handleSignupValidation(email, password)) {
+    return
   }
   try {
     const userCredential = await createUserWithEmailAndPassword(
@@ -71,19 +36,9 @@ const signup = async (email, password, name) => {
     console.log(user);
     await signOut(auth)
   } catch (error) {
-    let errorMessage = "Authentication failed. Please try again";
-    if (error.code === "auth/invalid-email") {
-      errorMessage = "Please enter  valid email address";
-    } else if (error.code === "auth/invalid-credential") {
-      errorMessage =
-        "Incorrect email or password. Please check your credentials and try again";
-    } else if (error.code === "auth/network-request-failed") {
-      errorMessage = "Network error. Please check your internet connection";
-    } else if (error.code === "auth/email-already-in-use") {
-      errorMessage = "Email already in use, please login";
-    }
+    const errorMessage = handleFirebaseAuthErrors(error);
+    console.log(errorMessage);
     Alert.alert("Error ", errorMessage);
-    console.log(error.code);
   }
 };
 
