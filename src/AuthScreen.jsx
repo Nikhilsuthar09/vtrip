@@ -35,7 +35,7 @@ const signin = async (email, password) => {
     );
     // Signed in
     const user = userCredential.user;
-    // console.log(user)
+    // console.log(user);
   } catch (error) {
     const errorMessage = handleFirebaseAuthErrors(error);
     console.log(errorMessage);

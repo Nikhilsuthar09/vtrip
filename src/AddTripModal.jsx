@@ -5,6 +5,8 @@ import {
   StyleSheet,
   TextInput,
   ScrollView,
+  TouchableOpacity,
+  Alert,
 } from "react-native";
 import React, { useState } from "react";
 import Modal from "react-native-modal";
@@ -13,6 +15,9 @@ import { StatusBar } from "expo-status-bar";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { CalendarList } from "react-native-calendars";
+import { db } from "../firebaseConfig";
+import { doc, setDoc } from "firebase/firestore";
+import { getAuth } from "@firebase/auth";
 
 const AddTripModal = ({
   isModalVisible,
@@ -23,6 +28,58 @@ const AddTripModal = ({
   const [activeInput, setActiveInput] = useState(null);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [tripData, setTripData] = useState({
+    title: "",
+    destination: "",
+    budget: "",
+    start: "",
+    end: "",
+  });
+
+  const handleTripDataChange = (field, value) => {
+    setTripData((prevData) => ({
+      ...prevData,
+      [field]: value,
+    }
+  ));
+  };
+  // const validateTripData = () => {
+
+  // }
+  const handleStoreTripData = async () => {
+    // validateTripData()
+    if (!tripData.title.trim()) {
+      Alert.alert("Please enter a title");
+      return;
+    }
+    if (!tripData.destination.trim()) {
+      Alert.alert("Please enter your destination");
+      return;
+    }
+    if (!tripData.budget.trim()) {
+      console.log("click");
+      Alert.alert("Please enter your budget");
+      return;
+    }
+    tripData.budget = parseInt(tripData.budget);
+    if (isNaN(tripData.budget)) {
+      Alert.alert("Please enter a valid amount");
+      return;
+    }
+    try {
+      const auth = getAuth();
+      const uuid = auth.currentUser.uid;
+      await setDoc(doc(db, "Room", uuid), tripData);
+    } catch (e) {
+      console.log(e);
+    }
+    setTripData({
+      title: "",
+      destination: "",
+      budget: 0,
+    });
+    console.log(tripData);
+  };
 
   const handleDayPress = (day) => {
     const selectedDate = day.dateString;
@@ -78,6 +135,7 @@ const AddTripModal = ({
         textColor: "white",
       };
     }
+
     return markedDates;
   };
   const getDatesInRange = (start, end) => {
@@ -140,6 +198,8 @@ const AddTripModal = ({
                 style={styles.icon}
               />
               <TextInput
+                onChangeText={(text) => handleTripDataChange("title", text)}
+                value={tripData.title}
                 onFocus={() => setActiveInput("title")}
                 onBlur={() => setActiveInput(null)}
                 placeholder="Title"
@@ -162,6 +222,10 @@ const AddTripModal = ({
               <TextInput
                 placeholder="Destination"
                 placeholderTextColor="#8F9098"
+                onChangeText={(text) =>
+                  handleTripDataChange("destination", text)
+                }
+                value={tripData.destination}
                 onFocus={() => setActiveInput("destination")}
                 onBlur={() => setActiveInput(null)}
                 clearTextOnFocus={true}
@@ -182,8 +246,10 @@ const AddTripModal = ({
               />
               <TextInput
                 placeholder="Budget"
-                keyboardType="numeric"
                 placeholderTextColor="#8F9098"
+                onChangeText={(text) => handleTripDataChange("budget", text)}
+                value={tripData.budget}
+                keyboardType="numeric"
                 onFocus={() => setActiveInput("budget")}
                 onBlur={() => setActiveInput(null)}
                 clearTextOnFocus={true}
@@ -254,9 +320,12 @@ const AddTripModal = ({
                 }}
               />
             </View>
-            <Pressable style= {styles.createButton}>
-              <Text style= {styles.createButtonText}>Create Trip</Text>
-            </Pressable>
+            <TouchableOpacity
+              style={styles.createButton}
+              onPress={handleStoreTripData}
+            >
+              <Text style={styles.createButtonText}>Create Trip</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </ScrollView>
@@ -368,16 +437,16 @@ const styles = StyleSheet.create({
     color: COLOR.secondary,
     marginBottom: 10,
   },
-  createButton:{
-    backgroundColor:COLOR.primary,
-    paddingVertical:10,
-    borderRadius:10
+  createButton: {
+    backgroundColor: COLOR.primary,
+    paddingVertical: 10,
+    borderRadius: 10,
   },
-  createButtonText:{
-    fontFamily:FONTS.semiBold,
-    fontSize:FONT_SIZE.H5,
-    textAlign:"center",
-    color:"#fff"
+  createButtonText: {
+    fontFamily: FONTS.semiBold,
+    fontSize: FONT_SIZE.H5,
+    textAlign: "center",
+    color: "#fff",
   },
 });
 
