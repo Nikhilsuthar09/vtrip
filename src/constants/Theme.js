@@ -8,6 +8,10 @@ const FONTS = {
 
 const FONT_SIZE = {
   H1: 32,
+  H2:28,
+  H3:24,
+  H4:22,
+  H5:20,
   body:14,
   caption:12,
 }
@@ -19,8 +23,8 @@ const COLOR = {
   textPrimary:"#111827",
   textSecondary:"#1A1C1E",
   grey:"#6C7278",
-  stroke:"#EDF1F3"
-
+  stroke:"#EDF1F3",
+  danger:"#ff6b6b"
 }
 
 export {FONTS, FONT_SIZE, COLOR};

@@ -12,18 +12,21 @@ import {
 } from "react-native";
 import React, { useRef, useState } from "react";
 import { LinearGradient } from "expo-linear-gradient";
-import { COLOR, FONT_SIZE, FONTS } from "./Theme";
+import { COLOR, FONT_SIZE, FONTS } from "./constants/Theme";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { createUserWithEmailAndPassword, signOut } from "firebase/auth";
 import { auth } from "../firebaseConfig";
 import { useNavigation } from "expo-router";
-import { handleFirebaseAuthErrors, handleSignupValidation } from "./AuthHandlers";
+import {
+  handleFirebaseAuthErrors,
+  handleSignupValidation,
+} from "./AuthHandlers";
 
 const signup = async (email, password, name) => {
   Keyboard.dismiss();
   // input validation
-  if(!handleSignupValidation(email, password)) {
-    return
+  if (!handleSignupValidation(email, password)) {
+    return;
   }
   try {
     const userCredential = await createUserWithEmailAndPassword(
@@ -34,7 +37,7 @@ const signup = async (email, password, name) => {
     // Signed in
     const user = userCredential.user;
     console.log(user);
-    await signOut(auth)
+    await signOut(auth);
   } catch (error) {
     const errorMessage = handleFirebaseAuthErrors(error);
     console.log(errorMessage);
@@ -91,6 +94,8 @@ export default function Signup() {
               <View>
                 <Text style={styles.label}>Full Name</Text>
                 <TextInput
+                  placeholder="eg John Doe"
+                  placeholderTextColor="#8F9098"
                   style={styles.input}
                   onChangeText={(value) => (name.current = value)}
                 />
@@ -99,6 +104,8 @@ export default function Signup() {
                 <Text style={styles.label}>Email</Text>
                 <TextInput
                   style={styles.input}
+                  placeholder="name@email.com"
+                  placeholderTextColor="#8F9098"
                   onChangeText={(value) => (email.current = value)}
                   autoCorrect={false}
                 />
@@ -108,6 +115,8 @@ export default function Signup() {
                 <View style={styles.passwordContainer}>
                   <TextInput
                     style={styles.passwordInput}
+                    placeholder="Create a Password"
+                    placeholderTextColor="#8F9098"
                     onChangeText={(value) => (password.current = value)}
                     secureTextEntry={!showPassword}
                     autoCorrect={false}

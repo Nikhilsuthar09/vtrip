@@ -12,17 +12,20 @@ import {
   View,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { COLOR, FONT_SIZE, FONTS } from "./Theme";
+import { COLOR, FONT_SIZE, FONTS } from "./constants/Theme";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { auth } from "../firebaseConfig";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { useNavigation } from "expo-router";
-import { handleFirebaseAuthErrors, handleLoginValidation } from "./AuthHandlers";
+import {
+  handleFirebaseAuthErrors,
+  handleLoginValidation,
+} from "./AuthHandlers";
 
 const signin = async (email, password) => {
   Keyboard.dismiss();
   // input validation
- if(!handleLoginValidation(email, password)) return 
+  if (!handleLoginValidation(email, password)) return;
 
   try {
     const userCredential = await signInWithEmailAndPassword(
@@ -34,7 +37,7 @@ const signin = async (email, password) => {
     const user = userCredential.user;
     // console.log(user)
   } catch (error) {
-    const errorMessage = handleFirebaseAuthErrors(error)
+    const errorMessage = handleFirebaseAuthErrors(error);
     console.log(errorMessage);
     Alert.alert("Error ", errorMessage);
   }
@@ -90,6 +93,8 @@ export default function AuthScreen() {
                 <Text style={styles.label}>Email</Text>
                 <TextInput
                   style={styles.input}
+                  placeholder="Email Address"
+                  placeholderTextColor="#8F9098"
                   onChangeText={(value) => (email.current = value)}
                 />
               </View>
@@ -98,6 +103,8 @@ export default function AuthScreen() {
                 <View style={styles.passwordContainer}>
                   <TextInput
                     style={styles.passwordInput}
+                    placeholder="Password"
+                    placeholderTextColor="#8F9098"
                     onChangeText={(value) => (password.current = value)}
                     secureTextEntry={!showPassword}
                     autoCorrect={false}
@@ -121,7 +128,9 @@ export default function AuthScreen() {
               </View>
             </View>
             <View style={styles.loginbuttons}>
-              <Pressable onPress={() => signin(email.current, password.current)}>
+              <Pressable
+                onPress={() => signin(email.current, password.current)}
+              >
                 <View style={styles.loginbuttonContainer}>
                   <Text style={styles.loginbuttontext}>Log In</Text>
                 </View>
