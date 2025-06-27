@@ -11,6 +11,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { COLOR, FONT_SIZE, FONTS } from "./constants/Theme";
 import AddTripModal from "./AddTripModal";
 import MyTrip from "./MyTrip";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -32,6 +33,7 @@ export default function RootStack() {
   }
 
   return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
     <Stack.Navigator screenOptions={{ animation: "fade" }}>
       {isLoggedIn ? (
         <Stack.Screen
@@ -54,6 +56,7 @@ export default function RootStack() {
         </>
       )}
     </Stack.Navigator>
+    </SafeAreaView>
   );
 }
 
@@ -105,6 +108,7 @@ function HomeTabs() {
           name="My Trips"
           component={MyTrip}
           options={{
+            headerShown: false,
             tabBarIcon: ({ color }) => (
               <Ionicons name="airplane" size={22} color={color} />
             ),

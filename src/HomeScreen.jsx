@@ -1,8 +1,9 @@
-import { View, Text, Pressable, Platform, SafeAreaView } from "react-native";
+import { View, Text, Pressable } from "react-native";
 import React from "react";
 import { auth } from "../firebaseConfig";
 import { signOut } from "@firebase/auth";
-import { StatusBar } from "expo-status-bar";
+import { SafeAreaView } from "react-native-safe-area-context";
+
 
 const handlelogout = async () => {
   try {
@@ -15,7 +16,7 @@ const handlelogout = async () => {
 
 const HomeScreen = () => {
   return (
-    <SafeAreaView style={{flex:1}}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
       <View
         style={{
           flex: 1,

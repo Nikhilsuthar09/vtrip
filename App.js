@@ -11,6 +11,7 @@ import { useEffect } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import RootStack from "./src/AppNavigator";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { StatusBar } from "expo-status-bar";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -34,6 +35,7 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
+      <StatusBar style="auto"/>
     <NavigationContainer>
       <RootStack />
     </NavigationContainer>

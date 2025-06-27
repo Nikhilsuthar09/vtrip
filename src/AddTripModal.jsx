@@ -14,10 +14,11 @@ import { COLOR, FONT_SIZE, FONTS } from "./constants/Theme";
 import { StatusBar } from "expo-status-bar";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { CalendarList } from "react-native-calendars";
+import { Calendar, CalendarList } from "react-native-calendars";
 import { db } from "../firebaseConfig";
-import { doc, setDoc } from "firebase/firestore";
+import { addDoc, collection, doc, setDoc } from "firebase/firestore";
 import { getAuth } from "@firebase/auth";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const AddTripModal = ({
   isModalVisible,
@@ -26,8 +27,8 @@ const AddTripModal = ({
   backdropPress,
 }) => {
   const [activeInput, setActiveInput] = useState(null);
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  // const [tripData.start, setTripData.start] = useState("");
+  // const [tripData.end, setTripData.end] = useState("");
   const [tripData, setTripData] = useState({
     title: "",
     destination: "",
@@ -40,8 +41,7 @@ const AddTripModal = ({
     setTripData((prevData) => ({
       ...prevData,
       [field]: value,
-    }
-  ));
+    }));
   };
   // const validateTripData = () => {
 
@@ -57,47 +57,79 @@ const AddTripModal = ({
       return;
     }
     if (!tripData.budget.trim()) {
-      console.log("click");
       Alert.alert("Please enter your budget");
       return;
     }
-    tripData.budget = parseInt(tripData.budget);
+    const budgetNumber = parseInt(tripData.budget);
     if (isNaN(tripData.budget)) {
       Alert.alert("Please enter a valid amount");
       return;
     }
+    if (!tripData.start) {
+      Alert.alert("Please select a start date");
+      return;
+    }
+    if (!tripData.end) {
+      Alert.alert("Please select an end date");
+      return;
+    }
+
     try {
       const auth = getAuth();
-      const uuid = auth.currentUser.uid;
-      await setDoc(doc(db, "Room", uuid), tripData);
+      const userId = auth.currentUser.uid;
+      const tripToStore = {
+        title: tripData.title.trim(),
+        destination: tripData.destination.trim(),
+        budget: budgetNumber,
+        startDate: tripData.start,
+        endDate: tripData.end,
+        createdAt: new Date().toISOString(),
+        userId: userId,
+      };
+      const tripCollectionRef = collection(db, "userRoom", userId, "trips");
+      await addDoc(tripCollectionRef, tripToStore);
+      Alert.alert("Success", "Trip created successfully!");
+      setTripData({
+        title: "",
+        destination: "",
+        budget: "",
+        start: "",
+        end: "",
+      });
+      onClose();
     } catch (e) {
-      console.log(e);
+      console.log("Error storing trip", e);
+      Alert.alert("Error", "Failed to create trip. Please try again.");
     }
-    setTripData({
-      title: "",
-      destination: "",
-      budget: 0,
-    });
     console.log(tripData);
   };
 
   const handleDayPress = (day) => {
     const selectedDate = day.dateString;
 
-    if (!startDate || (startDate && endDate)) {
+    if (!tripData.start || (tripData.start && tripData.end)) {
       // First selection or reset selection
-      setStartDate(selectedDate);
-      setEndDate("");
-    } else if (startDate && !endDate) {
+      setTripData((prev) => ({
+        ...prev,
+        start: selectedDate,
+        end: "",
+      }));
+    } else if (tripData.start && !tripData.end) {
       // Second selection
-      const startDateObj = new Date(startDate);
+      const startDateObj = new Date(tripData.start);
       const selectedDateObj = new Date(selectedDate);
       if (selectedDateObj >= startDateObj) {
-        setEndDate(selectedDate);
+        setTripData((prev) => ({
+          ...prev,
+          end: selectedDate,
+        }));
       } else {
         // If selected date is before start date, make it the new start date
-        setStartDate(selectedDate);
-        setEndDate("");
+        setTripData((prev) => ({
+          ...prev,
+          start: selectedDate,
+          end: "",
+        }));
       }
     }
   };
@@ -112,23 +144,23 @@ const AddTripModal = ({
   // create marked date objects
   const getMarkedDates = () => {
     let markedDates = {};
-    if (startDate && endDate) {
+    if (tripData.start && tripData.end) {
       // range selection
-      markedDates = getDatesInRange(startDate, endDate);
-      markedDates[startDate] = {
-        ...markedDates[startDate],
+      markedDates = getDatesInRange(tripData.start, tripData.end);
+      markedDates[tripData.start] = {
+        ...markedDates[tripData.start],
         startingDay: true,
         color: "#4D81E7",
         textColor: "white",
       };
-      markedDates[endDate] = {
-        ...markedDates[endDate],
+      markedDates[tripData.end] = {
+        ...markedDates[tripData.end],
         endingDay: true,
         color: "#4D81E7",
         textColor: "white",
       };
-    } else if (startDate) {
-      markedDates[startDate] = {
+    } else if (tripData.start) {
+      markedDates[tripData.start] = {
         startingDay: true,
         endingDay: true,
         color: "#4D81E7",
@@ -158,8 +190,11 @@ const AddTripModal = ({
   };
 
   const resetDates = () => {
-    setStartDate("");
-    setEndDate("");
+    setTripData((prev) => ({
+      ...prev,
+      start: "",
+      end: "",
+    }));
   };
 
   const formatDate = (dateString) => {
@@ -180,155 +215,157 @@ const AddTripModal = ({
       animationOut="slideOutDown"
       style={styles.modal} // Remove default margins
     >
-      <ScrollView>
-        <StatusBar style="dark" />
-        <View style={styles.modalContainer}>
-          <View style={styles.headingContainer}>
-            <Text style={styles.heading}>Create New Trip</Text>
-            <Pressable style={styles.closeButton} onPress={onClose}>
-              <Text style={styles.closeButtonText}>Close</Text>
-            </Pressable>
-          </View>
-          <View style={{ flex: 1 }}>
-            <View style={styles.inputContainer}>
-              <AntDesign
-                name="tags"
-                size={20}
-                color="#4D81E7"
-                style={styles.icon}
-              />
-              <TextInput
-                onChangeText={(text) => handleTripDataChange("title", text)}
-                value={tripData.title}
-                onFocus={() => setActiveInput("title")}
-                onBlur={() => setActiveInput(null)}
-                placeholder="Title"
-                placeholderTextColor="#8F9098"
-                style={[
-                  styles.input,
-                  activeInput === "title"
-                    ? styles.activeColor
-                    : styles.inactiveColor,
-                ]}
-              />
+      <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+        <ScrollView nestedScrollEnabled={true}>
+          <StatusBar style="dark" />
+          <View style={styles.modalContainer}>
+            <View style={styles.headingContainer}>
+              <Text style={styles.heading}>Create New Trip</Text>
+              <Pressable style={styles.closeButton} onPress={onClose}>
+                <Text style={styles.closeButtonText}>Close</Text>
+              </Pressable>
             </View>
-            <View style={styles.inputContainer}>
-              <FontAwesome
-                name="map-marker"
-                size={20}
-                color="#4D81E7"
-                style={styles.icon}
-              />
-              <TextInput
-                placeholder="Destination"
-                placeholderTextColor="#8F9098"
-                onChangeText={(text) =>
-                  handleTripDataChange("destination", text)
-                }
-                value={tripData.destination}
-                onFocus={() => setActiveInput("destination")}
-                onBlur={() => setActiveInput(null)}
-                clearTextOnFocus={true}
-                style={[
-                  styles.input,
-                  activeInput === "destination"
-                    ? styles.activeColor
-                    : styles.inactiveColor,
-                ]}
-              />
-            </View>
-            <View style={styles.inputContainer}>
-              <FontAwesome
-                name="inr"
-                size={20}
-                color="#4D81E7"
-                style={styles.icon}
-              />
-              <TextInput
-                placeholder="Budget"
-                placeholderTextColor="#8F9098"
-                onChangeText={(text) => handleTripDataChange("budget", text)}
-                value={tripData.budget}
-                keyboardType="numeric"
-                onFocus={() => setActiveInput("budget")}
-                onBlur={() => setActiveInput(null)}
-                clearTextOnFocus={true}
-                style={[
-                  styles.input,
-                  activeInput === "budget"
-                    ? styles.activeColor
-                    : styles.inactiveColor,
-                ]}
-              />
-            </View>
-            {/* Date Selection Info */}
-            <View style={styles.dateInfoContainer}>
-              <View style={styles.dateRow}>
-                <Text style={styles.dateLabel}>Start Date:</Text>
-                <Text style={styles.dateText}>
-                  {startDate ? formatDate(startDate) : "Select start date"}
-                </Text>
+            <View style={{ flex: 1 }}>
+              <View style={styles.inputContainer}>
+                <AntDesign
+                  name="tags"
+                  size={20}
+                  color="#4D81E7"
+                  style={styles.icon}
+                />
+                <TextInput
+                  onChangeText={(text) => handleTripDataChange("title", text)}
+                  value={tripData.title}
+                  onFocus={() => setActiveInput("title")}
+                  onBlur={() => setActiveInput(null)}
+                  placeholder="Title"
+                  placeholderTextColor="#8F9098"
+                  style={[
+                    styles.input,
+                    activeInput === "title"
+                      ? styles.activeColor
+                      : styles.inactiveColor,
+                  ]}
+                />
               </View>
-              <View style={styles.dateRow}>
-                <Text style={styles.dateLabel}>End Date:</Text>
-                <Text style={styles.dateText}>
-                  {endDate ? formatDate(endDate) : "Select end date"}
-                </Text>
+              <View style={styles.inputContainer}>
+                <FontAwesome
+                  name="map-marker"
+                  size={20}
+                  color="#4D81E7"
+                  style={styles.icon}
+                />
+                <TextInput
+                  placeholder="Destination"
+                  placeholderTextColor="#8F9098"
+                  onChangeText={(text) =>
+                    handleTripDataChange("destination", text)
+                  }
+                  value={tripData.destination}
+                  onFocus={() => setActiveInput("destination")}
+                  onBlur={() => setActiveInput(null)}
+                  clearTextOnFocus={true}
+                  style={[
+                    styles.input,
+                    activeInput === "destination"
+                      ? styles.activeColor
+                      : styles.inactiveColor,
+                  ]}
+                />
               </View>
-              {(startDate || endDate) && (
-                <Pressable style={styles.resetButton} onPress={resetDates}>
-                  <Text style={styles.resetButtonText}>Reset Dates</Text>
-                </Pressable>
-              )}
-            </View>
+              <View style={styles.inputContainer}>
+                <FontAwesome
+                  name="inr"
+                  size={20}
+                  color="#4D81E7"
+                  style={styles.icon}
+                />
+                <TextInput
+                  placeholder="Budget"
+                  placeholderTextColor="#8F9098"
+                  onChangeText={(text) => handleTripDataChange("budget", text)}
+                  value={tripData.budget}
+                  keyboardType="numeric"
+                  onFocus={() => setActiveInput("budget")}
+                  onBlur={() => setActiveInput(null)}
+                  clearTextOnFocus={true}
+                  style={[
+                    styles.input,
+                    activeInput === "budget"
+                      ? styles.activeColor
+                      : styles.inactiveColor,
+                  ]}
+                />
+              </View>
+              {/* Date Selection Info */}
+              <View style={styles.dateInfoContainer}>
+                <View style={styles.dateRow}>
+                  <Text style={styles.dateLabel}>Start Date:</Text>
+                  <Text style={styles.dateText}>
+                    {tripData.start
+                      ? formatDate(tripData.start)
+                      : "Select start date"}
+                  </Text>
+                </View>
+                <View style={styles.dateRow}>
+                  <Text style={styles.dateLabel}>End Date:</Text>
+                  <Text style={styles.dateText}>
+                    {tripData.end
+                      ? formatDate(tripData.end)
+                      : "Select end date"}
+                  </Text>
+                </View>
+                {(tripData.start || tripData.end) && (
+                  <Pressable style={styles.resetButton} onPress={resetDates}>
+                    <Text style={styles.resetButtonText}>Reset Dates</Text>
+                  </Pressable>
+                )}
+              </View>
 
-            <View>
-              <Text style={styles.calendarInstruction}>
-                {!startDate
-                  ? "Tap to select start date"
-                  : !endDate
-                  ? "Tap to select end date"
-                  : `${
-                      Math.ceil(
-                        (new Date(endDate) - new Date(startDate)) /
-                          (1000 * 60 * 60 * 24)
-                      ) + 1
-                    } days selected`}
-              </Text>
-
-              <CalendarList
-                onDayPress={handleDayPress}
-                markedDates={getMarkedDates()}
-                minDate={getCurrentDate()}
-                markingType="period"
-                horizontal={true}
-                pagingEnabled={true}
-                pastScrollRange={0}
-                futureScrollRange={12}
-                calendarWidth={320}
-                calendarHeight={340}
-                current={getCurrentDate()}
-                theme={{
-                  fontFamily: FONTS.regular,
-                  selectedDayBackgroundColor: "#4D81E7",
-                  selectedDayTextColor: "#ffffff",
-                  todayTextColor: "#4D81E7",
-                  dayTextColor: "#2d4150",
-                  textDisabledColor: "#d9e1e8",
-                  monthTextColor: "#2d4150",
-                  indicatorColor: "#4D81E7",
-                }}
-              />
+              <View style={{marginBottom:14}}>
+                <Text style={styles.calendarInstruction}>
+                  {!tripData.start
+                    ? "Tap to select start date"
+                    : !tripData.end
+                    ? "Tap to select end date"
+                    : `${
+                        Math.ceil(
+                          (new Date(tripData.end) - new Date(tripData.start)) /
+                            (1000 * 60 * 60 * 24)
+                        ) + 1
+                      } days selected`}
+                </Text>
+                <Calendar
+                  onDayPress={handleDayPress}
+                  markedDates={getMarkedDates()}
+                  minDate={getCurrentDate()}
+                  markingType="period"
+                  pagingEnabled={true}
+                  pastScrollRange={0}
+                  futureScrollRange={12}
+                  current={getCurrentDate()}
+                  theme={{
+                    fontFamily: FONTS.regular,
+                    selectedDayBackgroundColor: "#4D81E7",
+                    selectedDayTextColor: "#ffffff",
+                    todayTextColor: "#4D81E7",
+                    dayTextColor: "#2d4150",
+                    textDisabledColor: "#d9e1e8",
+                    monthTextColor: "#2d4150",
+                    indicatorColor: "#4D81E7",
+                  }}
+                />
+              </View>
+              <TouchableOpacity
+                style={styles.createButton}
+                onPress={handleStoreTripData}
+              >
+                <Text style={styles.createButtonText}>Create Trip</Text>
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity
-              style={styles.createButton}
-              onPress={handleStoreTripData}
-            >
-              <Text style={styles.createButtonText}>Create Trip</Text>
-            </TouchableOpacity>
           </View>
-        </View>
-      </ScrollView>
+        </ScrollView>
+      </SafeAreaView>
     </Modal>
   );
 };
@@ -444,7 +481,7 @@ const styles = StyleSheet.create({
   },
   createButtonText: {
     fontFamily: FONTS.semiBold,
-    fontSize: FONT_SIZE.H5,
+    fontSize: FONT_SIZE.H6,
     textAlign: "center",
     color: "#fff",
   },
