@@ -17,13 +17,17 @@ const handleFirebaseAuthErrors = (error) => {
   return "Authentication failed. Please try again";
 };
 
-const handleSignupValidation = (email, password) => {
+const handleSignupValidation = (email, password, name) => {
   if (!email.trim()) {
     Alert.alert("Please enter your email");
     return false;
   }
   if (!password.trim()) {
     Alert.alert("Please enter your password");
+    return false;
+  }
+  if (!name.trim()) {
+    Alert.alert("Please enter your Name");
     return false;
   }
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -49,6 +53,10 @@ const handleSignupValidation = (email, password) => {
   const numbers = /[0-9]/g;
   if (!password.match(numbers)) {
     Alert.alert("Password must contain alteast one number");
+    return false;
+  }
+  if(name.match(numbers)){
+    Alert.alert("Name should not contain numbers")
     return false;
   }
 

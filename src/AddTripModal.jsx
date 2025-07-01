@@ -14,11 +14,12 @@ import { COLOR, FONT_SIZE, FONTS } from "./constants/Theme";
 import { StatusBar } from "expo-status-bar";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { Calendar, CalendarList } from "react-native-calendars";
+import { Calendar } from "react-native-calendars";
 import { db } from "../firebaseConfig";
-import { addDoc, collection, doc, setDoc } from "firebase/firestore";
+import { doc, setDoc } from "firebase/firestore";
 import { getAuth } from "@firebase/auth";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { AddTripToUser } from "./utils/firebaseUserHandlers";
 
 const AddTripModal = ({
   isModalVisible,
@@ -27,8 +28,6 @@ const AddTripModal = ({
   backdropPress,
 }) => {
   const [activeInput, setActiveInput] = useState(null);
-  // const [tripData.start, setTripData.start] = useState("");
-  // const [tripData.end, setTripData.end] = useState("");
   const [tripData, setTripData] = useState({
     title: "",
     destination: "",
@@ -43,11 +42,16 @@ const AddTripModal = ({
       [field]: value,
     }));
   };
-  // const validateTripData = () => {
+  const generateRandomId = () => {
+    let str = "1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    let id = [];
+    for (let i = 0; i <= 4; i++) {
+      id.push(str[Math.floor(Math.random() * str.length)]);
+    }
+    return id.join("");
+  };
 
-  // }
   const handleStoreTripData = async () => {
-    // validateTripData()
     if (!tripData.title.trim()) {
       Alert.alert("Please enter a title");
       return;
@@ -61,7 +65,7 @@ const AddTripModal = ({
       return;
     }
     const budgetNumber = parseInt(tripData.budget);
-    if (isNaN(tripData.budget)) {
+    if (isNaN(budgetNumber)) {
       Alert.alert("Please enter a valid amount");
       return;
     }
@@ -86,8 +90,11 @@ const AddTripModal = ({
         createdAt: new Date().toISOString(),
         userId: userId,
       };
-      const tripCollectionRef = collection(db, "userRoom", userId, "trips");
-      await addDoc(tripCollectionRef, tripToStore);
+
+      const tripId = generateRandomId();
+      const tripDocRef = doc(db, "trip", tripId);
+      AddTripToUser(tripId)
+      await setDoc(tripDocRef, tripToStore);
       Alert.alert("Success", "Trip created successfully!");
       setTripData({
         title: "",
@@ -238,7 +245,7 @@ const AddTripModal = ({
                   value={tripData.title}
                   onFocus={() => setActiveInput("title")}
                   onBlur={() => setActiveInput(null)}
-                  placeholder="Title"
+                  placeholder="Title (eg Office Trip) "
                   placeholderTextColor="#8F9098"
                   style={[
                     styles.input,
@@ -281,7 +288,7 @@ const AddTripModal = ({
                   style={styles.icon}
                 />
                 <TextInput
-                  placeholder="Budget"
+                  placeholder="Group Budget"
                   placeholderTextColor="#8F9098"
                   onChangeText={(text) => handleTripDataChange("budget", text)}
                   value={tripData.budget}
@@ -322,7 +329,7 @@ const AddTripModal = ({
                 )}
               </View>
 
-              <View style={{marginBottom:14}}>
+              <View style={{ marginBottom: 14 }}>
                 <Text style={styles.calendarInstruction}>
                   {!tripData.start
                     ? "Tap to select start date"
@@ -378,7 +385,7 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 30,
     backgroundColor: "#fff",
-    marginTop: 50,
+    marginTop: 30,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: 20,

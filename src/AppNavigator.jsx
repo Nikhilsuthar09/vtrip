@@ -34,28 +34,28 @@ export default function RootStack() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
-    <Stack.Navigator screenOptions={{ animation: "fade" }}>
-      {isLoggedIn ? (
-        <Stack.Screen
-          name="HomeTabs"
-          component={HomeTabs}
-          options={{ headerShown: false }}
-        />
-      ) : (
-        <>
+      <Stack.Navigator screenOptions={{ animation: "fade" }}>
+        {isLoggedIn ? (
           <Stack.Screen
-            name="Login"
-            component={AuthScreen}
+            name="HomeTabs"
+            component={HomeTabs}
             options={{ headerShown: false }}
           />
-          <Stack.Screen
-            name="SignUp"
-            component={Signup}
-            options={{ headerShown: false }}
-          />
-        </>
-      )}
-    </Stack.Navigator>
+        ) : (
+          <>
+            <Stack.Screen
+              name="Login"
+              component={AuthScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="SignUp"
+              component={Signup}
+              options={{ headerShown: false }}
+            />
+          </>
+        )}
+      </Stack.Navigator>
     </SafeAreaView>
   );
 }

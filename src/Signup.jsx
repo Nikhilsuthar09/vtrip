@@ -14,7 +14,7 @@ import React, { useRef, useState } from "react";
 import { LinearGradient } from "expo-linear-gradient";
 import { COLOR, FONT_SIZE, FONTS } from "./constants/Theme";
 import AntDesign from "@expo/vector-icons/AntDesign";
-import { createUserWithEmailAndPassword, signOut } from "firebase/auth";
+import { createUserWithEmailAndPassword, signOut, updateProfile } from "firebase/auth";
 import { auth } from "../firebaseConfig";
 import { useNavigation } from "expo-router";
 import {
@@ -25,7 +25,7 @@ import {
 const signup = async (email, password, name) => {
   Keyboard.dismiss();
   // input validation
-  if (!handleSignupValidation(email, password)) {
+  if (!handleSignupValidation(email, password, name)) {
     return;
   }
   try {
@@ -36,6 +36,9 @@ const signup = async (email, password, name) => {
     );
     // Signed in
     const user = userCredential.user;
+    await updateProfile(user, {
+      displayName: name
+    })
     console.log(user);
     await signOut(auth);
   } catch (error) {
