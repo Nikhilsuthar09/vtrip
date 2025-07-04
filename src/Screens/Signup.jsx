@@ -10,7 +10,7 @@ import {
   StyleSheet,
   Keyboard,
 } from "react-native";
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import { LinearGradient } from "expo-linear-gradient";
 import { COLOR, FONT_SIZE, FONTS } from "../constants/Theme";
 import AntDesign from "@expo/vector-icons/AntDesign";

@@ -1,20 +1,35 @@
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import React from "react";
+import React, { useState } from "react";
 import { COLOR, FONT_SIZE, FONTS } from "../constants/Theme";
 import { Image } from "expo-image";
 import SeparationLine from "./SeparationLine";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useNavigation } from "expo-router";
+import Entypo from "@expo/vector-icons/Entypo";
+import TripMenuModal from "./TripMenuModal";
 
 const blurhash =
   "|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[";
 
-const ShowTripsCard = ({ title, destination, startDate, endDate, budget }) => {
+const ShowTripsCard = ({ title, destination, startDate, endDate, budget, visible, openModal, closeModal }) => {
   const navigation = useNavigation();
+
   return (
     <>
       <View style={styles.container}>
+          <Entypo
+            name="dots-three-vertical"
+            style={styles.menuIcon}
+            size={18}
+            color="black"
+            onPress={openModal}
+          />
+          <TripMenuModal 
+          visible = {visible}
+          closeModal={closeModal}
+          />
+
         <View style={styles.imgcontiner}>
           <Image
             style={styles.image}
@@ -69,6 +84,7 @@ const ShowTripsCard = ({ title, destination, startDate, endDate, budget }) => {
 };
 const styles = StyleSheet.create({
   container: {
+    position: "relative",
     paddingVertical: 14,
     paddingHorizontal: 10,
     flexDirection: "row",
@@ -104,6 +120,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
+  },
+  menuIcon: {
+    position: "absolute",
+    right: 16,
+    top: 6,
   },
   title: {
     fontFamily: FONTS.bold,

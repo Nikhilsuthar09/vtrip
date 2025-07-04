@@ -3,6 +3,8 @@ import React from "react";
 import { auth } from "../Configs/firebaseConfig";
 import { signOut } from "@firebase/auth";
 import { SafeAreaView } from "react-native-safe-area-context";
+import TripMenuModal from "../components/TripMenuModal";
+import { FONT_SIZE } from "../constants/Theme";
 
 const handlelogout = async () => {
   try {
@@ -36,7 +38,7 @@ const HomeScreen = () => {
             borderRadius: 8,
           }}
         >
-          <Text style={{ color: "white", fontSize: 16 }}>logout</Text>
+          <Text style={{ color: "white", fontSize: FONT_SIZE.bodyLarge }}>logout</Text>
         </Pressable>
       </View>
     </SafeAreaView>

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import ShowTripsCard from "../components/ShowTripsCard";
 import HeaderWithSearch from "../components/HeaderWithSearch";
@@ -7,7 +7,11 @@ import { FlatList } from "react-native";
 import Spinner from "../components/Spinner";
 
 const MyTrip = () => {
+  const [openModalId, setOpenModalId] = useState(null);
   const { tripsData, loading, error, tripIds } = useUserTripsData();
+  
+    const openMenu = (itemId) => setOpenModalId(itemId);
+    const closeMenu = () => setOpenModalId(null);
   if (loading) {
     return <Spinner />;
   }
@@ -27,6 +31,9 @@ const MyTrip = () => {
             startDate={item.startDate}
             endDate={item.endDate}
             budget={item.budget}
+            visible={openModalId === item.id}
+            openModal = {() => openMenu(item.id)}
+            closeModal={closeMenu}
           />
         )}
         keyExtractor={(item) => item.id}

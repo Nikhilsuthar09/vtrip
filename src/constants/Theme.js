@@ -13,6 +13,7 @@ const FONT_SIZE = {
   H4:22,
   H5:20,
   H6:18,
+  bodyLarge:16,
   body:14,
   caption:12,
 }
