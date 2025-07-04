@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Pressable, TextInput } from "react-native";
+import { View, StyleSheet, Pressable, TextInput } from "react-native";
 import React, { useState } from "react";
 import { COLOR, FONT_SIZE, FONTS } from "../constants/Theme";
 import { FontAwesome, FontAwesome5 } from "@expo/vector-icons";
@@ -25,7 +25,7 @@ const HeaderWithSearch = ({ onSearch, onBack }) => {
             />
           <FontAwesome name="search" size={18} color={COLOR.grey} />
         </View>
-            <Pressable style={styles.backButton} onPress={onBack}>
+            <Pressable style={styles.userButton} onPress={onBack}>
               <FontAwesome name="user-o" size={18} color="#fff" />
             </Pressable>
       </View>
@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
     height: "100%",
     marginRight: 8,
   },
-  backButton:{
+  userButton:{
     backgroundColor:COLOR.primary,
     paddingVertical:9,
     paddingHorizontal:11,

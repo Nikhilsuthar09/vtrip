@@ -10,16 +10,18 @@ import {
 } from "react-native";
 import React, { useState } from "react";
 import Modal from "react-native-modal";
-import { COLOR, FONT_SIZE, FONTS } from "./constants/Theme";
 import { StatusBar } from "expo-status-bar";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { Calendar } from "react-native-calendars";
-import { db } from "../firebaseConfig";
-import { doc, setDoc } from "firebase/firestore";
-import { getAuth } from "@firebase/auth";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { AddTripToUser } from "./utils/firebaseUserHandlers";
+// local file imports
+import { COLOR, FONT_SIZE, FONTS } from "../constants/Theme";
+// firebase
+import { db } from "../Configs/firebaseConfig";
+import { getAuth } from "@firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
+import { AddTripToUser } from "../utils/firebaseUserHandlers";
 
 const AddTripModal = ({
   isModalVisible,
@@ -93,7 +95,7 @@ const AddTripModal = ({
 
       const tripId = generateRandomId();
       const tripDocRef = doc(db, "trip", tripId);
-      AddTripToUser(tripId)
+      AddTripToUser(tripId);
       await setDoc(tripDocRef, tripToStore);
       Alert.alert("Success", "Trip created successfully!");
       setTripData({

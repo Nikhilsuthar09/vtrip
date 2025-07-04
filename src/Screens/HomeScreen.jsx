@@ -1,10 +1,8 @@
 import { View, Text, Pressable } from "react-native";
 import React from "react";
-import { auth } from "../firebaseConfig";
+import { auth } from "../Configs/firebaseConfig";
 import { signOut } from "@firebase/auth";
 import { SafeAreaView } from "react-native-safe-area-context";
-import AirplaneLoading from "./components/AirplaneLoading";
-
 
 const handlelogout = async () => {
   try {

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { db } from "../../firebaseConfig";
+import { db } from "../Configs/firebaseConfig";
 import {
   arrayUnion,
   collection,
@@ -32,7 +32,7 @@ export const useUserTrips = () => {
           const userTripIds = userData.tripIds || [];
           setLoading(false);
           setTripIds(userTripIds);
-          console.log( "Trip Id updated: ", userTripIds);
+          console.log("Trip Id updated: ", userTripIds);
         } else {
           console.log("User document does not exist");
         }
@@ -76,8 +76,15 @@ export const useUserTripsData = () => {
               id: doc.id,
               ...doc.data(),
             });
-            setTripsData(trips)
           });
+          trips.sort((a, b) => {
+            const dateA = new Date(a.startDate);
+            const dateB = new Date(b.startDate);
+            return dateA - dateB;
+          });
+          console.log(trips);
+          setTripsData(trips);
+          setLoading(false);
         } else {
           // if trips array length is greater than 10
           const tripPromises = tripIds.map(async (tripId) => {
@@ -101,6 +108,11 @@ export const useUserTripsData = () => {
           });
           const trips = await Promise.all(tripPromises);
           const validTrips = trips.filter((trip) => trip !== null);
+          validTrips.sort((a, b) => {
+            const dateA = new Date(a.startDate);
+            const dateB = new Date(b.startDate);
+            return dateA - dateB;
+          });
           setTripsData(validTrips);
         }
         setError(null);

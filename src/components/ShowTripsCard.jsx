@@ -5,18 +5,20 @@ import { Image } from "expo-image";
 import SeparationLine from "./SeparationLine";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { useNavigation } from "expo-router";
 
 const blurhash =
   "|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[";
 
 const ShowTripsCard = ({ title, destination, startDate, endDate, budget }) => {
+  const navigation = useNavigation();
   return (
     <>
       <View style={styles.container}>
         <View style={styles.imgcontiner}>
           <Image
             style={styles.image}
-            source={require('./../../assets/default.jpg')}
+            source={require("./../../assets/default.jpg")}
             placeholder={{ blurhash }}
             contentFit="cover"
             transition={500}
@@ -27,13 +29,17 @@ const ShowTripsCard = ({ title, destination, startDate, endDate, budget }) => {
             <View style={styles.iconContainer}>
               <FontAwesome name="map-marker" size={16} color={COLOR.grey} />
             </View>
-            <Text style={styles.title}>{title} to {destination}</Text>
+            <Text style={styles.title}>
+              {title} to {destination}
+            </Text>
           </View>
           <View style={styles.icon_text_container}>
             <View style={styles.iconContainer}>
               <MaterialIcons name="date-range" size={16} color={COLOR.grey} />
             </View>
-            <Text style={styles.dates}>{startDate} - {endDate}</Text>
+            <Text style={styles.dates}>
+              {startDate} - {endDate}
+            </Text>
           </View>
           <View style={styles.icon_text_container}>
             <View style={styles.iconContainer}>
@@ -41,8 +47,18 @@ const ShowTripsCard = ({ title, destination, startDate, endDate, budget }) => {
             </View>
             <Text style={styles.bugdet}>{budget}</Text>
           </View>
-          <Text style={styles.noOFdays}>2 days</Text>
-          <TouchableOpacity style={styles.planButton}>
+          <Text style={styles.noOFdays}>
+            {`${
+              Math.ceil(
+                (new Date(endDate) - new Date(startDate)) /
+                  (1000 * 60 * 60 * 24)
+              ) + 1
+            } Days`}
+          </Text>
+          <TouchableOpacity
+            style={styles.planButton}
+            onPress={() => navigation.navigate("TopTabs")}
+          >
             <Text style={styles.planButtontext}>Start Planning</Text>
           </TouchableOpacity>
         </View>

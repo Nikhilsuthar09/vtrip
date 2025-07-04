@@ -12,15 +12,15 @@ import {
   View,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { COLOR, FONT_SIZE, FONTS } from "./constants/Theme";
+import { COLOR, FONT_SIZE, FONTS } from "../constants/Theme";
 import AntDesign from "@expo/vector-icons/AntDesign";
-import { auth } from "../firebaseConfig";
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../Configs/firebaseConfig";
+import { signInWithEmailAndPassword } from "firebase/auth";
 import { useNavigation } from "expo-router";
 import {
   handleFirebaseAuthErrors,
   handleLoginValidation,
-} from "./AuthHandlers";
+} from "../utils/AuthHandlers";
 
 const signin = async (email, password) => {
   Keyboard.dismiss();

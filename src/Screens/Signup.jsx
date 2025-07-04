@@ -12,51 +12,65 @@ import {
 } from "react-native";
 import React, { useRef, useState } from "react";
 import { LinearGradient } from "expo-linear-gradient";
-import { COLOR, FONT_SIZE, FONTS } from "./constants/Theme";
+import { COLOR, FONT_SIZE, FONTS } from "../constants/Theme";
 import AntDesign from "@expo/vector-icons/AntDesign";
-import { createUserWithEmailAndPassword, signOut, updateProfile } from "firebase/auth";
-import { auth } from "../firebaseConfig";
+import {
+  createUserWithEmailAndPassword,
+  signOut,
+  updateProfile,
+} from "firebase/auth";
+import { auth } from "../Configs/firebaseConfig";
 import { useNavigation } from "expo-router";
 import {
   handleFirebaseAuthErrors,
   handleSignupValidation,
-} from "./AuthHandlers";
-
-const signup = async (email, password, name) => {
-  Keyboard.dismiss();
-  // input validation
-  if (!handleSignupValidation(email, password, name)) {
-    return;
-  }
-  try {
-    const userCredential = await createUserWithEmailAndPassword(
-      auth,
-      email,
-      password
-    );
-    // Signed in
-    const user = userCredential.user;
-    await updateProfile(user, {
-      displayName: name
-    })
-    console.log(user);
-    await signOut(auth);
-  } catch (error) {
-    const errorMessage = handleFirebaseAuthErrors(error);
-    console.log(errorMessage);
-    Alert.alert("Error ", errorMessage);
-  }
-};
+} from "../utils/AuthHandlers";
+import { useAuth } from "../Context/AuthContext";
 
 export default function Signup() {
-  const email = useRef("");
-  const password = useRef("");
-  const name = useRef("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const { setRegistrationState } = useAuth();
   const navigation = useNavigation();
-
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
+  };
+  if (loading) {
+    return null;
+  }
+  const signup = async () => {
+    Keyboard.dismiss();
+    // input validation
+    if (!handleSignupValidation(email, password, name)) {
+      return;
+    }
+    try {
+      setLoading(true);
+      setRegistrationState(true);
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      // Signed in
+      const user = userCredential.user;
+      await updateProfile(user, {
+        displayName: name,
+      });
+      console.log(user);
+      await signOut(auth);
+      setLoading(false);
+      setRegistrationState(false);
+      navigation.goBack();
+    } catch (error) {
+      const errorMessage = handleFirebaseAuthErrors(error);
+      console.log(errorMessage);
+      Alert.alert("Error ", errorMessage);
+      setLoading(false);
+    }
   };
 
   return (
@@ -100,7 +114,8 @@ export default function Signup() {
                   placeholder="eg John Doe"
                   placeholderTextColor="#8F9098"
                   style={styles.input}
-                  onChangeText={(value) => (name.current = value)}
+                  value={name}
+                  onChangeText={(value) => setName(value)}
                 />
               </View>
               <View>
@@ -109,7 +124,8 @@ export default function Signup() {
                   style={styles.input}
                   placeholder="name@email.com"
                   placeholderTextColor="#8F9098"
-                  onChangeText={(value) => (email.current = value)}
+                  onChangeText={(value) => setEmail(value)}
+                  value={email}
                   autoCorrect={false}
                 />
               </View>
@@ -120,7 +136,8 @@ export default function Signup() {
                     style={styles.passwordInput}
                     placeholder="Create a Password"
                     placeholderTextColor="#8F9098"
-                    onChangeText={(value) => (password.current = value)}
+                    onChangeText={(value) => setPassword(value)}
+                    value={password}
                     secureTextEntry={!showPassword}
                     autoCorrect={false}
                     underlineColorAndroid="transparent"
@@ -138,11 +155,7 @@ export default function Signup() {
                 </View>
               </View>
             </View>
-            <Pressable
-              onPress={() =>
-                signup(email.current, password.current, name.current)
-              }
-            >
+            <Pressable onPress={signup}>
               <View style={styles.loginbuttonContainer}>
                 <Text style={styles.loginbuttontext}>Register</Text>
               </View>
