@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import React, { useState } from "react";
+import React from "react";
 import { COLOR, FONT_SIZE, FONTS } from "../constants/Theme";
 import { Image } from "expo-image";
 import SeparationLine from "./SeparationLine";
@@ -7,28 +7,41 @@ import FontAwesome from "@expo/vector-icons/FontAwesome";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useNavigation } from "expo-router";
 import Entypo from "@expo/vector-icons/Entypo";
-import TripMenuModal from "./TripMenuModal";
 
 const blurhash =
   "|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[";
 
-const ShowTripsCard = ({ title, destination, startDate, endDate, budget, visible, openModal, closeModal }) => {
+const ShowTripsCard = ({
+  title,
+  destination,
+  startDate,
+  endDate,
+  budget,
+  openModal,
+}) => {
   const navigation = useNavigation();
+  const handleMenuPress = (e) => {
+    e.target.measure((x, y, width, height, pageX, pageY) => {
+      openModal({
+        x: pageX,
+        y:pageY + height,
+        width,
+        height
+      })
+    })
+  };
 
   return (
     <>
       <View style={styles.container}>
+        <TouchableOpacity style={styles.menuIcon} onPress={handleMenuPress}>
           <Entypo
             name="dots-three-vertical"
-            style={styles.menuIcon}
             size={18}
             color="black"
-            onPress={openModal}
+            
           />
-          <TripMenuModal 
-          visible = {visible}
-          closeModal={closeModal}
-          />
+        </TouchableOpacity>
 
         <View style={styles.imgcontiner}>
           <Image
@@ -125,6 +138,9 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: 16,
     top: 6,
+    zIndex:10,
+    alignItems:"center",
+    justifyContent:"center"
   },
   title: {
     fontFamily: FONTS.bold,

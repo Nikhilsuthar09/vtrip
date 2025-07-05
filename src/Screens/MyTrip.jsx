@@ -5,13 +5,19 @@ import HeaderWithSearch from "../components/HeaderWithSearch";
 import { useUserTripsData } from "../utils/firebaseUserHandlers";
 import { FlatList } from "react-native";
 import Spinner from "../components/Spinner";
+import TripMenuModal from "../components/TripMenuModal";
 
 const MyTrip = () => {
-  const [openModalId, setOpenModalId] = useState(null);
+  const [modalData, setModalData] = useState(null);
   const { tripsData, loading, error, tripIds } = useUserTripsData();
-  
-    const openMenu = (itemId) => setOpenModalId(itemId);
-    const closeMenu = () => setOpenModalId(null);
+
+  const openMenu = (position) => {
+    setModalData({
+      visible: true,
+      position
+    })
+  }
+  const closeMenu = () => setModalData(null);
   if (loading) {
     return <Spinner />;
   }
@@ -31,12 +37,15 @@ const MyTrip = () => {
             startDate={item.startDate}
             endDate={item.endDate}
             budget={item.budget}
-            visible={openModalId === item.id}
-            openModal = {() => openMenu(item.id)}
-            closeModal={closeMenu}
+            openModal={openMenu}
           />
         )}
         keyExtractor={(item) => item.id}
+      />
+      <TripMenuModal 
+      visible={modalData?.visible || false} 
+      closeModal={closeMenu}
+      position={modalData?.position}
       />
     </SafeAreaView>
   );

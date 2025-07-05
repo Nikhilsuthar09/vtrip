@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Pressable } from "react-native";
+import { View, Text, StyleSheet, Pressable, Dimensions } from "react-native";
 import React from "react";
 import {
   widthPercentageToDP as wp,
@@ -7,48 +7,72 @@ import {
 import { COLOR, FONT_SIZE, FONTS } from "../constants/Theme";
 import Feather from "@expo/vector-icons/Feather";
 import Entypo from "@expo/vector-icons/Entypo";
-import AntDesign from '@expo/vector-icons/AntDesign';
+import AntDesign from "@expo/vector-icons/AntDesign";
 
-const TripMenuModal = ({visible, closeModal}) => {
-  if(!visible) return null;
+const { width, height } = Dimensions.get("window");
+
+const TripMenuModal = ({ visible, closeModal, position }) => {
+  if (!visible) return null;
+
+  const getModalPosition = () => {
+    if (!position) {
+      return {
+        top: 50,
+        right: 30,
+      };
+    }
+
+
+    const modalHeight = 120;
+    const margin = 8;
+
+    let top = position.y + margin;
+    let right = width - position.x - position.width + margin;
+
+    if (top + modalHeight > height) {
+      top = position.y - modalHeight - margin;
+    }
+    if (right < 0) {
+      right = margin;
+    }
+    return { top, right };
+  };
+  const modalPosition = getModalPosition();
   return (
     <>
-    {/* Backdrop */}
-    <Pressable
-    style={styles.backdrop}
-    onPress={closeModal}
-    />
-    <View style={styles.container}>
-      <View style={styles.iconTextContainer}>
-        <Feather name="edit" size={18} color={COLOR.primary} />
-        <Text style={styles.text}>Edit Trip</Text>
+      {/* Backdrop */}
+      <Pressable style={styles.backdrop} onPress={closeModal} />
+      <View style={[styles.container, modalPosition]}>
+        <View style={styles.iconTextContainer}>
+          <Feather name="edit" size={18} color={COLOR.primary} />
+          <Text style={styles.text}>Edit Trip</Text>
+        </View>
+        <View style={styles.iconTextContainer}>
+          <Entypo name="share" size={18} color={COLOR.primary} />
+          <Text style={styles.text}>Share Trip</Text>
+        </View>
+        <View style={styles.iconTextContainer}>
+          <AntDesign name="delete" size={18} color={COLOR.primary} />
+          <Text style={styles.text}>Delete Trip</Text>
+        </View>
       </View>
-      <View style={styles.iconTextContainer}>
-        <Entypo name="share" size={18} color={COLOR.primary} />
-        <Text style={styles.text}>Share Trip</Text>
-      </View>
-      <View style={styles.iconTextContainer}>
-        <AntDesign name="delete" size={18} color={COLOR.primary} />
-        <Text style={styles.text}>Delete Trip</Text>
-      </View>
-    </View>
     </>
   );
 };
 const styles = StyleSheet.create({
-    backdrop: {
+  backdrop: {
     position: "absolute",
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    zIndex: 1,
+    width: width,
+    height: height,
+    zIndex: 100,
   },
   container: {
     position: "absolute",
-    top: hp("6"),
-    right: wp("8"),
-    zIndex: 2,
+    zIndex: 101,
     backgroundColor: "#fff",
     paddingVertical: 14,
     paddingLeft: 10,
@@ -60,7 +84,7 @@ const styles = StyleSheet.create({
   iconTextContainer: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent:"flex-start",
+    justifyContent: "flex-start",
     gap: 6,
   },
   text: {
