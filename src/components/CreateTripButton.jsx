@@ -2,6 +2,7 @@ import React from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { COLOR } from '../constants/Theme';
 
+
 const CreateTripButton = ({ children, onPress }) => {
   return (
     <View style={styles.container}>
@@ -23,7 +24,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    height: 60,
   },
   button: {
     top: -25, // Elevate above the tab bar

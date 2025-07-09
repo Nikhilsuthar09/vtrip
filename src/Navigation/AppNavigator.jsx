@@ -29,7 +29,9 @@ export default function RootStack() {
             <Stack.Screen
               name="TopTabs"
               component={TopTabs}
-              options={{ headerShown: false }}
+              options={{ 
+                headerShown: false,
+              }}
             />
           </>
         ) : (
