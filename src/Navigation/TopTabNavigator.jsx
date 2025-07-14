@@ -10,7 +10,8 @@ import { Text, View } from "react-native";
 
 const Tab = createMaterialTopTabNavigator();
 
-export default function TopTabs() {
+export default function TopTabs({route}) {
+  const {id} = route.params;
   return (
     <Tab.Navigator
       screenOptions={{
@@ -25,6 +26,7 @@ export default function TopTabs() {
        <Tab.Screen
         name="Itinerary"
         component={Itinerary}
+        initialParams={{id}}
         options={{
           tabBarLabel: ({ color }) => (
             <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -43,7 +45,7 @@ export default function TopTabs() {
           ),
         }}
       />
-      <Tab.Screen name="Packing" component={Packing} options={{
+      <Tab.Screen name="Packing" initialParams={{id}} component={Packing} options={{
           tabBarLabel: ({ color }) => (
             <View style={{ flexDirection: "row", alignItems: "center" }}>
               <MaterialIcons name="card-travel" size={16} color={color} />
@@ -60,7 +62,7 @@ export default function TopTabs() {
             </View>
           ),
         }}/>
-      <Tab.Screen name="Expenses" component={Expenses} options={{
+      <Tab.Screen name="Expenses" initialParams={{id}} component={Expenses} options={{
           tabBarLabel: ({ color }) => (
             <View style={{ flexDirection: "row", alignItems: "center" }}>
               <FontAwesome name="inr" size={16} color={color} />

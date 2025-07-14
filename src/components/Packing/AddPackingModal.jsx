@@ -14,7 +14,9 @@ import { useState } from "react";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import CreateNewCategory from "./CreateNewCategory";
-const AddPackingModal = ({ isVisible, onClose }) => {
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { db } from "../../Configs/firebaseConfig";
+const AddPackingModal = ({ isVisible, onClose, tripId }) => {
   const [packingListData, setPackingListData] = useState({
     category: "",
     item: "",
@@ -28,15 +30,10 @@ const AddPackingModal = ({ isVisible, onClose }) => {
     { id: 2, name: "Travelling" },
     { id: 3, name: "Food" },
     { id: 4, name: "Clothing" },
-    { id: 5, name: "vfdvdf" },
-    { id: 6, name: "Electrosvdfvnics" },
-    { id: 7, name: "Electdeefronics" },
-    {
-      id: 8,
-      name: "Electrefvbdjcnejcnweicnewicnecniweucewiufbewuiewiuefeonics",
-    },
+    { id: 5, name: "Electronics" },
   ]);
   const [newCategoryInput, setNewCategoryInput] = useState("");
+
   const handleAddCategory = () => {
     Keyboard.dismiss();
     if (!newCategoryInput.trim()) {
@@ -76,7 +73,7 @@ const AddPackingModal = ({ isVisible, onClose }) => {
     setIsNewCategoryModalVisible(!isNewCategoryModalVisible);
   };
 
-  const handleAddPackingItem = () => {
+  const handleAddPackingItem = async () => {
     if (!packingListData.category.trim()) {
       Alert.alert("Hold on!", "Choose a category to organize your item.");
       return;
@@ -88,7 +85,27 @@ const AddPackingModal = ({ isVisible, onClose }) => {
       );
       return;
     }
-    console.log(packingListData);
+    const quantityStrToNumber = parseInt(packingListData.quantity);
+    if (isNaN(quantityStrToNumber)) {
+      Alert.alert("Error!", "Please enter a valid quantity");
+      return;
+    }
+    try {
+      
+      const packingListToStore = {
+        category: packingListData.category,
+        item: packingListData.item,
+        quantity: quantityStrToNumber,
+        note: packingListData.note,
+        createdAt: serverTimestamp(),
+      };
+      const packingCollectionRef = collection(db, "trip", tripId, "packing");
+      await addDoc(packingCollectionRef, packingListToStore);
+      console.log("packingList added Successfully");
+    } catch (e) {
+      console.log(e);
+    }
+
     setPackingListData((prev) => ({
       ...prev,
       category: "",
@@ -96,6 +113,7 @@ const AddPackingModal = ({ isVisible, onClose }) => {
       quantity: "",
       note: "",
     }));
+    onClose();
   };
 
   return (
@@ -183,7 +201,9 @@ const AddPackingModal = ({ isVisible, onClose }) => {
                 />
               </View>
               <View style={styles.quantityInputContainer}>
-                <Text style={[styles.label,{textAlign:"center"}]}>qty.</Text>
+                <Text style={[styles.label, { textAlign: "center" }]}>
+                  qty.
+                </Text>
                 <TextInput
                   inputMode="numeric"
                   style={styles.quantityInput}
@@ -251,6 +271,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 10,
     borderRadius: 4,
+    alignItems:"center"
   },
   categoryLabel: {
     fontFamily: FONTS.medium,
@@ -272,7 +293,7 @@ const styles = StyleSheet.create({
   addCategory: {
     paddingVertical: 6,
     paddingHorizontal: 10,
-    marginBottom: 10,
+
     flexDirection: "row",
     gap: 3,
     backgroundColor: COLOR.primary,
@@ -286,7 +307,7 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginVertical: 30,
+    marginTop: 40,
     width: "100%",
   },
   itemTextInputContainer: {
@@ -295,12 +316,11 @@ const styles = StyleSheet.create({
   quantityInputContainer: {
     width: "20%",
   },
-  label:{
-    fontFamily:FONTS.medium,
-    fontSize:FONT_SIZE.caption,
-    color:COLOR.grey,
-    marginBottom:2,
-
+  label: {
+    fontFamily: FONTS.medium,
+    fontSize: FONT_SIZE.caption,
+    color: COLOR.grey,
+    marginBottom: 2,
   },
   itemTextInput: {
     borderColor: COLOR.grey,
@@ -321,7 +341,7 @@ const styles = StyleSheet.create({
     borderColor: COLOR.grey,
     paddingHorizontal: 8,
     textAlign: "center",
-    width:"100%"
+    width: "100%",
   },
   noteinput: {
     paddingHorizontal: 6,

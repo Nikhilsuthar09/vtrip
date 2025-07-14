@@ -1,23 +1,45 @@
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-} from "react-native";
+import { View, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
 import React, { useState } from "react";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { COLOR } from "../constants/Theme";
 import AddPackingModal from "../components/Packing/AddPackingModal";
+import { useTripPackingList } from "../utils/firebaseTripHandler";
+import Spinner from "../components/Spinner";
+import PackingListCard from "../components/Packing/PackingListCard";
 
+const Packing = ({ route }) => {
+  const { id } = route.params;
+  const { packingData, loading, error } = useTripPackingList(id);
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
-const Packing = () => {
-  const [isModalVisible, setIsModalVisible] = useState(true);
+  const packingByCategory = packingData.reduce((acc, item) => {
+    const category = item.category;
+    if (!acc[category]) {
+      acc[category] = [];
+    }
+    acc[category].push(item);
+    return acc;
+  }, {});
+
+  if (error) console.log(error);
+  if (loading) return <Spinner />;
   const toggleModal = () => {
     setIsModalVisible(!isModalVisible);
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#fff" }}>
+    <View style={{ flex: 1, paddingHorizontal: 20, paddingVertical: 20 }}>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        {Object.keys(packingByCategory)
+          .sort()
+          .map((category) => (
+            <PackingListCard
+              key={category}
+              title={category}
+              data={packingByCategory[category]}
+            />
+          ))}
+      </ScrollView>
       <TouchableOpacity
         onPress={toggleModal}
         activeOpacity={0.8}
@@ -25,9 +47,10 @@ const Packing = () => {
       >
         <Ionicons name="add" style={styles.icon} size={28} color="white" />
       </TouchableOpacity>
-      <AddPackingModal 
-      isVisible={isModalVisible}
-      onClose ={toggleModal}
+      <AddPackingModal
+        isVisible={isModalVisible}
+        onClose={toggleModal}
+        tripId={id}
       />
     </View>
   );
@@ -43,7 +66,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLOR.primary,
     alignItems: "center",
     justifyContent: "center",
-    elevation: 8,
+    elevation: 10,
   },
 });
 export default Packing;

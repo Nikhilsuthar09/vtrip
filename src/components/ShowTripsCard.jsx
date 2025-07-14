@@ -12,6 +12,7 @@ const blurhash =
   "|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[";
 
 const ShowTripsCard = ({
+  id,
   title,
   destination,
   startDate,
@@ -85,7 +86,7 @@ const ShowTripsCard = ({
           </Text>
           <TouchableOpacity
             style={styles.planButton}
-            onPress={() => navigation.navigate("TopTabs")}
+            onPress={() => navigation.navigate("TopTabs",{id})}
           >
             <Text style={styles.planButtontext}>Start Planning</Text>
           </TouchableOpacity>

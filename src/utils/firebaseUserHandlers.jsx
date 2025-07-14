@@ -153,3 +153,4 @@ export const AddTripToUser = async (tripId) => {
     console.log(e.message);
   }
 };
+

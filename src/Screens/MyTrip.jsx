@@ -32,6 +32,7 @@ const MyTrip = () => {
         data={tripsData}
         renderItem={({ item }) => (
           <ShowTripsCard
+            id={item.id}
             title={item.title}
             destination={item.destination}
             startDate={item.startDate}
