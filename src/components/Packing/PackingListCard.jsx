@@ -1,23 +1,15 @@
-import { View, Text, StyleSheet, FlatList } from "react-native";
-import React, { useState } from "react";
+import { View, Text, StyleSheet, Pressable } from "react-native";
 import Entypo from "@expo/vector-icons/Entypo";
 import { COLOR, FONT_SIZE, FONTS } from "../../constants/Theme";
 import Checkbox from "expo-checkbox";
 
-const PackingListCard = ({ title, data }) => {
-  const [isChecked, setChecked] = useState({});
-  const checkedCount = Object.values(isChecked).filter(Boolean).length;
+const PackingListCard = ({ title, data, toggleChecked, isChecked }) => {
+  const checkedCount = data.filter((item) => isChecked[item.id]).length;
 
-  const toggleChecked = (itemId) => {
-    setChecked((prev) => ({
-      ...prev,
-      [itemId]: !prev[itemId],
-    }));
-  };
   return (
     <View style={styles.container}>
       <View style={styles.categoryContainer}>
-        <View style={{flexDirection:"row", alignItems:"center",gap:2}}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 2 }}>
           <Text style={styles.categorylabel}>{title} </Text>
           <Text style={styles.checkedCount}>
             ({checkedCount}/{data.length})
@@ -26,7 +18,11 @@ const PackingListCard = ({ title, data }) => {
         <Entypo name="chevron-thin-up" size={18} color={COLOR.grey} />
       </View>
       {data.sort().map((item) => (
-        <View key={item.id} style={styles.item_quantity_Container}>
+        <Pressable
+          onPress={() => toggleChecked(item.id)}
+          key={item.id}
+          style={styles.item_quantity_Container}
+        >
           <View style={styles.itemContainer}>
             <Checkbox
               style={styles.checkbox}
@@ -51,7 +47,7 @@ const PackingListCard = ({ title, data }) => {
           >
             {item.quantity}
           </Text>
-        </View>
+        </Pressable>
       ))}
     </View>
   );
@@ -74,10 +70,10 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.semiBold,
     fontSize: FONT_SIZE.bodyLarge,
   },
-  checkedCount:{
-    fontFamily:FONTS.regular,
-    letterSpacing:1,
-    fontSize:FONT_SIZE.caption
+  checkedCount: {
+    fontFamily: FONTS.regular,
+    letterSpacing: 1,
+    fontSize: FONT_SIZE.caption,
   },
   item_quantity_Container: {
     flexDirection: "row",
@@ -97,7 +93,11 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   itemText: {
-    fontFamily: FONTS.regular,
+    fontFamily: FONTS.medium,
+    fontSize: FONT_SIZE.body,
+  },
+  quantity: {
+    fontFamily: FONTS.medium,
     fontSize: FONT_SIZE.body,
   },
   strikethrough: {

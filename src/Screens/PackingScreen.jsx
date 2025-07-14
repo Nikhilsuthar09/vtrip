@@ -1,4 +1,4 @@
-import { View, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
+import { View, TouchableOpacity, StyleSheet, ScrollView, Text } from "react-native";
 import React, { useState } from "react";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { COLOR } from "../constants/Theme";
@@ -6,11 +6,13 @@ import AddPackingModal from "../components/Packing/AddPackingModal";
 import { useTripPackingList } from "../utils/firebaseTripHandler";
 import Spinner from "../components/Spinner";
 import PackingListCard from "../components/Packing/PackingListCard";
+import ProgressBar from "../components/Packing/ProgressBar";
 
 const Packing = ({ route }) => {
   const { id } = route.params;
   const { packingData, loading, error } = useTripPackingList(id);
   const [isModalVisible, setIsModalVisible] = useState(false);
+    const [isChecked, setChecked] = useState({});
 
   const packingByCategory = packingData.reduce((acc, item) => {
     const category = item.category;
@@ -20,6 +22,17 @@ const Packing = ({ route }) => {
     acc[category].push(item);
     return acc;
   }, {});
+  const totalItems = Object.values(packingByCategory).reduce(
+    (sum, items) => sum + items.length,
+    0)
+
+    const toggleChecked = (itemId) => {
+      setChecked((prev) => ({
+        ...prev,
+        [itemId]: !prev[itemId],
+      }));
+    };
+    const totalChecked = Object.values(isChecked).filter(Boolean).length
 
   if (error) console.log(error);
   if (loading) return <Spinner />;
@@ -28,7 +41,11 @@ const Packing = ({ route }) => {
   };
 
   return (
-    <View style={{ flex: 1, paddingHorizontal: 20, paddingVertical: 20 }}>
+    <View style={{ flex: 1, paddingHorizontal: 20, paddingTop: 20 }}>
+        <ProgressBar
+        progress = {`${totalChecked/totalItems}`}
+        totalitems = {totalItems}
+        />
       <ScrollView showsVerticalScrollIndicator={false}>
         {Object.keys(packingByCategory)
           .sort()
@@ -37,6 +54,8 @@ const Packing = ({ route }) => {
               key={category}
               title={category}
               data={packingByCategory[category]}
+              toggleChecked = {toggleChecked}
+              isChecked = {isChecked}
             />
           ))}
       </ScrollView>
