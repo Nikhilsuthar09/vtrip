@@ -1,7 +1,13 @@
-import { View, TouchableOpacity, StyleSheet, ScrollView, Text } from "react-native";
+import {
+  View,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+  Text,
+} from "react-native";
 import React, { useState } from "react";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { COLOR } from "../constants/Theme";
+import { COLOR, FONT_SIZE, FONTS } from "../constants/Theme";
 import AddPackingModal from "../components/Packing/AddPackingModal";
 import { useTripPackingList } from "../utils/firebaseTripHandler";
 import Spinner from "../components/Spinner";
@@ -12,7 +18,7 @@ const Packing = ({ route }) => {
   const { id } = route.params;
   const { packingData, loading, error } = useTripPackingList(id);
   const [isModalVisible, setIsModalVisible] = useState(false);
-    const [isChecked, setChecked] = useState({});
+  const [isChecked, setChecked] = useState({});
 
   const packingByCategory = packingData.reduce((acc, item) => {
     const category = item.category;
@@ -24,15 +30,16 @@ const Packing = ({ route }) => {
   }, {});
   const totalItems = Object.values(packingByCategory).reduce(
     (sum, items) => sum + items.length,
-    0)
+    0
+  );
 
-    const toggleChecked = (itemId) => {
-      setChecked((prev) => ({
-        ...prev,
-        [itemId]: !prev[itemId],
-      }));
-    };
-    const totalChecked = Object.values(isChecked).filter(Boolean).length
+  const toggleChecked = (itemId) => {
+    setChecked((prev) => ({
+      ...prev,
+      [itemId]: !prev[itemId],
+    }));
+  };
+  const totalChecked = Object.values(isChecked).filter(Boolean).length;
 
   if (error) console.log(error);
   if (loading) return <Spinner />;
@@ -42,11 +49,20 @@ const Packing = ({ route }) => {
 
   return (
     <View style={{ flex: 1, paddingHorizontal: 20, paddingTop: 20 }}>
-        <ProgressBar
-        progress = {`${totalChecked/totalItems}`}
-        totalitems = {totalItems}
-        />
+      <ProgressBar
+        progress={`${totalChecked / totalItems}`}
+        totalitems={totalItems}
+      />
       <ScrollView showsVerticalScrollIndicator={false}>
+        <View style={styles.infoContainer}>
+          <Ionicons
+            name="information-circle-outline"
+            size={18}
+            color="#007AFF"
+            style={styles.infoIcon}
+          />
+          <Text style={styles.infoText}>Tick the items you've packed...</Text>
+        </View>
         {Object.keys(packingByCategory)
           .sort()
           .map((category) => (
@@ -54,8 +70,8 @@ const Packing = ({ route }) => {
               key={category}
               title={category}
               data={packingByCategory[category]}
-              toggleChecked = {toggleChecked}
-              isChecked = {isChecked}
+              toggleChecked={toggleChecked}
+              isChecked={isChecked}
             />
           ))}
       </ScrollView>
@@ -75,6 +91,21 @@ const Packing = ({ route }) => {
   );
 };
 const styles = StyleSheet.create({
+  infoContainer: {
+    paddingVertical: 10,
+    borderRadius: 12,
+    marginVertical: 4,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  infoIcon: {
+    marginRight: 4,
+  },
+  infoText: {
+    color: "#333", // dark grey text
+    fontSize: FONT_SIZE.caption,
+    fontFamily: FONTS.semiBold,
+  },
   addIconContainer: {
     position: "absolute",
     bottom: 40,

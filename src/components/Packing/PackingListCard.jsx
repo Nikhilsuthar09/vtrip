@@ -17,38 +17,53 @@ const PackingListCard = ({ title, data, toggleChecked, isChecked }) => {
         </View>
         <Entypo name="chevron-thin-up" size={18} color={COLOR.grey} />
       </View>
-      {data.sort().map((item) => (
+      {data.sort().map((item) =>{
+        const hasNote = item.note?.trim() !== ""
+      return(
         <Pressable
           onPress={() => toggleChecked(item.id)}
           key={item.id}
-          style={styles.item_quantity_Container}
+          style={styles.itemListContainer}
         >
-          <View style={styles.itemContainer}>
-            <Checkbox
-              style={styles.checkbox}
-              value={isChecked[item.id] || false}
-              onValueChange={() => toggleChecked(item.id)}
-              color={isChecked[item.id] ? COLOR.primary : undefined}
-            />
-            <Text
-              style={[
-                styles.itemText,
-                isChecked[item.id] && styles.strikethrough,
-              ]}
+          <View style={styles.itemQuantityContainer}>
+            <View style={styles.itemContainer}>
+              <Checkbox
+                style={styles.checkbox}
+                value={isChecked[item.id] || false}
+                onValueChange={() => toggleChecked(item.id)}
+                color={isChecked[item.id] ? COLOR.primary : undefined}
+              />
+              <Text
+                style={[
+                  styles.itemText,
+                  isChecked[item.id] && styles.strikethrough,
+                ]}
+              >
+                {item.item}
+              </Text>
+            </View>
+            <View
+              style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
             >
-              {item.item}
-            </Text>
+              <Text
+                style={[
+                  styles.quantity,
+                  isChecked[item.id] && styles.strikethrough,
+                ]}
+              >
+                {item.quantity}
+              </Text>
+            </View>
           </View>
-          <Text
-            style={[
-              styles.quantity,
-              isChecked[item.id] && styles.strikethrough,
-            ]}
-          >
-            {item.quantity}
+          {
+            hasNote && (
+          <Text style={styles.note}>
+            {item.note}
           </Text>
+            )
+          }
         </Pressable>
-      ))}
+      )})}
     </View>
   );
 };
@@ -75,15 +90,18 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
     fontSize: FONT_SIZE.caption,
   },
-  item_quantity_Container: {
+  itemQuantityContainer:{
     flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    
+  },
+  itemListContainer: {
+    marginTop: 10,
     borderWidth: 1,
     borderColor: COLOR.stroke,
     padding: 12,
     borderRadius: 8,
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginTop: 10,
   },
   itemContainer: {
     flexDirection: "row",
@@ -99,6 +117,15 @@ const styles = StyleSheet.create({
   quantity: {
     fontFamily: FONTS.medium,
     fontSize: FONT_SIZE.body,
+  },
+  note:{
+    fontFamily:FONTS.regular,
+    fontSize:FONT_SIZE.caption,
+    marginTop:12,
+    borderTopWidth:1,
+    borderColor:COLOR.stroke,
+    paddingTop:4,
+    fontStyle:"italic"
   },
   strikethrough: {
     textDecorationLine: "line-through",
