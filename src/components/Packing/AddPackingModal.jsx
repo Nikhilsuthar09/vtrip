@@ -97,6 +97,7 @@ const AddPackingModal = ({ isVisible, onClose, tripId }) => {
         item: packingListData.item,
         quantity: quantityStrToNumber,
         note: packingListData.note,
+        isPacked:false,
         createdAt: serverTimestamp(),
       };
       const packingCollectionRef = collection(db, "trip", tripId, "packing");

@@ -1,9 +1,12 @@
-import { View, Text, StyleSheet, Pressable, Dimensions } from "react-native";
-import React from "react";
 import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-} from "react-native-responsive-screen";
+  View,
+  Text,
+  StyleSheet,
+  Pressable,
+  Dimensions,
+  TouchableOpacity,
+} from "react-native";
+import React from "react";
 import { COLOR, FONT_SIZE, FONTS } from "../constants/Theme";
 import Feather from "@expo/vector-icons/Feather";
 import Entypo from "@expo/vector-icons/Entypo";
@@ -11,7 +14,15 @@ import AntDesign from "@expo/vector-icons/AntDesign";
 
 const { width, height } = Dimensions.get("window");
 
-const TripMenuModal = ({ visible, closeModal, position }) => {
+const TripMenuModal = ({
+  selectedId,
+  visible,
+  closeModal,
+  position,
+  onDelete,
+  onEdit,
+  isShareVisible = false,
+}) => {
   if (!visible) return null;
 
   const getModalPosition = () => {
@@ -21,7 +32,6 @@ const TripMenuModal = ({ visible, closeModal, position }) => {
         right: 30,
       };
     }
-
 
     const modalHeight = 120;
     const margin = 8;
@@ -38,23 +48,37 @@ const TripMenuModal = ({ visible, closeModal, position }) => {
     return { top, right };
   };
   const modalPosition = getModalPosition();
+  const handleDelete = () => {
+    if(onDelete && selectedId){
+      onDelete(selectedId)
+    }
+    closeModal()
+  }
+  const handleEdit = () => {
+    if(onEdit && selectedId){
+      onEdit(selectedId)
+    }
+    closeModal()
+  }
   return (
     <>
       {/* Backdrop */}
       <Pressable style={styles.backdrop} onPress={closeModal} />
       <View style={[styles.container, modalPosition]}>
-        <View style={styles.iconTextContainer}>
+        <TouchableOpacity onPress={handleEdit} style={styles.iconTextContainer}>
           <Feather name="edit" size={18} color={COLOR.primary} />
-          <Text style={styles.text}>Edit Trip</Text>
-        </View>
-        <View style={styles.iconTextContainer}>
-          <Entypo name="share" size={18} color={COLOR.primary} />
-          <Text style={styles.text}>Share Trip</Text>
-        </View>
-        <View style={styles.iconTextContainer}>
+          <Text style={styles.text}>Edit</Text>
+        </TouchableOpacity>
+        {isShareVisible && (
+          <View style={styles.iconTextContainer}>
+            <Entypo name="share" size={18} color={COLOR.primary} />
+            <Text style={styles.text}>Share</Text>
+          </View>
+        )}
+        <TouchableOpacity onPress={handleDelete} style={styles.iconTextContainer}>
           <AntDesign name="delete" size={18} color={COLOR.primary} />
-          <Text style={styles.text}>Delete Trip</Text>
-        </View>
+          <Text style={styles.text}>Delete</Text>
+        </TouchableOpacity>
       </View>
     </>
   );

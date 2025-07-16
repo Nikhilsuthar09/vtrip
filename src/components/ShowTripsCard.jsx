@@ -21,21 +21,25 @@ const ShowTripsCard = ({
   openModal,
 }) => {
   const navigation = useNavigation();
-  const handleMenuPress = (e) => {
-    e.target.measure((x, y, width, height, pageX, pageY) => {
-      openModal({
-        x: pageX,
-        y:pageY + height,
-        width,
-        height
+  const handleMenuPress = (itemId) => {
+    return (e)=> {
+      console.log("tripcard:",itemId)
+      e.currentTarget.measure((x, y, width, height, pageX, pageY) => {
+        openModal({
+          x: pageX,
+          y:pageY + height,
+          width,
+          height,
+          itemId: itemId
+        })
       })
-    })
+    }
   };
 
   return (
     <>
       <View style={styles.container}>
-        <TouchableOpacity style={styles.menuIcon} onPress={handleMenuPress}>
+        <TouchableOpacity style={styles.menuIcon} onPress={handleMenuPress(id)}>
           <Entypo
             name="dots-three-vertical"
             size={18}
@@ -141,7 +145,8 @@ const styles = StyleSheet.create({
     top: 6,
     zIndex:10,
     alignItems:"center",
-    justifyContent:"center"
+    justifyContent:"center",
+    padding:2
   },
   title: {
     fontFamily: FONTS.bold,

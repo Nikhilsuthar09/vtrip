@@ -14,7 +14,8 @@ const MyTrip = () => {
   const openMenu = (position) => {
     setModalData({
       visible: true,
-      position
+      position,
+      selectedItemId: position.itemId
     })
   }
   const closeMenu = () => setModalData(null);
@@ -47,6 +48,8 @@ const MyTrip = () => {
       visible={modalData?.visible || false} 
       closeModal={closeMenu}
       position={modalData?.position}
+      selectedId={modalData?.selectedItemId}
+      isShareVisible={true}
       />
     </SafeAreaView>
   );

@@ -1,11 +1,37 @@
-import { View, Text, StyleSheet, Pressable } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Pressable,
+  TouchableOpacity,
+} from "react-native";
 import Entypo from "@expo/vector-icons/Entypo";
 import { COLOR, FONT_SIZE, FONTS } from "../../constants/Theme";
 import Checkbox from "expo-checkbox";
 
-const PackingListCard = ({ title, data, toggleChecked, isChecked }) => {
-  const checkedCount = data.filter((item) => isChecked[item.id]).length;
+const PackingListCard = ({
+  title,
+  data,
+  toggleChecked,
+  isChecked,
+  openModal,
+}) => {
+  const checkedCount = data.filter((item) => item.isPacked).length;
 
+  const handleMenuPress = (itemId) => {
+    return (e) => {
+      console.log(itemId)
+      e.currentTarget.measure((x, y, width, height, pageX, pageY) => {
+        openModal({
+          x: pageX,
+          y: pageY + height,
+          width,
+          height,
+          itemId: itemId,
+        });
+      });
+    };
+  };
   return (
     <View style={styles.container}>
       <View style={styles.categoryContainer}>
@@ -17,53 +43,52 @@ const PackingListCard = ({ title, data, toggleChecked, isChecked }) => {
         </View>
         <Entypo name="chevron-thin-up" size={18} color={COLOR.grey} />
       </View>
-      {data.sort().map((item) =>{
-        const hasNote = item.note?.trim() !== ""
-      return(
-        <Pressable
-          onPress={() => toggleChecked(item.id)}
-          key={item.id}
-          style={styles.itemListContainer}
-        >
-          <View style={styles.itemQuantityContainer}>
-            <View style={styles.itemContainer}>
-              <Checkbox
-                style={styles.checkbox}
-                value={isChecked[item.id] || false}
-                onValueChange={() => toggleChecked(item.id)}
-                color={isChecked[item.id] ? COLOR.primary : undefined}
-              />
-              <Text
-                style={[
-                  styles.itemText,
-                  isChecked[item.id] && styles.strikethrough,
-                ]}
+      {data.sort().map((item) => {
+        const hasNote = item.note?.trim() !== "";
+        return (
+          <Pressable
+            onPress={() => !item.isPacked && toggleChecked(item.id)}
+            key={item.id}
+            style={styles.itemListContainer}
+          >
+            <View style={styles.itemQuantityContainer}>
+              <View style={styles.itemContainer}>
+                <Checkbox
+                  disabled={item.isPacked}
+                  style={styles.checkbox}
+                  onValueChange={() => toggleChecked(item.id)}
+                  value={isChecked[item.id] || false}
+                  color={isChecked[item.id] ? COLOR.primary : undefined}
+                />
+                <Text
+                  style={[
+                    styles.itemText,
+                    item.isPacked && styles.strikethrough,
+                  ]}
+                >
+                  {item.item}
+                </Text>
+              </View>
+              <View
+                style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
               >
-                {item.item}
-              </Text>
+                <Text
+                  style={[
+                    styles.quantity,
+                    item.isPacked && styles.strikethrough,
+                  ]}
+                >
+                  {item.quantity}
+                </Text>
+                <TouchableOpacity onPress={handleMenuPress(item.id)}>
+                  <Entypo name="dots-three-vertical" size={16} color="black" />
+                </TouchableOpacity>
+              </View>
             </View>
-            <View
-              style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
-            >
-              <Text
-                style={[
-                  styles.quantity,
-                  isChecked[item.id] && styles.strikethrough,
-                ]}
-              >
-                {item.quantity}
-              </Text>
-            </View>
-          </View>
-          {
-            hasNote && (
-          <Text style={styles.note}>
-            {item.note}
-          </Text>
-            )
-          }
-        </Pressable>
-      )})}
+            {hasNote && <Text style={styles.note}>{item.note}</Text>}
+          </Pressable>
+        );
+      })}
     </View>
   );
 };
@@ -90,11 +115,10 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
     fontSize: FONT_SIZE.caption,
   },
-  itemQuantityContainer:{
+  itemQuantityContainer: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    
   },
   itemListContainer: {
     marginTop: 10,
@@ -118,14 +142,14 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.medium,
     fontSize: FONT_SIZE.body,
   },
-  note:{
-    fontFamily:FONTS.regular,
-    fontSize:FONT_SIZE.caption,
-    marginTop:12,
-    borderTopWidth:1,
-    borderColor:COLOR.stroke,
-    paddingTop:4,
-    fontStyle:"italic"
+  note: {
+    fontFamily: FONTS.regular,
+    fontSize: FONT_SIZE.caption,
+    marginTop: 12,
+    borderTopWidth: 1,
+    borderColor: COLOR.stroke,
+    paddingTop: 4,
+    fontStyle: "italic",
   },
   strikethrough: {
     textDecorationLine: "line-through",
