@@ -25,12 +25,13 @@ const Packing = ({ route }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isChecked, setChecked] = useState({});
   const [modalData, setModalData] = useState(null);
+  const [editItem, setEditItem] = useState(null);
 
   const openMenu = (position) => {
     setModalData({
       visible: true,
       position,
-      selectedItemId: position.itemId
+      selectedItemId: position.itemId,
     });
   };
   const closeMenu = () => setModalData(null);
@@ -80,10 +81,21 @@ const Packing = ({ route }) => {
   const handleDeleteItem = async (itemId) => {
     try {
       const itemDocRef = doc(db, "trip", id, "packing", itemId);
-      await deleteDoc(itemDocRef)
+      await deleteDoc(itemDocRef);
     } catch (e) {
-      console.error("Failed to delete the item",e);
+      console.error("Failed to delete the item", e);
     }
+  };
+  const handleEditItem = async (itemId) => {
+    const itemToEdit = safePackingData.find((item) => item.id === itemId);
+    if (itemToEdit) {
+      setEditItem(itemToEdit);
+      toggleModal();
+    }
+  };
+  const handleCloseModal = () => {
+    setEditItem(null);
+    setIsModalVisible(!isModalVisible);
   };
 
   if (error) console.log(error);
@@ -129,7 +141,7 @@ const Packing = ({ route }) => {
             </View>
             {Object.keys(packingByCategory)
               .sort()
-              .map((category) => (
+              .map((category, index, array) => (
                 <PackingListCard
                   key={category}
                   title={category}
@@ -137,6 +149,7 @@ const Packing = ({ route }) => {
                   toggleChecked={toggleChecked}
                   isChecked={isChecked}
                   openModal={openMenu}
+                  isLast = {index === array.length-1}
                 />
               ))}
           </ScrollView>
@@ -153,13 +166,16 @@ const Packing = ({ route }) => {
         visible={modalData?.visible || false}
         closeModal={closeMenu}
         position={modalData?.position}
-        selectedId = {modalData?.selectedItemId}
-        onDelete = {handleDeleteItem}
+        selectedId={modalData?.selectedItemId}
+        onDelete={handleDeleteItem}
+        onEdit={handleEditItem}
       />
       <AddPackingModal
+        packingByCategory={packingByCategory}
         isVisible={isModalVisible}
-        onClose={toggleModal}
+        onClose={handleCloseModal}
         tripId={id}
+        editingItem={editItem}
       />
     </View>
   );

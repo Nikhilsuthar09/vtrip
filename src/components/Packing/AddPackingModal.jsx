@@ -10,19 +10,26 @@ import {
 } from "react-native";
 import Modal from "react-native-modal";
 import { COLOR, FONT_SIZE, FONTS } from "../../constants/Theme";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import CreateNewCategory from "./CreateNewCategory";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  doc,
+  serverTimestamp,
+  updateDoc,
+} from "firebase/firestore";
 import { db } from "../../Configs/firebaseConfig";
-const AddPackingModal = ({ isVisible, onClose, tripId }) => {
-  const [packingListData, setPackingListData] = useState({
-    category: "",
-    item: "",
-    quantity: "",
-    note: "",
-  });
+const AddPackingModal = ({
+  isVisible,
+  onClose,
+  tripId,
+  packingByCategory,
+  editingItem,
+}) => {
+  const [packingListData, setPackingListData] = useState({});
   const [isNewCategoryModalVisible, setIsNewCategoryModalVisible] =
     useState(false);
   const [category, setCategory] = useState([
@@ -33,6 +40,48 @@ const AddPackingModal = ({ isVisible, onClose, tripId }) => {
     { id: 5, name: "Electronics" },
   ]);
   const [newCategoryInput, setNewCategoryInput] = useState("");
+  useEffect(() => {
+    if (!isVisible) return;
+    if (editingItem) {
+      setPackingListData({
+        category: editingItem.category,
+        item: editingItem.item,
+        quantity: editingItem.quantity?.toString(),
+        note: editingItem.note,
+      });
+    } else {
+      setPackingListData({
+        category: "",
+        item: "",
+        quantity: "",
+        note: "",
+      });
+    }
+  }, [editingItem, isVisible]);
+  ``;
+  const resetData = () => {
+    setPackingListData((prev)=> ({
+      ...prev,
+      category: "",
+      item: "",
+      quantity: "",
+      note: "",
+    }));
+  };
+
+  useEffect(() => {
+    if (!isVisible || !packingByCategory) return;
+    const existingNames = new Set(category.map((cat) => cat.name));
+    const newCategories = Object.keys(packingByCategory)
+      .filter((name) => !existingNames.has(name))
+      .map((name, index) => ({
+        id: Date.now() + index,
+        name,
+      }));
+    if (newCategories.length > 0) {
+      setCategory((prev) => [...prev, ...newCategories]);
+    }
+  }, [isVisible, packingByCategory]);
 
   const handleAddCategory = () => {
     Keyboard.dismiss();
@@ -72,6 +121,14 @@ const AddPackingModal = ({ isVisible, onClose, tripId }) => {
   const toggleCategoryModal = () => {
     setIsNewCategoryModalVisible(!isNewCategoryModalVisible);
   };
+  const handleSubmitItem = () => {
+    if (editingItem) {
+      handleUpdateItem();
+    }
+    else{
+      handleAddPackingItem();
+    }
+  };
 
   const handleAddPackingItem = async () => {
     if (!packingListData.category.trim()) {
@@ -91,13 +148,12 @@ const AddPackingModal = ({ isVisible, onClose, tripId }) => {
       return;
     }
     try {
-      
       const packingListToStore = {
         category: packingListData.category,
         item: packingListData.item,
         quantity: quantityStrToNumber,
         note: packingListData.note,
-        isPacked:false,
+        isPacked: false,
         createdAt: serverTimestamp(),
       };
       const packingCollectionRef = collection(db, "trip", tripId, "packing");
@@ -107,13 +163,42 @@ const AddPackingModal = ({ isVisible, onClose, tripId }) => {
       console.log(e);
     }
 
-    setPackingListData((prev) => ({
-      ...prev,
-      category: "",
-      item: "",
-      quantity: "",
-      note: "",
-    }));
+    resetData();
+    onClose();
+  };
+
+  const handleUpdateItem = async () => {
+    if (!packingListData.category.trim()) {
+      Alert.alert("Hold on!", "Choose a category to organize your item.");
+      return;
+    }
+    if (!packingListData.item.trim()) {
+      Alert.alert(
+        "Missing Item Name",
+        "Enter the packing item name to proceed."
+      );
+      return;
+    }
+    const quantityStrToNumber = parseInt(packingListData.quantity);
+    if (isNaN(quantityStrToNumber)) {
+      Alert.alert("Error!", "Please enter a valid quantity");
+      return;
+    }
+    try {
+      const itemToUpdate = {
+        category: packingListData.category,
+        item: packingListData.item,
+        quantity: quantityStrToNumber,
+        note: packingListData.note,
+        upDatedAt: serverTimestamp(),
+      };
+      const itemDocRef = doc(db, "trip", tripId, "packing", editingItem.id);
+      await updateDoc(itemDocRef, itemToUpdate);
+      console.log("Item updated successfully");
+    } catch (e) {
+      console.log("Error Updating Item", e);
+    }
+    resetData()
     onClose();
   };
 
@@ -232,10 +317,12 @@ const AddPackingModal = ({ isVisible, onClose, tripId }) => {
           </View>
         </ScrollView>
         <TouchableOpacity
-          onPress={handleAddPackingItem}
+          onPress={handleSubmitItem}
           style={styles.addButtonContainer}
         >
-          <Text style={styles.addButtonText}>Add Item</Text>
+          <Text style={styles.addButtonText}>
+            {editingItem ? "Update Item" : "Add Item"}
+          </Text>
         </TouchableOpacity>
       </View>
     </Modal>
@@ -272,7 +359,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 10,
     borderRadius: 4,
-    alignItems:"center"
+    alignItems: "center",
   },
   categoryLabel: {
     fontFamily: FONTS.medium,

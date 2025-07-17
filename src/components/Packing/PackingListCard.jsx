@@ -8,6 +8,8 @@ import {
 import Entypo from "@expo/vector-icons/Entypo";
 import { COLOR, FONT_SIZE, FONTS } from "../../constants/Theme";
 import Checkbox from "expo-checkbox";
+import { useRef } from "react";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 const PackingListCard = ({
   title,
@@ -15,25 +17,29 @@ const PackingListCard = ({
   toggleChecked,
   isChecked,
   openModal,
+  isLast,
 }) => {
+  const pressableRefs = useRef({});
   const checkedCount = data.filter((item) => item.isPacked).length;
 
   const handleMenuPress = (itemId) => {
     return (e) => {
-      console.log(itemId)
-      e.currentTarget.measure((x, y, width, height, pageX, pageY) => {
-        openModal({
-          x: pageX,
-          y: pageY + height,
-          width,
-          height,
-          itemId: itemId,
+      const pressableRef = pressableRefs.current[itemId];
+      if (pressableRef) {
+        pressableRef.measure((x, y, width, height, pageX, pageY) => {
+          openModal({
+            x: pageX,
+            y: pageY + height,
+            width,
+            height,
+            itemId: itemId,
+          });
         });
-      });
+      }
     };
   };
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, isLast && { marginBottom: 50 }]}>
       <View style={styles.categoryContainer}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 2 }}>
           <Text style={styles.categorylabel}>{title} </Text>
@@ -41,13 +47,19 @@ const PackingListCard = ({
             ({checkedCount}/{data.length})
           </Text>
         </View>
-        <Entypo name="chevron-thin-up" size={18} color={COLOR.grey} />
+        <TouchableOpacity>
+        <Ionicons name="add" color={COLOR.primary} size={22}  />
+        </TouchableOpacity>
       </View>
       {data.sort().map((item) => {
         const hasNote = item.note?.trim() !== "";
         return (
           <Pressable
+            ref={(ref) => {
+              pressableRefs.current[item.id] = ref;
+            }}
             onPress={() => !item.isPacked && toggleChecked(item.id)}
+            onLongPress={handleMenuPress(item.id)}
             key={item.id}
             style={styles.itemListContainer}
           >
