@@ -4,7 +4,6 @@ import {
   StyleSheet,
   ScrollView,
   Text,
-  Alert,
 } from "react-native";
 import React, { useState } from "react";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -15,9 +14,9 @@ import Spinner from "../components/Spinner";
 import PackingListCard from "../components/Packing/PackingListCard";
 import ProgressBar from "../components/Packing/ProgressBar";
 import Placeholder from "../components/Placeholder";
-import { deleteDoc, doc, updateDoc } from "firebase/firestore";
-import { db } from "../Configs/firebaseConfig";
 import TripMenuModal from "../components/TripMenuModal";
+import { handleDeleteItem } from "../utils/packing/firebaseDeleteHandler";
+import { handlePackedItems } from "../utils/packing/firebaseMarkAsPackedHandler";
 
 const Packing = ({ route }) => {
   const { id } = route.params;
@@ -26,6 +25,8 @@ const Packing = ({ route }) => {
   const [isChecked, setChecked] = useState({});
   const [modalData, setModalData] = useState(null);
   const [editItem, setEditItem] = useState(null);
+  if (error) console.log(error);
+  if (loading) return <Spinner />;
 
   const openMenu = (position) => {
     setModalData({
@@ -60,31 +61,15 @@ const Packing = ({ route }) => {
   };
   const totalChecked = Object.values(isChecked).filter(Boolean).length;
 
-  const handlePackedItems = async () => {
-    const checkedKeys = Object.keys(isChecked).filter((key) => isChecked[key]);
-    if (checkedKeys.length === 0) {
-      Alert.alert("Please select an item to mark");
-      return;
-    }
-    try {
-      const batchUpdates = checkedKeys.map(async (itemId) => {
-        const itemDocRef = doc(db, "trip", id, "packing", itemId);
-        await updateDoc(itemDocRef, { isPacked: true });
-      });
-      await Promise.all(batchUpdates);
-      Alert.alert("Success", "Items marked as packed! ");
+  const markAsPacked = async () => {
+    const success = await handlePackedItems(id, isChecked);
+    if (success) {
       setChecked({});
-    } catch (e) {
-      console.log(e);
     }
   };
-  const handleDeleteItem = async (itemId) => {
-    try {
-      const itemDocRef = doc(db, "trip", id, "packing", itemId);
-      await deleteDoc(itemDocRef);
-    } catch (e) {
-      console.error("Failed to delete the item", e);
-    }
+
+  const deleteItem = async (itemId) => {
+    await handleDeleteItem(id, itemId);
   };
   const handleEditItem = async (itemId) => {
     const itemToEdit = safePackingData.find((item) => item.id === itemId);
@@ -98,8 +83,6 @@ const Packing = ({ route }) => {
     setIsModalVisible(!isModalVisible);
   };
 
-  if (error) console.log(error);
-  if (loading) return <Spinner />;
   const toggleModal = () => {
     setIsModalVisible(!isModalVisible);
   };
@@ -117,7 +100,7 @@ const Packing = ({ route }) => {
           {totalChecked !== 0 && (
             <View style={styles.actionButtonContainer}>
               <TouchableOpacity
-                onPress={handlePackedItems}
+                onPress={markAsPacked}
                 style={[
                   styles.actionButton,
                   { backgroundColor: COLOR.primary },
@@ -149,7 +132,7 @@ const Packing = ({ route }) => {
                   toggleChecked={toggleChecked}
                   isChecked={isChecked}
                   openModal={openMenu}
-                  isLast = {index === array.length-1}
+                  isLast={index === array.length - 1}
                 />
               ))}
           </ScrollView>
@@ -167,7 +150,7 @@ const Packing = ({ route }) => {
         closeModal={closeMenu}
         position={modalData?.position}
         selectedId={modalData?.selectedItemId}
-        onDelete={handleDeleteItem}
+        onDelete={deleteItem}
         onEdit={handleEditItem}
       />
       <AddPackingModal

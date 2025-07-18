@@ -14,14 +14,6 @@ import { useEffect, useState } from "react";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import CreateNewCategory from "./CreateNewCategory";
-import {
-  addDoc,
-  collection,
-  doc,
-  serverTimestamp,
-  updateDoc,
-} from "firebase/firestore";
-import { db } from "../../Configs/firebaseConfig";
 import { handleAddPackingItem } from "../../utils/packing/firebaseAddHandler";
 import { handleUpdateItem } from "../../utils/packing/firebaseUpdateHandler";
 const AddPackingModal = ({
