@@ -22,6 +22,8 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import { db } from "../../Configs/firebaseConfig";
+import { handleAddPackingItem } from "../../utils/packing/firebaseAddHandler";
+import { handleUpdateItem } from "../../utils/packing/firebaseUpdateHandler";
 const AddPackingModal = ({
   isVisible,
   onClose,
@@ -50,17 +52,12 @@ const AddPackingModal = ({
         note: editingItem.note,
       });
     } else {
-      setPackingListData({
-        category: "",
-        item: "",
-        quantity: "",
-        note: "",
-      });
+      resetData()
     }
   }, [editingItem, isVisible]);
-  ``;
+  
   const resetData = () => {
-    setPackingListData((prev)=> ({
+    setPackingListData((prev) => ({
       ...prev,
       category: "",
       item: "",
@@ -123,83 +120,25 @@ const AddPackingModal = ({
   };
   const handleSubmitItem = () => {
     if (editingItem) {
-      handleUpdateItem();
-    }
-    else{
-      handleAddPackingItem();
+      updateItem();
+    } else {
+      addItem();
     }
   };
 
-  const handleAddPackingItem = async () => {
-    if (!packingListData.category.trim()) {
-      Alert.alert("Hold on!", "Choose a category to organize your item.");
-      return;
+  const addItem = async () => {
+    const success = await handleAddPackingItem(tripId, packingListData);
+     if (success) {
+      resetData();
+      onClose();
     }
-    if (!packingListData.item.trim()) {
-      Alert.alert(
-        "Missing Item Name",
-        "Enter the packing item name to proceed."
-      );
-      return;
-    }
-    const quantityStrToNumber = parseInt(packingListData.quantity);
-    if (isNaN(quantityStrToNumber)) {
-      Alert.alert("Error!", "Please enter a valid quantity");
-      return;
-    }
-    try {
-      const packingListToStore = {
-        category: packingListData.category,
-        item: packingListData.item,
-        quantity: quantityStrToNumber,
-        note: packingListData.note,
-        isPacked: false,
-        createdAt: serverTimestamp(),
-      };
-      const packingCollectionRef = collection(db, "trip", tripId, "packing");
-      await addDoc(packingCollectionRef, packingListToStore);
-      console.log("packingList added Successfully");
-    } catch (e) {
-      console.log(e);
-    }
-
-    resetData();
-    onClose();
   };
-
-  const handleUpdateItem = async () => {
-    if (!packingListData.category.trim()) {
-      Alert.alert("Hold on!", "Choose a category to organize your item.");
-      return;
+  const updateItem = async () => {
+    const success = await handleUpdateItem(tripId, editingItem.id, packingListData);
+    if (success) {
+      resetData();
+      onClose();
     }
-    if (!packingListData.item.trim()) {
-      Alert.alert(
-        "Missing Item Name",
-        "Enter the packing item name to proceed."
-      );
-      return;
-    }
-    const quantityStrToNumber = parseInt(packingListData.quantity);
-    if (isNaN(quantityStrToNumber)) {
-      Alert.alert("Error!", "Please enter a valid quantity");
-      return;
-    }
-    try {
-      const itemToUpdate = {
-        category: packingListData.category,
-        item: packingListData.item,
-        quantity: quantityStrToNumber,
-        note: packingListData.note,
-        upDatedAt: serverTimestamp(),
-      };
-      const itemDocRef = doc(db, "trip", tripId, "packing", editingItem.id);
-      await updateDoc(itemDocRef, itemToUpdate);
-      console.log("Item updated successfully");
-    } catch (e) {
-      console.log("Error Updating Item", e);
-    }
-    resetData()
-    onClose();
   };
 
   return (

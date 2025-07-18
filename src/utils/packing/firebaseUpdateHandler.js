@@ -1,8 +1,8 @@
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { doc, serverTimestamp, updateDoc } from "firebase/firestore";
 import { db } from "../../Configs/firebaseConfig";
 import { Alert } from "react-native";
 
-const handleAddPackingItem = async (tripId, packingListData) => {
+const handleUpdateItem = async (tripId, editDocId, packingListData) => {
   if (!packingListData.category.trim()) {
     Alert.alert("Hold on!", "Choose a category to organize your item.");
     return false;
@@ -17,22 +17,22 @@ const handleAddPackingItem = async (tripId, packingListData) => {
     return false;
   }
   try {
-    const packingListToStore = {
+    const itemToUpdate = {
       category: packingListData.category,
       item: packingListData.item,
       quantity: quantityStrToNumber,
       note: packingListData.note,
-      isPacked: false,
-      createdAt: serverTimestamp(),
+      upDatedAt: serverTimestamp(),
     };
-    const packingCollectionRef = collection(db, "trip", tripId, "packing");
-    await addDoc(packingCollectionRef, packingListToStore);
-    Alert.alert("Success!", "Item Added successfully");
+    const itemDocRef = doc(db, "trip", tripId, "packing", editDocId);
+    await updateDoc(itemDocRef, itemToUpdate);
+    Alert.alert("Success!", "Item updated successfully");
     return true;
   } catch (e) {
-    console.log("Error Adding Item", e);
-    Alert.alert("Error Adding Item");
+    console.log("Error Updating Item", e);
+    Alert.alert("Error Updating Item");
     return false;
   }
 };
-export { handleAddPackingItem };
+
+export { handleUpdateItem };
