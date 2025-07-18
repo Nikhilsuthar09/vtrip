@@ -25,6 +25,7 @@ const Packing = ({ route }) => {
   const [isChecked, setChecked] = useState({});
   const [modalData, setModalData] = useState(null);
   const [editItem, setEditItem] = useState(null);
+  const [addbyCategory, setAddbyCategory] = useState(null);
   if (error) console.log(error);
   if (loading) return <Spinner />;
 
@@ -80,11 +81,18 @@ const Packing = ({ route }) => {
   };
   const handleCloseModal = () => {
     setEditItem(null);
+    setAddbyCategory(null)
     setIsModalVisible(!isModalVisible);
   };
 
   const toggleModal = () => {
     setIsModalVisible(!isModalVisible);
+  };
+  const handleAddByCategory = (category) => {
+    if (category) {
+      setAddbyCategory(category);
+      toggleModal();
+    }
   };
 
   return (
@@ -133,6 +141,7 @@ const Packing = ({ route }) => {
                   isChecked={isChecked}
                   openModal={openMenu}
                   isLast={index === array.length - 1}
+                  handleAddByCategory={handleAddByCategory}
                 />
               ))}
           </ScrollView>
@@ -159,6 +168,7 @@ const Packing = ({ route }) => {
         onClose={handleCloseModal}
         tripId={id}
         editingItem={editItem}
+        addbyCategory={addbyCategory}
       />
     </View>
   );

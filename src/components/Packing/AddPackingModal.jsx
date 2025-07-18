@@ -22,6 +22,7 @@ const AddPackingModal = ({
   tripId,
   packingByCategory,
   editingItem,
+  addbyCategory,
 }) => {
   const [packingListData, setPackingListData] = useState({});
   const [isNewCategoryModalVisible, setIsNewCategoryModalVisible] =
@@ -44,18 +45,22 @@ const AddPackingModal = ({
         note: editingItem.note,
       });
     } else {
-      resetData()
+      setPackingListData({
+        category: addbyCategory || "",
+        item: "",
+        quantity: "",
+        note: "",
+      });
     }
-  }, [editingItem, isVisible]);
-  
+  }, [editingItem, addbyCategory, isVisible]);
+
   const resetData = () => {
-    setPackingListData((prev) => ({
-      ...prev,
+    setPackingListData({
       category: "",
       item: "",
       quantity: "",
       note: "",
-    }));
+    });
   };
 
   useEffect(() => {
@@ -120,13 +125,17 @@ const AddPackingModal = ({
 
   const addItem = async () => {
     const success = await handleAddPackingItem(tripId, packingListData);
-     if (success) {
+    if (success) {
       resetData();
       onClose();
     }
   };
   const updateItem = async () => {
-    const success = await handleUpdateItem(tripId, editingItem.id, packingListData);
+    const success = await handleUpdateItem(
+      tripId,
+      editingItem.id,
+      packingListData
+    );
     if (success) {
       resetData();
       onClose();

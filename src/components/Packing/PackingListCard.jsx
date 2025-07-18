@@ -18,6 +18,7 @@ const PackingListCard = ({
   isChecked,
   openModal,
   isLast,
+  handleAddByCategory
 }) => {
   const pressableRefs = useRef({});
   const checkedCount = data.filter((item) => item.isPacked).length;
@@ -47,7 +48,7 @@ const PackingListCard = ({
             ({checkedCount}/{data.length})
           </Text>
         </View>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => handleAddByCategory(title)}>
         <Ionicons name="add" color={COLOR.primary} size={22}  />
         </TouchableOpacity>
       </View>
