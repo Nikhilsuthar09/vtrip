@@ -112,7 +112,7 @@ export default function Signup() {
                 <Text style={styles.label}>Full Name</Text>
                 <TextInput
                   placeholder="eg John Doe"
-                  placeholderTextColor="#8F9098"
+                  placeholderTextColor={COLOR.placeholder}
                   style={styles.input}
                   value={name}
                   onChangeText={(value) => setName(value)}
@@ -123,7 +123,7 @@ export default function Signup() {
                 <TextInput
                   style={styles.input}
                   placeholder="name@email.com"
-                  placeholderTextColor="#8F9098"
+                  placeholderTextColor={COLOR.placeholder}
                   onChangeText={(value) => setEmail(value)}
                   value={email}
                   autoCorrect={false}
@@ -135,7 +135,7 @@ export default function Signup() {
                   <TextInput
                     style={styles.passwordInput}
                     placeholder="Create a Password"
-                    placeholderTextColor="#8F9098"
+                    placeholderTextColor={COLOR.placeholder}
                     onChangeText={(value) => setPassword(value)}
                     value={password}
                     secureTextEntry={!showPassword}

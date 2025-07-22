@@ -19,9 +19,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { COLOR, FONT_SIZE, FONTS } from "../constants/Theme";
 // firebase
 import { db } from "../Configs/firebaseConfig";
-import { getAuth } from "@firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { AddTripToUser } from "../utils/firebaseUserHandlers";
+import { getAuth } from "firebase/auth";
 
 const AddTripModal = ({
   isModalVisible,
@@ -248,7 +248,7 @@ const AddTripModal = ({
                   onFocus={() => setActiveInput("title")}
                   onBlur={() => setActiveInput(null)}
                   placeholder="Title (eg Office Trip) "
-                  placeholderTextColor="#8F9098"
+                  placeholderTextColor={COLOR.placeholder}
                   style={[
                     styles.input,
                     activeInput === "title"
@@ -266,7 +266,7 @@ const AddTripModal = ({
                 />
                 <TextInput
                   placeholder="Destination"
-                  placeholderTextColor="#8F9098"
+                  placeholderTextColor={COLOR.placeholder}
                   onChangeText={(text) =>
                     handleTripDataChange("destination", text)
                   }
@@ -291,7 +291,7 @@ const AddTripModal = ({
                 />
                 <TextInput
                   placeholder="Group Budget"
-                  placeholderTextColor="#8F9098"
+                  placeholderTextColor={COLOR.placeholder}
                   onChangeText={(text) => handleTripDataChange("budget", text)}
                   value={tripData.budget}
                   keyboardType="numeric"

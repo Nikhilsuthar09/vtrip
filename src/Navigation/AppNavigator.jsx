@@ -6,6 +6,7 @@ import { useAuth } from "../Context/AuthContext";
 import Spinner from "../components/Spinner";
 import TopTabs from "./TopTabNavigator";
 import HomeTabs from "./BottomTabNavigator";
+import PlanInAdvance from "../Screens/expenses/PlanInAdvance";
 
 const Stack = createNativeStackNavigator();
 
@@ -29,6 +30,13 @@ export default function RootStack() {
             <Stack.Screen
               name="TopTabs"
               component={TopTabs}
+              options={{ 
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen
+              name="PlanExpenseInAdvance"
+              component={PlanInAdvance}
               options={{ 
                 headerShown: false,
               }}

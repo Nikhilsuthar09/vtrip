@@ -4,7 +4,6 @@ import {
   TextInput,
   StyleSheet,
   Pressable,
-  Alert,
 } from "react-native";
 import Modal from "react-native-modal";
 import React, { useState } from "react";
@@ -39,6 +38,7 @@ const CreateNewCategory = ({ isNewCategoryModalVisible, onCloseModal, input, set
             <Text style={styles.label}>Enter new Category</Text>
             <TextInput
               placeholder="eg snacks"
+              placeholderTextColor={COLOR.placeholder}
               style={styles.newCategoryInput}
               onChangeText={(value) => setInput(value)}
               value={input}

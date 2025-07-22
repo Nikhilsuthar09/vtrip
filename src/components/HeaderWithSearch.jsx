@@ -17,7 +17,7 @@ const HeaderWithSearch = ({ onSearch, onBack }) => {
           <TextInput
             style={styles.searchInput}
             placeholder="Search destination..."
-            placeholderTextColor={COLOR.grey}
+            placeholderTextColor={COLOR.placeholder}
             value={searchText}
             onChangeText={handleSearch}
             autoCapitalize="none"

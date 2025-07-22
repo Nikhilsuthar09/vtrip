@@ -1,10 +1,9 @@
 import { View, Text, Pressable } from "react-native";
 import React from "react";
 import { auth } from "../Configs/firebaseConfig";
-import { signOut } from "@firebase/auth";
 import { SafeAreaView } from "react-native-safe-area-context";
-import TripMenuModal from "../components/TripMenuModal";
 import { FONT_SIZE } from "../constants/Theme";
+import { signOut } from "firebase/auth";
 
 const handlelogout = async () => {
   try {

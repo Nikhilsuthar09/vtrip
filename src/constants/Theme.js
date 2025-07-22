@@ -26,7 +26,8 @@ const COLOR = {
   textSecondary:"#1A1C1E",
   grey:"#6C7278",
   stroke:"#EDF1F3",
-  danger:"#ff6b6b"
+  danger:"#ff6b6b",
+  placeholder:"#999",
 }
 
 export {FONTS, FONT_SIZE, COLOR};

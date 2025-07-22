@@ -219,6 +219,7 @@ const AddPackingModal = ({
                 <Text style={styles.label}>Name</Text>
                 <TextInput
                   placeholder="Enter your item name"
+                  placeholderTextColor={COLOR.placeholder}
                   style={styles.itemTextInput}
                   onChangeText={(value) =>
                     handlePackingListDataChange("item", value)
@@ -234,6 +235,7 @@ const AddPackingModal = ({
                   inputMode="numeric"
                   style={styles.quantityInput}
                   placeholder="0"
+                  placeholderTextColor={COLOR.placeholder}
                   selectTextOnFocus={true}
                   onChangeText={(value) => {
                     const numericValue = value.replace(/[^0-9]/g, "");
@@ -247,6 +249,7 @@ const AddPackingModal = ({
             <TextInput
               style={styles.noteinput}
               placeholder="Add a note (optional)"
+              placeholderTextColor={COLOR.placeholder}
               multiline={true}
               onChangeText={(value) =>
                 handlePackingListDataChange("note", value)

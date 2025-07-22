@@ -14,8 +14,6 @@ import { StatusBar } from "expo-status-bar";
 import AirplaneLoading from "./src/components/AirplaneLoading";
 import { AuthProvider } from "./src/Context/AuthContext";
 
-// SplashScreen.preventAutoHideAsync();
-
 export default function App() {
   const [minimumAnimationTime, setMinimumAnimationTime] = useState(false);
   const [loaded, error] = useFonts({

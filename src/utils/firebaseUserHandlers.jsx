@@ -12,7 +12,7 @@ import {
   setDoc,
   where,
 } from "firebase/firestore";
-import { getAuth } from "@firebase/auth";
+import { getAuth } from "firebase/auth";
 
 // hook to listen to the changes in tripIds array
 export const useUserTrips = () => {

@@ -34,8 +34,6 @@ const signin = async (email, password) => {
       password
     );
     // Signed in
-    const user = userCredential.user;
-    // console.log(user);
   } catch (error) {
     const errorMessage = handleFirebaseAuthErrors(error);
     console.log(errorMessage);
@@ -94,7 +92,7 @@ export default function AuthScreen() {
                 <TextInput
                   style={styles.input}
                   placeholder="Email Address"
-                  placeholderTextColor="#8F9098"
+                  placeholderTextColor={COLOR.placeholder}
                   onChangeText={(value) => (email.current = value)}
                 />
               </View>
@@ -104,7 +102,7 @@ export default function AuthScreen() {
                   <TextInput
                     style={styles.passwordInput}
                     placeholder="Password"
-                    placeholderTextColor="#8F9098"
+                    placeholderTextColor={COLOR.placeholder}
                     onChangeText={(value) => (password.current = value)}
                     secureTextEntry={!showPassword}
                     autoCorrect={false}
