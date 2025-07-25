@@ -16,7 +16,6 @@ import AntDesign from "@expo/vector-icons/AntDesign";
 
 const CreateNewCategory = ({ isNewCategoryModalVisible, onCloseModal, input, setInput, onAdd }) => {
 
-
   return (
     <Modal
       isVisible={isNewCategoryModalVisible}

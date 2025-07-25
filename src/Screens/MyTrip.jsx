@@ -3,13 +3,17 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import ShowTripsCard from "../components/ShowTripsCard";
 import HeaderWithSearch from "../components/HeaderWithSearch";
 import { useUserTripsData } from "../utils/firebaseUserHandlers";
-import { FlatList } from "react-native";
+import { Alert, FlatList } from "react-native";
 import Spinner from "../components/Spinner";
 import TripMenuModal from "../components/TripMenuModal";
+import { db } from "../Configs/firebaseConfig";
+import { doc } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 
 const MyTrip = () => {
   const [modalData, setModalData] = useState(null);
   const { tripsData, loading, error, tripIds } = useUserTripsData();
+  const safeTripData = tripsData || []
 
   const openMenu = (position) => {
     setModalData({
@@ -25,12 +29,35 @@ const MyTrip = () => {
   if (error) {
     console.log(error);
   }
+  // to do
+  const deleteTrip = () => {
+    console.log("ToDo")
+  }
+  const handleDeleteTrip = () => {
+    Alert.alert(
+      "Are you sure?",
+      `Do you want to delete ?`,
+      [
+        {
+          text:"Cancel",
+          style:"cancel"
+        },
+        {
+          text:"Ok",
+          onPress : ()=> {
+            deleteTrip()
+          }
+        }
+      ],
+      { cancelable: true }
+    )
+  }
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
       <HeaderWithSearch />
       <FlatList
-        data={tripsData}
+        data={safeTripData}
         renderItem={({ item }) => (
           <ShowTripsCard
             id={item.id}
@@ -50,6 +77,7 @@ const MyTrip = () => {
       position={modalData?.position}
       selectedId={modalData?.selectedItemId}
       isShareVisible={true}
+      onDelete = {handleDeleteTrip}
       />
     </SafeAreaView>
   );

@@ -1,15 +1,21 @@
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import React from "react";
 import { COLOR, FONT_SIZE, FONTS } from "../../constants/Theme";
 import { useNavigation } from "expo-router";
 
 const Expenses = ({ route }) => {
-  const { id } = route.params;
+  const { id, budget } = route.params;
   const navigation = useNavigation();
+
+
   const handlePlanInAdv = () => {
-    navigation.navigate("PlanExpenseInAdvance", { tripid: id });
-  }
+    navigation.navigate("PlanExpenseInAdvance", {
+      id: id,
+      budget: budget,
+    });
+  };
+
+
   return (
     <View style={styles.container}>
       <Text style={styles.instruction}>Tap a box below to begin</Text>
@@ -48,7 +54,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   dashedBox: {
-    borderWidth: 2,
+    borderWidth: 1.5,
     borderStyle: "dashed",
     borderColor: COLOR.primary,
     borderRadius: 16,

@@ -3,7 +3,7 @@ import React from 'react'
 
 const Itinerary = () => {
   return (
-    <View>
+    <View style = {{ flex:1,backgroundColor:"#fff"}}>
       <Text>Itinerary</Text>
     </View>
   )

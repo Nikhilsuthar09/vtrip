@@ -202,7 +202,7 @@ const AddPackingModal = ({
                   name="add"
                   style={styles.icon}
                   size={20}
-                  color="white"
+                  color={COLOR.primary}
                 />
                 <Text style={styles.addCategoryText}>Add category</Text>
               </TouchableOpacity>
@@ -311,11 +311,11 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
   },
   selectedColor: {
-    backgroundColor: COLOR.secondary,
-    borderColor: COLOR.secondary,
+    backgroundColor: COLOR.primaryLight,
+    borderColor: COLOR.primaryLight,
   },
   selectedTextColor: {
-    color: "#FFF",
+    color: COLOR.primary,
   },
   categoryButtonText: {
     fontFamily: FONTS.semiBold,
@@ -324,16 +324,15 @@ const styles = StyleSheet.create({
   addCategory: {
     paddingVertical: 6,
     paddingHorizontal: 10,
-
     flexDirection: "row",
     gap: 3,
-    backgroundColor: COLOR.primary,
+    // backgroundColor: COLOR.primary,
     borderRadius: 4,
     alignItems: "center",
   },
   addCategoryText: {
-    fontFamily: FONTS.regular,
-    color: "#FFF",
+    fontFamily: FONTS.semiBold,
+    color: COLOR.primary,
   },
   inputContainer: {
     flexDirection: "row",
@@ -354,7 +353,7 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   itemTextInput: {
-    borderColor: COLOR.grey,
+    borderColor: COLOR.stroke,
     borderWidth: 1,
     borderRightWidth: 0,
     borderTopLeftRadius: 8,
@@ -369,7 +368,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderTopRightRadius: 8,
     borderBottomRightRadius: 8,
-    borderColor: COLOR.grey,
+    borderColor: COLOR.stroke,
     paddingHorizontal: 8,
     textAlign: "center",
     width: "100%",

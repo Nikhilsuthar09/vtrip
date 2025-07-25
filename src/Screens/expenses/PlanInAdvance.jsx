@@ -5,23 +5,39 @@ import {
   View,
   TouchableOpacity,
   SafeAreaView,
-  ScrollView,
   FlatList,
+  Alert,
 } from "react-native";
 import { FONTS, FONT_SIZE, COLOR } from "../../constants/Theme";
 import { Ionicons } from "@expo/vector-icons";
 import PlanInAdvanceModal from "../../components/expense/PlanInAdvanceModal";
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  serverTimestamp,
+} from "firebase/firestore";
+import { db } from "../../Configs/firebaseConfig";
+import Spinner from "../../components/Spinner";
+import { usePlannedExpense } from "../../utils/firebaseTripHandler";
 
-const PlanInAdvance = () => {
+const PlanInAdvance = ({ route }) => {
+  const { id, budget } = route.params;
+  const tripId = id || "";
+  const { plannedExpenseData, loading, error } = usePlannedExpense(id);
+  const safePlannedExpenseData = plannedExpenseData || []
   const [isVisible, setIsVisible] = useState(false);
-  const [expenses, setExpenses] = useState([
-    { id: 1, category: "Hotel", amount: 5000 },
-    { id: 2, category: "Food", amount: 2000 },
-    { id: 3, category: "Transport", amount: 1500 },
-  ]); // Sample expenses
-  
-  const budget = 10000; // Sample budget
-  const totalExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+  const [updateItem, setUpdateItem] = useState(null)
+  if (loading) return <Spinner />;
+  if (error) return Alert.alert("Error", "Something went wrong!!");
+
+  console.log(safePlannedExpenseData);
+
+  const totalExpenses = safePlannedExpenseData.reduce(
+    (sum, expense) => sum + expense.amount,
+    0
+  );
   const budgetPercentage = Math.min((totalExpenses / budget) * 100, 100);
   const isOverBudget = totalExpenses > budget;
 
@@ -29,49 +45,100 @@ const PlanInAdvance = () => {
     setIsVisible(!isVisible);
   };
 
-  const addExpense = (newExpense) => {
-    const expense = {
-      id: Date.now(),
-      category: newExpense.category,
-      amount: parseFloat(newExpense.amount) || 0,
+  const addExpense = async (newExpense) => {
+    const expenseToStore = {
+      category: newExpense.category.trim(),
+      amount: parseFloat(newExpense.amount),
+      createdAt: serverTimestamp(),
     };
-    setExpenses(prevExpenses => [...prevExpenses, expense]);
+    try {
+      const advExpenseCollectionRef = collection(
+        db,
+        "trip",
+        tripId,
+        "plannedExpenses"
+      );
+      await addDoc(advExpenseCollectionRef, expenseToStore);
+      console.log("successful");
+    } catch (e) {
+      console.log("add expense error ", e);
+    }
+  };
+  const deleteExpense = async(itemId) => {
+     try {
+      const itemDocRef = doc(db, "trip", tripId, "plannedExpenses", itemId);
+      await deleteDoc(itemDocRef);
+      Alert.alert("Success!", "Item deleted Successfully");
+    } catch (e) {
+      console.error("Failed to delete the item", e);
+      Alert.alert("Error!", "Something went wrong");
+    }
+  }
+
+  const handleDeletePress = (itemId, categoryName) => {
+    Alert.alert(
+      "Are you sure?",
+      `Do you want to delete ${categoryName}?`,
+      [
+        {
+          text:"Cancel",
+          style:"cancel"
+        },
+        {
+          text:"Ok",
+          onPress : ()=> {
+            deleteExpense (itemId)
+          }
+        }
+      ],
+      { cancelable: true }
+    )
+   
   };
 
-  const removeExpense = (id) => {
-    setExpenses(prevExpenses => prevExpenses.filter(expense => expense.id !== id));
-  };
+  const updateExpense = async(editDocId) => {
+    const itemToEdit = safePlannedExpenseData.find((item) => item.id === editDocId);
+    if(itemToEdit){
+      setUpdateItem(itemToEdit)
+      toggleModal()
+    }
+     
+  }
 
-  const renderExpenseItem = ({ item }) => (
-    <View style={styles.expenseItem}>
+  const renderExpenseItem = ({ item, index }) => (
+    <TouchableOpacity onPress={() => updateExpense(item.id)} style={[styles.expenseItem, index === 0 && styles.firstItem]}>
       <View style={styles.expenseInfo}>
         <Text style={styles.expenseCategory}>{item.category}</Text>
-        <Text style={styles.expenseAmount}>₹{item.amount}</Text>
+        <Text style={styles.expenseAmount}>₹ {item.amount}</Text>
       </View>
       <TouchableOpacity
         style={styles.removeButton}
-        onPress={() => removeExpense(item.id)}
+        onPress={() => handleDeletePress(item.id, item.category)}
       >
         <Ionicons name="trash-outline" size={18} color={COLOR.danger} />
       </TouchableOpacity>
-    </View>
+    </TouchableOpacity>
   );
 
   return (
     <SafeAreaView style={styles.container}>
       {/* Budget Progress Bar */}
       <View style={styles.progressBarContainer}>
-        <View style={[
-          styles.progressBar,
-          { backgroundColor: isOverBudget ? COLOR.danger : COLOR.primaryLight }
-        ]}>
+        <View
+          style={[
+            styles.progressBar,
+            {
+              backgroundColor: isOverBudget ? COLOR.danger : COLOR.primaryLight,
+            },
+          ]}
+        >
           <View
             style={[
               styles.progressFill,
               {
                 width: `${budgetPercentage}%`,
                 backgroundColor: isOverBudget ? COLOR.danger : COLOR.primary,
-              }
+              },
             ]}
           />
         </View>
@@ -84,29 +151,33 @@ const PlanInAdvance = () => {
       <View style={styles.summaryBox}>
         <View style={styles.summaryItem}>
           <Text style={styles.summaryLabel}>Total Expenses</Text>
-          <Text style={[
-            styles.summaryValue,
-            { color: isOverBudget ? COLOR.danger : COLOR.textPrimary }
-          ]}>
+          <Text
+            style={[
+              styles.summaryValue,
+              { color: isOverBudget ? COLOR.danger : COLOR.textPrimary },
+            ]}
+          >
             ₹{totalExpenses.toLocaleString()}
           </Text>
         </View>
         <View style={styles.divider} />
         <View style={styles.summaryItem}>
           <Text style={styles.summaryLabel}>Budget</Text>
-          <Text style={styles.summaryValue}>₹{budget.toLocaleString()}</Text>
+          <Text style={styles.summaryValue}>₹{budget?.toLocaleString()}</Text>
         </View>
       </View>
 
       {/* Remaining Amount */}
       <View style={styles.remainingBox}>
         <Text style={styles.remainingLabel}>
-          {isOverBudget ? 'Over Budget by' : 'Remaining'}
+          {isOverBudget ? "Over Budget by" : "Remaining"}
         </Text>
-        <Text style={[
-          styles.remainingAmount,
-          { color: isOverBudget ? COLOR.danger : COLOR.primary }
-        ]}>
+        <Text
+          style={[
+            styles.remainingAmount,
+            { color: isOverBudget ? COLOR.danger : COLOR.primary },
+          ]}
+        >
           ₹{Math.abs(budget - totalExpenses).toLocaleString()}
         </Text>
       </View>
@@ -114,11 +185,11 @@ const PlanInAdvance = () => {
       {/* Expenses List */}
       <View style={styles.expensesContainer}>
         <Text style={styles.expensesTitle}>Planned Expenses</Text>
-        {expenses.length > 0 ? (
+        {safePlannedExpenseData.length > 0 ? (
           <FlatList
-            data={expenses}
-            keyExtractor={(item) => item.id.toString()}
-            renderItem={renderExpenseItem}
+            data={safePlannedExpenseData}
+            keyExtractor={(item) => item.id}
+            renderItem={(item, index ) => renderExpenseItem(item, index)}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.expensesList}
           />
@@ -135,15 +206,17 @@ const PlanInAdvance = () => {
 
       {/* Floating Action Button */}
       <TouchableOpacity style={styles.fab} onPress={toggleModal}>
-        <Ionicons name="add" size={24} color="#fff" />
+        <Ionicons name="add" size={24} color={COLOR.actionText} />
       </TouchableOpacity>
 
       {/* Modal */}
       <PlanInAdvanceModal
+        tripId = {tripId}
         isVisible={isVisible}
         onClose={toggleModal}
         onBackButtonPress={toggleModal}
         onAddExpense={addExpense}
+        itemToUpdate = {updateItem}
       />
     </SafeAreaView>
   );
@@ -152,24 +225,24 @@ const PlanInAdvance = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f8f9fa",
+    backgroundColor: "#fff",
   },
   progressBarContainer: {
     paddingHorizontal: 20,
     paddingTop: 20,
     paddingBottom: 10,
-    alignItems: 'center',
+    alignItems: "center",
   },
   progressBar: {
-    width: '100%',
+    width: "100%",
     height: 8,
     borderRadius: 4,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   progressFill: {
-    height: '100%',
+    height: "100%",
     borderRadius: 4,
-    transition: 'width 0.3s ease',
+    transition: "width 0.3s ease",
   },
   overBudgetText: {
     marginTop: 8,
@@ -178,13 +251,13 @@ const styles = StyleSheet.create({
     color: COLOR.danger,
   },
   summaryBox: {
-    flexDirection: 'row',
-    backgroundColor: '#fff',
+    flexDirection: "row",
+    backgroundColor: "#fff",
     marginHorizontal: 20,
     marginTop: 10,
     borderRadius: 12,
     padding: 20,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -192,7 +265,7 @@ const styles = StyleSheet.create({
   },
   summaryItem: {
     flex: 1,
-    alignItems: 'center',
+    alignItems: "center",
   },
   summaryLabel: {
     fontSize: FONT_SIZE.caption,
@@ -211,13 +284,13 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
   },
   remainingBox: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     marginHorizontal: 20,
     marginTop: 12,
     borderRadius: 12,
     padding: 16,
-    alignItems: 'center',
-    shadowColor: '#000',
+    alignItems: "center",
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -236,26 +309,30 @@ const styles = StyleSheet.create({
   expensesContainer: {
     flex: 1,
     marginTop: 20,
-    paddingHorizontal: 20,
   },
   expensesTitle: {
     fontSize: FONT_SIZE.H6,
     fontFamily: FONTS.semiBold,
     color: COLOR.textPrimary,
-    marginBottom: 16,
+    marginLeft: 20,
+  },
+  firstItem:{
+    marginTop: 16,
+    
   },
   expensesList: {
     paddingBottom: 100,
+    marginHorizontal: 20,
   },
   expenseItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#fff',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: "#fff",
     borderRadius: 12,
     padding: 16,
     marginBottom: 8,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
@@ -265,13 +342,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   expenseCategory: {
-    fontSize: FONT_SIZE.bodyLarge,
+    fontSize: FONT_SIZE.body,
     fontFamily: FONTS.medium,
     color: COLOR.textPrimary,
     marginBottom: 4,
   },
   expenseAmount: {
-    fontSize: FONT_SIZE.body,
+    fontSize: FONT_SIZE.caption,
     fontFamily: FONTS.regular,
     color: COLOR.grey,
   },
@@ -280,8 +357,8 @@ const styles = StyleSheet.create({
   },
   emptyState: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     paddingTop: 60,
   },
   emptyStateText: {
@@ -295,19 +372,19 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZE.body,
     fontFamily: FONTS.regular,
     color: COLOR.grey,
-    textAlign: 'center',
+    textAlign: "center",
     paddingHorizontal: 40,
   },
   fab: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 30,
     right: 20,
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: COLOR.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: COLOR.actionButton,
+    justifyContent: "center",
+    alignItems: "center",
     shadowColor: COLOR.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,

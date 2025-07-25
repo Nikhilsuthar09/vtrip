@@ -40,7 +40,7 @@ const PackingListCard = ({
     };
   };
   return (
-    <View style={[styles.container, isLast && { marginBottom: 50 }]}>
+    <View style={[styles.container, isLast && { marginBottom: 100 }]}>
       <View style={styles.categoryContainer}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 2 }}>
           <Text style={styles.categorylabel}>{title} </Text>
@@ -94,11 +94,11 @@ const PackingListCard = ({
                   {item.quantity}
                 </Text>
                 <TouchableOpacity onPress={handleMenuPress(item.id)}>
-                  <Entypo name="dots-three-vertical" size={16} color="black" />
+                  <Entypo name="dots-three-vertical" size={16} color={COLOR.grey} />
                 </TouchableOpacity>
               </View>
             </View>
-            {hasNote && <Text style={styles.note}>{item.note}</Text>}
+            {hasNote && <Text style={styles.note}>{item.note} </Text>}
           </Pressable>
         );
       })}
@@ -110,8 +110,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     padding: 10,
     marginBottom: 10,
+    marginHorizontal:20,
     borderRadius: 8,
-    elevation: 2,
+    elevation: 1,
   },
   categoryContainer: {
     flexDirection: "row",
@@ -162,7 +163,6 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderColor: COLOR.stroke,
     paddingTop: 4,
-    fontStyle: "italic",
   },
   strikethrough: {
     textDecorationLine: "line-through",

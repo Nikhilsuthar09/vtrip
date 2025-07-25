@@ -52,7 +52,7 @@ export default function HomeTabs() {
           options={{
             tabBarButton: (props) => (
               <CreateTripButton {...props} onPress={toggleModal}>
-                <Ionicons name="add" size={28} color="white" />
+                <Ionicons name="add" size={28} color={COLOR.actionText} />
               </CreateTripButton>
             ),
           }}

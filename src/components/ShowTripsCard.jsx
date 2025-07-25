@@ -43,7 +43,7 @@ const ShowTripsCard = ({
           <Entypo
             name="dots-three-vertical"
             size={18}
-            color="black"
+            color={COLOR.grey}
             
           />
         </TouchableOpacity>
@@ -90,7 +90,7 @@ const ShowTripsCard = ({
           </Text>
           <TouchableOpacity
             style={styles.planButton}
-            onPress={() => navigation.navigate("TopTabs",{id})}
+            onPress={() => navigation.navigate("TopTabs",{id, budget})}
           >
             <Text style={styles.planButtontext}>Start Planning</Text>
           </TouchableOpacity>
@@ -106,7 +106,6 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 10,
     flexDirection: "row",
-    marginBottom: 10,
   },
   imgcontiner: {
     width: 120,
@@ -149,7 +148,7 @@ const styles = StyleSheet.create({
     padding:2
   },
   title: {
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.semiBold,
     fontSize: FONT_SIZE.body,
     color: COLOR.textPrimary,
   },
@@ -175,7 +174,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   planButton: {
-    backgroundColor: COLOR.primary,
+    backgroundColor: COLOR.primaryLight,
     paddingVertical: 6,
     paddingHorizontal: 10,
     borderRadius: 4,
@@ -184,7 +183,7 @@ const styles = StyleSheet.create({
   planButtontext: {
     fontFamily: FONTS.semiBold,
     fontSize: FONT_SIZE.body,
-    color: "#fff",
+    color: COLOR.primary,
     textAlign: "center",
   },
 });

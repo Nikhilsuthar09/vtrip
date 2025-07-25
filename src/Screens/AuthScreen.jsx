@@ -52,7 +52,7 @@ export default function AuthScreen() {
   };
 
   return (
-    <LinearGradient colors={["#2567E8", "#1CE6DA"]} style={{ flex: 1 }}>
+    <LinearGradient colors={["#EADDFF", "#625B71"]} style={{ flex: 1 }}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1, width: "100%" }}
@@ -76,7 +76,7 @@ export default function AuthScreen() {
                 <Pressable onPress={() => navigation.push("SignUp")}>
                   <Text
                     style={{
-                      color: COLOR.secondary,
+                      color: COLOR.primary,
                       fontFamily: FONTS.semiBold,
                       fontSize: FONT_SIZE.caption,
                     }}
@@ -262,7 +262,7 @@ const styles = StyleSheet.create({
     marginTop: 14,
     fontFamily: FONTS.semiBold,
     fontSize: FONT_SIZE.caption,
-    color: COLOR.secondary,
+    color: COLOR.primary,
     textAlign: "right",
   },
   separater: {

@@ -96,11 +96,11 @@ const Packing = ({ route }) => {
   };
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor:"#fff" }}>
       {safePackingData.length === 0 ? (
         <Placeholder onPress={toggleModal} />
       ) : (
-        <View style={{ flex: 1, paddingHorizontal: 20, paddingTop: 20 }}>
+        <View style={{ flex: 1, paddingTop: 20 }}>
           <ProgressBar
             progress={totalItems > 0 ? checkedItems / totalItems : 0}
             totalitems={totalItems}
@@ -109,10 +109,7 @@ const Packing = ({ route }) => {
             <View style={styles.actionButtonContainer}>
               <TouchableOpacity
                 onPress={markAsPacked}
-                style={[
-                  styles.actionButton,
-                  { backgroundColor: COLOR.primary },
-                ]}
+                style={styles.actionButton}
               >
                 <Text style={styles.actionText}>Mark as packed</Text>
               </TouchableOpacity>
@@ -150,7 +147,7 @@ const Packing = ({ route }) => {
             activeOpacity={0.8}
             style={styles.addIconContainer}
           >
-            <Ionicons name="add" style={styles.icon} size={28} color="white" />
+            <Ionicons name="add" style={styles.icon} size={28} color={COLOR.actionText} />
           </TouchableOpacity>
         </View>
       )}
@@ -178,17 +175,20 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "flex-end",
     gap: 10,
+    marginHorizontal:20,
   },
   actionButton: {
+    backgroundColor: COLOR.primaryLight,
     padding: 8,
     borderRadius: 4,
   },
   actionText: {
     fontFamily: FONTS.semiBold,
-    color: "#fff",
+    color: COLOR.primary,
     fontSize: FONT_SIZE.caption,
   },
   infoContainer: {
+    marginHorizontal:20,
     paddingVertical: 10,
     borderRadius: 12,
     marginVertical: 4,
@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 32.5,
-    backgroundColor: COLOR.primary,
+    backgroundColor: COLOR.actionButton,
     alignItems: "center",
     justifyContent: "center",
     elevation: 10,

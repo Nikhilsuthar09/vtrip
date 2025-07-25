@@ -8,44 +8,93 @@ import {
   ScrollView,
   Alert,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { COLOR, FONT_SIZE, FONTS } from "../../constants/Theme";
 import { Ionicons } from "@expo/vector-icons";
+import { doc, serverTimestamp, updateDoc } from "firebase/firestore";
+import { db } from "../../Configs/firebaseConfig";
 
-const PlanInAdvanceModal = ({ isVisible, onClose, onBackButtonPress, onAddExpense }) => {
-  const [category, setCategory] = useState('');
-  const [amount, setAmount] = useState('');
+const PlanInAdvanceModal = ({
+  tripId,
+  isVisible,
+  onClose,
+  onBackButtonPress,
+  onAddExpense,
+  itemToUpdate,
+}) => {
+  const [category, setCategory] = useState("");
+  const [amount, setAmount] = useState("");
 
-  const handleAddExpense = () => {
-    if (!category.trim()) {
-      Alert.alert("Error", "Please enter an expense category");
-      return;
+  useEffect(() => {
+    if (!isVisible) return;
+    if (itemToUpdate) {
+      setCategory(itemToUpdate.category);
+      setAmount(String(itemToUpdate.amount));
     }
-    
-    if (!amount.trim() || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
-      Alert.alert("Error", "Please enter a valid amount");
-      return;
-    }
+  }, [itemToUpdate, isVisible]);
 
+  const addItem = () => {
     // Add the expense
     onAddExpense({
       category: category.trim(),
       amount: amount.trim(),
     });
 
+    // Reset form
+    setCategory("");
+    setAmount("");
+
+    // Close modal
+    onClose();
+  };
+  const handleSubmitExpense = () => {
+    if (!category.trim()) {
+      Alert.alert("Error", "Please enter an expense category");
+      return;
+    }
+
+    if (
+      !amount.trim() ||
+      isNaN(parseFloat(amount)) ||
+      parseFloat(amount) <= 0
+    ) {
+      Alert.alert("Error", "Please enter a valid amount");
+      return;
+    }
+    if (itemToUpdate) {
+      updateItem();
+    } else {
+      addItem();
+    }
+  };
+  const updateItem = async () => {
+    // update the expense
+    try {
+      const itemToStore = {
+        category: category.trim(),
+        amount: parseFloat(amount.trim()),
+        upDatedAt: serverTimestamp(),
+      };
+      const itemDocRef = doc(db, "trip", tripId, "plannedExpenses", itemToUpdate.id);
+      await updateDoc(itemDocRef, itemToStore);
+      Alert.alert("Success!", "Item updated successfully");
+    } catch (e) {
+      console.log("Error Updating Item", e);
+      Alert.alert("Error Updating Item");
+    }
 
     // Reset form
-    setCategory('');
-    setAmount('');
-    
+    setCategory("");
+    setAmount("");
+
     // Close modal
     onClose();
   };
 
   const handleClose = () => {
     // Reset form when closing without saving
-    setCategory('');
-    setAmount('');
+    setCategory("");
+    setAmount("");
     onClose();
   };
 
@@ -62,7 +111,10 @@ const PlanInAdvanceModal = ({ isVisible, onClose, onBackButtonPress, onAddExpens
             {/* Header */}
             <View style={styles.header}>
               <Text style={styles.heading}>Plan an Expense</Text>
-              <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={handleClose}
+              >
                 <Ionicons name="close" size={24} color={COLOR.grey} />
               </TouchableOpacity>
             </View>
@@ -91,20 +143,25 @@ const PlanInAdvanceModal = ({ isVisible, onClose, onBackButtonPress, onAddExpens
               />
 
               {/* Add Button */}
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={[
                   styles.addButton,
-                  (!category.trim() || !amount.trim()) && styles.addButtonDisabled
-                ]} 
-                onPress={handleAddExpense}
+                  (!category.trim() || !amount.trim()) &&
+                    styles.addButtonDisabled,
+                ]}
+                onPress={handleSubmitExpense}
                 disabled={!category.trim() || !amount.trim()}
               >
-                <Ionicons name="add-circle" size={20} color="#fff" />
-                <Text style={styles.addButtonText}>Add Expense</Text>
+                <Text style={styles.addButtonText}>
+                  {itemToUpdate ? "Update" : "Add Expense"}
+                </Text>
               </TouchableOpacity>
 
               {/* Cancel Button */}
-              <TouchableOpacity style={styles.cancelButton} onPress={handleClose}>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={handleClose}
+              >
                 <Text style={styles.cancelButtonText}>Cancel</Text>
               </TouchableOpacity>
             </ScrollView>
@@ -118,23 +175,23 @@ const PlanInAdvanceModal = ({ isVisible, onClose, onBackButtonPress, onAddExpens
 const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-end',
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "flex-end",
   },
   modalContainer: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    maxHeight: '80%',
+    maxHeight: "80%",
   },
   modalContent: {
     padding: 24,
     paddingBottom: 40,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 24,
   },
   heading: {
@@ -188,7 +245,7 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   cancelButton: {
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
     paddingVertical: 16,
     borderRadius: 12,
     justifyContent: "center",

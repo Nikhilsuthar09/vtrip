@@ -30,7 +30,7 @@ const styles = StyleSheet.create({
     width: 65,
     height: 65,
     borderRadius: 32.5,
-    backgroundColor: COLOR.primary,
+    backgroundColor: COLOR.actionButton,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 6,

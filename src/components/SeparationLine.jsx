@@ -1,4 +1,4 @@
-import { View, StyleSheet, Text } from 'react-native'
+import { View, StyleSheet } from 'react-native'
 import React from 'react'
 import { COLOR } from '../constants/Theme'
 
@@ -11,8 +11,8 @@ const SeparationLine = () => {
 const styles = StyleSheet.create({
   line:{
     width:"100%",
-    height:1,
-    backgroundColor:COLOR.stroke,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: COLOR.stroke,
     marginBottom:10
   }
 })
