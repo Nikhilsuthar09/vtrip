@@ -7,12 +7,14 @@ import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const Tab = createMaterialTopTabNavigator();
 
 export default function TopTabs({ route }) {
   const { id, budget } = route.params;
   return (
+    <SafeAreaView style={{flex:1, backgroundColor:"#fff"}}>
       <Tab.Navigator
         screenOptions={{
           tabBarLabelStyle: {
@@ -27,7 +29,7 @@ export default function TopTabs({ route }) {
             elevation: 0,
             shadowOpacity: 0,
           },
-          tabBarPressColor: 'transparent',
+          tabBarPressColor: "transparent",
         }}
       >
         <Tab.Screen
@@ -145,6 +147,7 @@ export default function TopTabs({ route }) {
           }}
         />
       </Tab.Navigator>
+    </SafeAreaView>
   );
 }
 const styles = StyleSheet.create({

@@ -7,6 +7,7 @@ import Spinner from "../components/Spinner";
 import TopTabs from "./TopTabNavigator";
 import HomeTabs from "./BottomTabNavigator";
 import PlanInAdvance from "../Screens/expenses/PlanInAdvance";
+import TrackOnTrip from "../Screens/expenses/TrackOnTrip";
 
 const Stack = createNativeStackNavigator();
 
@@ -18,7 +19,6 @@ export default function RootStack() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
       <Stack.Navigator screenOptions={{ animation: "fade" }}>
         {isLoggedIn ? (
           <>
@@ -38,7 +38,14 @@ export default function RootStack() {
               name="PlanExpenseInAdvance"
               component={PlanInAdvance}
               options={{ 
-                headerShown: false,
+                headerShown: true,
+              }}
+            />
+            <Stack.Screen
+              name="TraceOnTrip"
+              component={TrackOnTrip}
+              options={{ 
+                headerShown: true,
               }}
             />
           </>
@@ -57,6 +64,5 @@ export default function RootStack() {
           </>
         )}
       </Stack.Navigator>
-    </SafeAreaView>
   );
 }

@@ -48,7 +48,7 @@ const ShowTripsCard = ({
           />
         </TouchableOpacity>
 
-        <View style={styles.imgcontiner}>
+        <View style={styles.imgcontainer}>
           <Image
             style={styles.image}
             source={require("./../../assets/default.jpg")}
@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     flexDirection: "row",
   },
-  imgcontiner: {
+  imgcontainer: {
     width: 120,
     height: 120,
     backgroundColor: "#fff",

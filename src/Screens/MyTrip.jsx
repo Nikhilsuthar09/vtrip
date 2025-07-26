@@ -6,9 +6,6 @@ import { useUserTripsData } from "../utils/firebaseUserHandlers";
 import { Alert, FlatList } from "react-native";
 import Spinner from "../components/Spinner";
 import TripMenuModal from "../components/TripMenuModal";
-import { db } from "../Configs/firebaseConfig";
-import { doc } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
 
 const MyTrip = () => {
   const [modalData, setModalData] = useState(null);
@@ -54,7 +51,8 @@ const MyTrip = () => {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff", paddingTop:20 }}
+    >
       <HeaderWithSearch />
       <FlatList
         data={safeTripData}

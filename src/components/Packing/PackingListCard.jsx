@@ -70,7 +70,7 @@ const PackingListCard = ({
                   disabled={item.isPacked}
                   style={styles.checkbox}
                   onValueChange={() => toggleChecked(item.id)}
-                  value={isChecked[item.id] || false}
+                  value={item.isPacked || isChecked[item.id] || false}
                   color={isChecked[item.id] ? COLOR.primary : undefined}
                 />
                 <Text

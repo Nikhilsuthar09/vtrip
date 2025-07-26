@@ -34,6 +34,7 @@ export default function HomeTabs() {
             fontFamily: FONTS.medium,
             fontSize: FONT_SIZE.caption,
           },
+          tabBarPressColor: 'transparent',
         }}
       >
         <Tab.Screen

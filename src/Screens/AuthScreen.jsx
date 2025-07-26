@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
   Keyboard,
   KeyboardAvoidingView,
@@ -11,7 +12,6 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
 import { COLOR, FONT_SIZE, FONTS } from "../constants/Theme";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { auth } from "../Configs/firebaseConfig";
@@ -21,42 +21,59 @@ import {
   handleFirebaseAuthErrors,
   handleLoginValidation,
 } from "../utils/AuthHandlers";
-
-const signin = async (email, password) => {
-  Keyboard.dismiss();
-  // input validation
-  if (!handleLoginValidation(email, password)) return;
-
-  try {
-    const userCredential = await signInWithEmailAndPassword(
-      auth,
-      email,
-      password
-    );
-    // Signed in
-  } catch (error) {
-    const errorMessage = handleFirebaseAuthErrors(error);
-    console.log(errorMessage);
-    Alert.alert("Error ", errorMessage);
-  }
-};
+import { Image } from "expo-image";
+import Fontisto from "@expo/vector-icons/Fontisto";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 export default function AuthScreen() {
   const email = useRef("");
   const password = useRef("");
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const navigation = useNavigation();
 
+  const signin = async (email, password) => {
+    Keyboard.dismiss();
+    setIsLoading(true);
+    // input validation
+    if (!handleLoginValidation(email, password)) {
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      setIsLoading(false);
+      // Signed in
+    } catch (error) {
+      const errorMessage = handleFirebaseAuthErrors(error);
+      console.log(errorMessage);
+      setIsLoading(false);
+      Alert.alert("Error ", errorMessage);
+    }
+  };
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
 
   return (
-    <LinearGradient colors={["#EADDFF", "#625B71"]} style={{ flex: 1 }}>
+    <View style={{ flex: 1 }}>
+      <Image
+        style={styles.imageRectangle}
+        source={require("../../assets/img/rectangle.png")}
+      />
+      <Image
+        style={styles.imageEclipse}
+        source={require("../../assets/img/eclipse.png")}
+      />
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1, width: "100%" }}
-        keyboardVerticalOffset={1}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
       >
         <ScrollView
           contentContainerStyle={styles.scrollContainer}
@@ -89,24 +106,41 @@ export default function AuthScreen() {
             <View>
               <View>
                 <Text style={styles.label}>Email</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Email Address"
-                  placeholderTextColor={COLOR.placeholder}
-                  onChangeText={(value) => (email.current = value)}
-                />
+                <View style={styles.icon_input_container}>
+                  <Fontisto
+                    name="email"
+                    style={styles.inputIcon}
+                    size={18}
+                    color={COLOR.placeholder}
+                  />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Email Address"
+                    placeholderTextColor={COLOR.placeholder}
+                    onChangeText={(value) => (email.current = value)}
+                    autoCorrect={false}
+                  />
+                </View>
               </View>
               <View>
                 <Text style={styles.label}>Password</Text>
                 <View style={styles.passwordContainer}>
-                  <TextInput
-                    style={styles.passwordInput}
-                    placeholder="Password"
-                    placeholderTextColor={COLOR.placeholder}
-                    onChangeText={(value) => (password.current = value)}
-                    secureTextEntry={!showPassword}
-                    autoCorrect={false}
-                  />
+                  <View style={styles.icon_input_container}>
+                    <Ionicons
+                      name="lock-open-outline"
+                      style={styles.inputIcon}
+                      size={18}
+                      color={COLOR.placeholder}
+                    />
+                    <TextInput
+                      style={styles.passwordInput}
+                      placeholder="Password"
+                      placeholderTextColor={COLOR.placeholder}
+                      onChangeText={(value) => (password.current = value)}
+                      secureTextEntry={!showPassword}
+                      autoCorrect={false}
+                    />
+                  </View>
                   <Pressable
                     onPress={togglePasswordVisibility}
                     style={styles.eyeIcon}
@@ -126,13 +160,17 @@ export default function AuthScreen() {
               </View>
             </View>
             <View style={styles.loginbuttons}>
-              <Pressable
-                onPress={() => signin(email.current, password.current)}
-              >
-                <View style={styles.loginbuttonContainer}>
-                  <Text style={styles.loginbuttontext}>Log In</Text>
-                </View>
-              </Pressable>
+              {isLoading ? (
+                <ActivityIndicator size="large" color={COLOR.primary}/>
+              ) : (
+                <Pressable
+                  onPress={() => signin(email.current, password.current)}
+                >
+                  <View style={styles.loginbuttonContainer}>
+                    <Text style={styles.loginbuttontext}>Log In</Text>
+                  </View>
+                </Pressable>
+              )}
               <View style={styles.separater}>
                 <View style={styles.separaterLine}></View>
                 <Text style={styles.orText}>Or</Text>
@@ -150,7 +188,7 @@ export default function AuthScreen() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </LinearGradient>
+    </View>
   );
 }
 
@@ -162,6 +200,24 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderRadius: 12,
     padding: 24,
+  },
+  imageRectangle: {
+    position: "absolute",
+    height: "40%",
+    width: "100%",
+  },
+  imageEclipse: {
+    position: "absolute",
+    height: "30%",
+    width: "60%",
+  },
+  icon_input_container: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  inputIcon: {
+    position: "absolute",
+    paddingLeft: 8,
   },
   logintitle: { gap: 8 },
   loginText: {
@@ -224,7 +280,8 @@ const styles = StyleSheet.create({
     borderColor: COLOR.stroke,
     borderRadius: 10,
     paddingVertical: 10,
-    paddingHorizontal: 12,
+    paddingRight: 12,
+    paddingLeft: 35,
     fontFamily: FONTS.medium,
     color: COLOR.textSecondary,
     fontSize: FONT_SIZE.body,
@@ -242,6 +299,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 12,
     paddingRight: 45,
+    paddingLeft: 35,
     fontFamily: FONTS.medium,
     color: COLOR.textSecondary,
     fontSize: FONT_SIZE.body,
@@ -285,7 +343,7 @@ const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: Platform.OS === "ios" ? "flex-start" : "center",
     paddingVertical: 32,
     paddingHorizontal: 20,
   },

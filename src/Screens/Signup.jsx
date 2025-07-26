@@ -11,7 +11,6 @@ import {
   Keyboard,
 } from "react-native";
 import React, { useState } from "react";
-import { LinearGradient } from "expo-linear-gradient";
 import { COLOR, FONT_SIZE, FONTS } from "../constants/Theme";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import {
@@ -26,6 +25,7 @@ import {
   handleSignupValidation,
 } from "../utils/AuthHandlers";
 import { useAuth } from "../Context/AuthContext";
+import { Image } from "expo-image";
 
 export default function Signup() {
   const [email, setEmail] = useState("");
@@ -74,7 +74,16 @@ export default function Signup() {
   };
 
   return (
-    <LinearGradient colors={["#2567E8", "#1CE6DA"]} style={{ flex: 1 }}>
+    <View style={{flex:1}}>
+      <Image
+        style={styles.imageRectangle}
+        source={require("../../assets/img/rectangle.png")}
+      />
+      <Image
+        style={styles.imageEclipse}
+        source={require("../../assets/img/eclipse.png")}
+      />
+
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1, width: "100%" }}
@@ -84,12 +93,12 @@ export default function Signup() {
           contentContainerStyle={styles.scrollContainer}
           keyboardShouldPersistTaps="handled"
         >
-          <View style={styles.loginContainer}>
+          <View style={styles.signupContainer}>
             <Pressable onPress={() => navigation.goBack()}>
               <AntDesign name="arrowleft" size={24} color={COLOR.textPrimary} />
             </Pressable>
-            <View style={styles.logintitle}>
-              <Text style={styles.loginText}>Sign up </Text>
+            <View style={styles.signupTitle}>
+              <Text style={styles.signupText}>Sign up </Text>
               <View style={{ flexDirection: "row", alignItems: "center" }}>
                 <Text style={styles.signupLinkText}>
                   Already have an account?{" "}
@@ -97,7 +106,7 @@ export default function Signup() {
                 <Pressable onPress={() => navigation.goBack()}>
                   <Text
                     style={{
-                      color: COLOR.secondary,
+                      color: COLOR.primary,
                       fontFamily: FONTS.semiBold,
                       fontSize: FONT_SIZE.caption,
                     }}
@@ -163,22 +172,32 @@ export default function Signup() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </LinearGradient>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  loginContainer: {
+  signupContainer: {
     display: "flex",
     gap: 20,
     backgroundColor: "#fff",
     borderRadius: 12,
     padding: 24,
   },
-  logintitle: {
+  signupTitle: {
     gap: 8,
   },
-  loginText: {
+    imageRectangle:{
+    position:"absolute",
+    height:"40%",
+    width:"100%",
+  },
+  imageEclipse:{
+    position:"absolute",
+    height:"30%",
+    width:"60%",
+  },
+  signupText: {
     fontFamily: FONTS.bold,
     fontSize: FONT_SIZE.H1,
     color: COLOR.textPrimary,

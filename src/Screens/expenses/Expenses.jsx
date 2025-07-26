@@ -14,6 +14,12 @@ const Expenses = ({ route }) => {
       budget: budget,
     });
   };
+  const trackOnTrip = () => {
+    navigation.navigate("TraceOnTrip", {
+      id: id,
+      budget: budget,
+    });
+  };
 
 
   return (
@@ -28,7 +34,7 @@ const Expenses = ({ route }) => {
         </Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.dashedBox}>
+      <TouchableOpacity style={styles.dashedBox} onPress={trackOnTrip}>
         <Ionicons name="add-circle-outline" size={32} color={COLOR.primary} />
         <Text style={styles.boxTitle}>Track During Trip</Text>
         <Text style={styles.boxSubtitle}>
