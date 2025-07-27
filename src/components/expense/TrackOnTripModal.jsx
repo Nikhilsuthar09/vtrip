@@ -2,6 +2,7 @@ import { View, Text, Modal, TextInput, Pressable, StyleSheet } from 'react-nativ
 import React from 'react'
 import { Picker } from '@react-native-picker/picker'
 import { COLOR, FONT_SIZE, FONTS } from '../../constants/Theme'
+import AntDesign from "@expo/vector-icons/AntDesign";
 
 const TrackOnTripModal = ({modalVisible, onclose, handleDataChange, expenseDataOnTrip, onSubmit}) => {
   return (
@@ -13,8 +14,16 @@ const TrackOnTripModal = ({modalVisible, onclose, handleDataChange, expenseDataO
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContainer}>
+            <View style={{flexDirection:"row", justifyContent:"space-between"}}>
             <Text style={styles.modalTitle}>Add Expense</Text>
-
+            <AntDesign
+              style={styles.closeButton}
+              onPress={onclose}
+              name="close"
+              size={24}
+              color={COLOR.primary}
+              />
+              </View>
             {/* Dropdown */}
             <Text style={styles.inputLabel}>Paid By</Text>
             <View style={styles.pickerContainer}>
@@ -23,6 +32,7 @@ const TrackOnTripModal = ({modalVisible, onclose, handleDataChange, expenseDataO
                 onValueChange={(value) => handleDataChange("name", value)}
                 style={styles.picker}
               >
+                <Picker.Item label="" value=""/>
                 <Picker.Item label="Nikhil" value="Nikhil" />
                 <Picker.Item label="Alex" value="Alex" />
                 <Picker.Item label="Priya" value="Priya" />

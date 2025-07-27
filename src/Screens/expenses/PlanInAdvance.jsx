@@ -21,6 +21,7 @@ import {
 import { db } from "../../Configs/firebaseConfig";
 import Spinner from "../../components/Spinner";
 import { usePlannedExpense } from "../../utils/firebaseTripHandler";
+import ErrorScreen from "../../components/ErrorScreen";
 
 const PlanInAdvance = ({ route }) => {
   const { id, budget } = route.params;
@@ -30,9 +31,7 @@ const PlanInAdvance = ({ route }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [updateItem, setUpdateItem] = useState(null)
   if (loading) return <Spinner />;
-  if (error) return Alert.alert("Error", "Something went wrong!!");
-
-  console.log(safePlannedExpenseData);
+  if (error) return <ErrorScreen/>;
 
   const totalExpenses = safePlannedExpenseData.reduce(
     (sum, expense) => sum + expense.amount,

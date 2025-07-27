@@ -24,7 +24,7 @@ const useTripPackingList = (tripId) => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [tripId]);
   return { packingData, loading, error };
 };
 
@@ -50,8 +50,33 @@ const usePlannedExpense = (tripId) => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [tripId]);
   return { plannedExpenseData, loading, error };
 };
+const useOnTripExpense = (tripId) => {
+  const [onTripExpenseData, setOnTripExpenseData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-export {useTripPackingList ,usePlannedExpense}
+  useEffect(() => {
+    try {
+      const collectionRef = collection(db, "trip", tripId, "onTripExpenses");
+      const expenseQuery = firestoreQuery(collectionRef, orderBy("createdAt", "desc"));
+      const unsubscribe = onSnapshot(expenseQuery, (snapshot) => {
+        const expenseList = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setOnTripExpenseData(expenseList);
+      });
+      return () => unsubscribe();
+    } catch (e) {
+      setError(e);
+    } finally {
+      setLoading(false);
+    }
+  }, [tripId]);
+  return { onTripExpenseData, loading, error };
+};
+
+export {useTripPackingList ,usePlannedExpense, useOnTripExpense}

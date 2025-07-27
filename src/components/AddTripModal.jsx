@@ -6,21 +6,26 @@ import {
   TextInput,
   ScrollView,
   TouchableOpacity,
-  Alert,
 } from "react-native";
 import React, { useState } from "react";
 import Modal from "react-native-modal";
 import { StatusBar } from "expo-status-bar";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Calendar } from "react-native-calendars";
 import { SafeAreaView } from "react-native-safe-area-context";
 // local file imports
 import { COLOR, FONT_SIZE, FONTS } from "../constants/Theme";
-// firebase
+import { handleDayPress } from "../utils/calendar/handleDayPress";
+import { getMarkedDates } from "../utils/calendar/handleMarkedDates";
+import {
+  formatDate,
+  getCurrentDate,
+} from "../utils/calendar/handleCurrentDate";
+import { addTripToDb } from "../utils/tripData/handleStoreTripData";
+import { arrayUnion, doc, getDoc, updateDoc } from "firebase/firestore";
 import { db } from "../Configs/firebaseConfig";
-import { doc, setDoc } from "firebase/firestore";
-import { AddTripToUser } from "../utils/firebaseUserHandlers";
 import { getAuth } from "firebase/auth";
 
 const AddTripModal = ({
@@ -29,6 +34,7 @@ const AddTripModal = ({
   onBackButtonPressed,
   backdropPress,
 }) => {
+  const [roomId, setRoomId] = useState("");
   const [activeInput, setActiveInput] = useState(null);
   const [tripData, setTripData] = useState({
     title: "",
@@ -37,165 +43,14 @@ const AddTripModal = ({
     start: "",
     end: "",
   });
-
-  const handleTripDataChange = (field, value) => {
-    setTripData((prevData) => ({
-      ...prevData,
-      [field]: value,
-    }));
-  };
-  const generateRandomId = () => {
-    let str = "1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    let id = [];
-    for (let i = 0; i <= 4; i++) {
-      id.push(str[Math.floor(Math.random() * str.length)]);
-    }
-    return id.join("");
-  };
-
-  const handleStoreTripData = async () => {
-    if (!tripData.title.trim()) {
-      Alert.alert("Please enter a title");
-      return;
-    }
-    if (!tripData.destination.trim()) {
-      Alert.alert("Please enter your destination");
-      return;
-    }
-    if (!tripData.budget.trim()) {
-      Alert.alert("Please enter your budget");
-      return;
-    }
-    const budgetNumber = parseInt(tripData.budget);
-    if (isNaN(budgetNumber)) {
-      Alert.alert("Please enter a valid amount");
-      return;
-    }
-    if (!tripData.start) {
-      Alert.alert("Please select a start date");
-      return;
-    }
-    if (!tripData.end) {
-      Alert.alert("Please select an end date");
-      return;
-    }
-
-    try {
-      const auth = getAuth();
-      const userId = auth.currentUser.uid;
-      const tripToStore = {
-        title: tripData.title.trim(),
-        destination: tripData.destination.trim(),
-        budget: budgetNumber,
-        startDate: tripData.start,
-        endDate: tripData.end,
-        createdAt: new Date().toISOString(),
-        userId: userId,
-      };
-
-      const tripId = generateRandomId();
-      const tripDocRef = doc(db, "trip", tripId);
-      AddTripToUser(tripId);
-      await setDoc(tripDocRef, tripToStore);
-      Alert.alert("Success", "Trip created successfully!");
-      setTripData({
-        title: "",
-        destination: "",
-        budget: "",
-        start: "",
-        end: "",
-      });
-      onClose();
-    } catch (e) {
-      console.log("Error storing trip", e);
-      Alert.alert("Error", "Failed to create trip. Please try again.");
-    }
-    console.log(tripData);
-  };
-
-  const handleDayPress = (day) => {
-    const selectedDate = day.dateString;
-
-    if (!tripData.start || (tripData.start && tripData.end)) {
-      // First selection or reset selection
-      setTripData((prev) => ({
-        ...prev,
-        start: selectedDate,
-        end: "",
-      }));
-    } else if (tripData.start && !tripData.end) {
-      // Second selection
-      const startDateObj = new Date(tripData.start);
-      const selectedDateObj = new Date(selectedDate);
-      if (selectedDateObj >= startDateObj) {
-        setTripData((prev) => ({
-          ...prev,
-          end: selectedDate,
-        }));
-      } else {
-        // If selected date is before start date, make it the new start date
-        setTripData((prev) => ({
-          ...prev,
-          start: selectedDate,
-          end: "",
-        }));
-      }
-    }
-  };
-
-  const getCurrentDate = () => {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, "0");
-    const day = String(today.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
-  };
-  // create marked date objects
-  const getMarkedDates = () => {
-    let markedDates = {};
-    if (tripData.start && tripData.end) {
-      // range selection
-      markedDates = getDatesInRange(tripData.start, tripData.end);
-      markedDates[tripData.start] = {
-        ...markedDates[tripData.start],
-        startingDay: true,
-        color: "#4D81E7",
-        textColor: "white",
-      };
-      markedDates[tripData.end] = {
-        ...markedDates[tripData.end],
-        endingDay: true,
-        color: "#4D81E7",
-        textColor: "white",
-      };
-    } else if (tripData.start) {
-      markedDates[tripData.start] = {
-        startingDay: true,
-        endingDay: true,
-        color: "#4D81E7",
-        textColor: "white",
-      };
-    }
-
-    return markedDates;
-  };
-  const getDatesInRange = (start, end) => {
-    const dates = {};
-    const startDateObj = new Date(start);
-    const endDateObj = new Date(end);
-
-    if (startDateObj > endDateObj) return dates;
-
-    const currentDate = new Date(startDateObj);
-    while (currentDate <= endDateObj) {
-      const dateString = currentDate.toISOString().split("T")[0];
-      dates[dateString] = {
-        color: "#4D81E7",
-        textColor: "white",
-      };
-      currentDate.setDate(currentDate.getDate() + 1);
-    }
-    return dates;
+  const resetTripData = () => {
+    setTripData({
+      title: "",
+      destination: "",
+      budget: "",
+      start: "",
+      end: "",
+    });
   };
 
   const resetDates = () => {
@@ -206,15 +61,53 @@ const AddTripModal = ({
     }));
   };
 
-  const formatDate = (dateString) => {
-    if (!dateString) return "";
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
+  const handleTripDataChange = (field, value) => {
+    setTripData((prevData) => ({
+      ...prevData,
+      [field]: value,
+    }));
   };
+
+  const handleStoreTripData = async () => {
+    if (roomId.trim()) {
+      try {
+        const idToRetrieve = roomId.trim();
+        const docRef = doc(db, "trip", idToRetrieve);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          try{
+            const auth = getAuth()
+            const uid = auth.currentUser.uid
+            const userDocRef = doc(db, "user", uid);
+            await updateDoc(userDocRef, {
+              tripIds: arrayUnion(idToRetrieve)
+            })
+            const tripDocRef = doc(db, "trip", idToRetrieve)
+            await updateDoc(tripDocRef, {
+              travellers: arrayUnion(uid)
+            })
+            console.log("user's Trip array updated")
+          }
+          catch(e){
+            console.log(e)
+          }
+        } else {
+          console.log("No trips found");
+        }
+      } catch (e) {
+        console.log("Something went wrong");
+      }
+    } else {
+      const success = await addTripToDb(tripData);
+      if (success) {
+        resetTripData();
+        onClose();
+      } else {
+        return;
+      }
+    }
+  };
+
   return (
     <Modal
       isVisible={isModalVisible}
@@ -222,24 +115,49 @@ const AddTripModal = ({
       onBackdropPress={backdropPress}
       animationIn="slideInUp"
       animationOut="slideOutDown"
-      style={styles.modal} // Remove default margins
+      style={styles.modal}
     >
       <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
         <ScrollView nestedScrollEnabled={true}>
           <StatusBar style="dark" />
           <View style={styles.modalContainer}>
             <View style={styles.headingContainer}>
-              <Text style={styles.heading}>Create New Trip</Text>
+              <Text style={styles.heading}>Add a trip</Text>
               <Pressable style={styles.closeButton} onPress={onClose}>
-                <Text style={styles.closeButtonText}>Close</Text>
+                <AntDesign name="close" size={24} color={COLOR.primary} />
               </Pressable>
             </View>
             <View style={{ flex: 1 }}>
+              <MaterialIcons
+                name="groups"
+                style={styles.icon}
+                size={18}
+                color={activeInput ==="roomId" ? COLOR.primary : COLOR.grey}
+              />
+              <TextInput
+                onChangeText={(value) => setRoomId(value)}
+                value={roomId}
+                onFocus={() => setActiveInput("roomId")}
+                onBlur={() => setActiveInput(null)}
+                placeholder="Room id"
+                placeholderTextColor={COLOR.placeholder}
+                style={[
+                  styles.input,
+                  activeInput === "roomId"
+                    ? styles.activeColor
+                    : styles.inactiveColor,
+                ]}
+              />
+              <View style={styles.separater}>
+                <View style={styles.separaterLine}></View>
+                <Text style={styles.orText}>Or</Text>
+                <View style={styles.separaterLine}></View>
+              </View>
               <View style={styles.inputContainer}>
                 <AntDesign
                   name="tags"
-                  size={20}
-                  color="#4D81E7"
+                  size={18}
+                  color={activeInput ==="title" ? COLOR.primary : COLOR.grey}
                   style={styles.icon}
                 />
                 <TextInput
@@ -247,7 +165,7 @@ const AddTripModal = ({
                   value={tripData.title}
                   onFocus={() => setActiveInput("title")}
                   onBlur={() => setActiveInput(null)}
-                  placeholder="Title (eg Office Trip) "
+                  placeholder="Title (e.g. Office Trip) "
                   placeholderTextColor={COLOR.placeholder}
                   style={[
                     styles.input,
@@ -260,8 +178,8 @@ const AddTripModal = ({
               <View style={styles.inputContainer}>
                 <FontAwesome
                   name="map-marker"
-                  size={20}
-                  color="#4D81E7"
+                  size={18}
+                  color={activeInput ==="destination" ? COLOR.primary : COLOR.grey}
                   style={styles.icon}
                 />
                 <TextInput
@@ -285,8 +203,8 @@ const AddTripModal = ({
               <View style={styles.inputContainer}>
                 <FontAwesome
                   name="inr"
-                  size={20}
-                  color="#4D81E7"
+                  size={18}
+                  color={activeInput ==="budget" ? COLOR.primary : COLOR.grey}
                   style={styles.icon}
                 />
                 <TextInput
@@ -345,8 +263,10 @@ const AddTripModal = ({
                       } days selected`}
                 </Text>
                 <Calendar
-                  onDayPress={handleDayPress}
-                  markedDates={getMarkedDates()}
+                  onDayPress={(day) =>
+                    handleDayPress(tripData, setTripData, day)
+                  }
+                  markedDates={getMarkedDates(tripData)}
                   minDate={getCurrentDate()}
                   markingType="period"
                   pagingEnabled={true}
@@ -355,13 +275,13 @@ const AddTripModal = ({
                   current={getCurrentDate()}
                   theme={{
                     fontFamily: FONTS.regular,
-                    selectedDayBackgroundColor: "#4D81E7",
+                    selectedDayBackgroundColor: COLOR.primaryLight,
                     selectedDayTextColor: "#ffffff",
-                    todayTextColor: "#4D81E7",
+                    todayTextColor: COLOR.primary,
                     dayTextColor: "#2d4150",
                     textDisabledColor: "#d9e1e8",
                     monthTextColor: "#2d4150",
-                    indicatorColor: "#4D81E7",
+                    indicatorColor: COLOR.primary,
                   }}
                 />
               </View>
@@ -408,6 +328,24 @@ const styles = StyleSheet.create({
     top: 18,
     left: 10,
   },
+  separater: {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 15,
+    marginBottom:14
+  },
+  separaterLine: {
+    width: 100,
+    height: 1,
+    backgroundColor: COLOR.stroke,
+  },
+  orText: {
+    fontFamily: FONTS.regular,
+    fontSize: FONT_SIZE.caption,
+    color: COLOR.grey,
+  },
   inputContainer: {
     position: "relative",
     flexDirection: "row",
@@ -430,12 +368,9 @@ const styles = StyleSheet.create({
     borderColor: COLOR.stroke,
   },
   closeButton: {
-    width: 100,
-    height: 40,
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: 8,
-    backgroundColor: COLOR.primary,
+    padding: 6,
   },
   closeButtonText: {
     fontFamily: FONTS.semiBold,
@@ -443,7 +378,7 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
   dateInfoContainer: {
-    backgroundColor: COLOR.stroke,
+    backgroundColor: COLOR.stroke + "20",
     padding: 15,
     borderRadius: 12,
     marginBottom: 15,
@@ -480,7 +415,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontFamily: FONTS.semiBold,
     fontSize: FONT_SIZE.body,
-    color: COLOR.secondary,
+    color: COLOR.primary,
     marginBottom: 10,
   },
   createButton: {

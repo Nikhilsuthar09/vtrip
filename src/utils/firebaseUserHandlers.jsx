@@ -17,7 +17,7 @@ import { getAuth } from "firebase/auth";
 // hook to listen to the changes in tripIds array
 export const useUserTrips = () => {
   const [tripIds, setTripIds] = useState([]);
-  const [idsError, setError] = useState(true);
+  const [idsError, setError] = useState(false);
   const [idsLoading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -142,9 +142,10 @@ export const AddTripToUser = async (tripId) => {
     const auth = getAuth();
     const userId = auth.currentUser.uid;
     const email = auth.currentUser.email;
+    const name = auth.currentUser.displayName
     const userDocRef = doc(db, "user", userId);
     const userDetails = {
-      userId: userId,
+      name: name,
       email: email,
       tripIds: arrayUnion(tripId),
     };

@@ -26,7 +26,6 @@ const CreateNewCategory = ({ isNewCategoryModalVisible, onCloseModal, input, set
         <View style={styles.modalContent}>
           <View style={styles.closeButtonWrapper}>
             <AntDesign
-              style={styles.closeButton}
               onPress={onCloseModal}
               name="close"
               size={24}

@@ -6,6 +6,8 @@ import CreateTripButton from "../components/CreateTripButton";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { COLOR, FONT_SIZE, FONTS } from "../constants/Theme";
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Platform } from "react-native";
 
 const Tab = createBottomTabNavigator();
 
@@ -14,6 +16,7 @@ function EmptyComponent() {
 }
 export default function HomeTabs() {
   const [isModalVisible, setModalVisible] = useState(false);
+   const insets = useSafeAreaInsets();
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
   };
@@ -24,8 +27,8 @@ export default function HomeTabs() {
         screenOptions={{
         animation: 'shift',
           tabBarStyle: {
-            height: 65,
-            paddingBottom: 5,
+            height: 60 + (Platform.OS === 'android' ? insets.bottom : 0),
+            paddingBottom: Platform.OS === 'android' ? insets.bottom : 0,
             paddingTop: 2,
           },
           tabBarActiveTintColor: COLOR.primary,
@@ -43,7 +46,7 @@ export default function HomeTabs() {
           options={{
             headerShown: false,
             tabBarIcon: ({ color }) => (
-              <Ionicons name="home" size={22} color={color} />
+              <Ionicons name="home" size={20} color={color} />
             ),
           }}
         />
@@ -64,7 +67,7 @@ export default function HomeTabs() {
           options={{
             headerShown: false,
             tabBarIcon: ({ color }) => (
-              <Ionicons name="airplane" size={22} color={color} />
+              <Ionicons name="airplane" size={20} color={color} />
             ),
           }}
         />
