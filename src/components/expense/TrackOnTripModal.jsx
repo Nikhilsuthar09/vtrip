@@ -4,7 +4,8 @@ import { Picker } from '@react-native-picker/picker'
 import { COLOR, FONT_SIZE, FONTS } from '../../constants/Theme'
 import AntDesign from "@expo/vector-icons/AntDesign";
 
-const TrackOnTripModal = ({modalVisible, onclose, handleDataChange, expenseDataOnTrip, onSubmit}) => {
+const TrackOnTripModal = ({modalVisible, onclose, handleDataChange, expenseDataOnTrip, onSubmit, traveller}) => {
+  
   return (
     <Modal
         visible={modalVisible}
@@ -33,9 +34,16 @@ const TrackOnTripModal = ({modalVisible, onclose, handleDataChange, expenseDataO
                 style={styles.picker}
               >
                 <Picker.Item label="" value=""/>
-                <Picker.Item label="Nikhil" value="Nikhil" />
-                <Picker.Item label="Alex" value="Alex" />
-                <Picker.Item label="Priya" value="Priya" />
+                {traveller.map((item) => {
+                  const capitalisedName = item.name.charAt(0).toUpperCase() + item.name.slice(1)
+                  return(
+                    <Picker.Item 
+                    key={item.uid}
+                    label={capitalisedName}
+                    value={capitalisedName}
+                    />
+                  
+                )})}
               </Picker>
             </View>
 

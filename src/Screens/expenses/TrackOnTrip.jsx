@@ -11,17 +11,28 @@ import { COLOR, FONT_SIZE, FONTS } from "../../constants/Theme";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import TrackOnTripModal from "../../components/expense/TrackOnTripModal";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  serverTimestamp,
+} from "firebase/firestore";
 import { db } from "../../Configs/firebaseConfig";
 import { useOnTripExpense } from "../../utils/firebaseTripHandler";
 import Spinner from "../../components/Spinner";
 import ErrorScreen from "../../components/ErrorScreen";
+import { useTravellerNames } from "../../utils/firebaseTravellerHandler";
+import TravellerNames from "./TravellerNames";
 
 const TrackOnTrip = ({ route }) => {
   const { id, budget } = route.params;
   const tripId = id || "";
   const safeBudget = budget || "";
   const { onTripExpenseData, loading, error } = useOnTripExpense(tripId);
+  const { travellerNames, travellerLoading, travellerError } =
+    useTravellerNames(tripId);
+  const safeTravellerNames = travellerNames || [];
   const [modalVisible, setModalVisible] = useState(false);
   const [expenseDataOnTrip, setExpenseDataOnTrip] = useState({
     name: "",
@@ -89,9 +100,40 @@ const TrackOnTrip = ({ route }) => {
     });
     setModalVisible(false);
   };
+  const deleteExpense = async (itemId) => {
+    try {
+      const itemDocRef = doc(db, "trip", tripId, "onTripExpenses", itemId);
+      await deleteDoc(itemDocRef);
+      Alert.alert("Success!", "Item deleted Successfully");
+    } catch (e) {
+      console.error("Failed to delete the item", e);
+      Alert.alert("Error!", "Something went wrong");
+    }
+  };
+
+  const handleLongPress = (itemId, expense) => {
+    Alert.alert(
+      "Are you sure?",
+      `Do you want to delete ${expense}?`,
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Ok",
+          onPress: () => {
+            deleteExpense(itemId);
+          },
+        },
+      ],
+      { cancelable: true }
+    );
+  };
   const renderItem = ({ item, index }) => {
     return (
       <TouchableOpacity
+        onLongPress={() => handleLongPress(item.id, item.expenseType)}
         style={[styles.expenseItem, index === 0 && styles.firstItem]}
       >
         <View style={styles.expenseInfo}>
@@ -169,27 +211,19 @@ const TrackOnTrip = ({ route }) => {
       </View>
 
       {/* horizontal scrolling traveller names */}
-      <View
-        style={{
-          marginTop: 20,
-          flexDirection: "row",
-          gap: 6,
-          marginHorizontal: 20,
-          alignSelf: "flex-start",
-        }}
-      >
-        <Text
-          style={{
-            backgroundColor: COLOR.primaryLight,
-            paddingVertical: 10,
-            paddingHorizontal: 20,
-            color: COLOR.primary,
-            borderRadius: 6,
-            fontFamily: FONTS.medium,
+      <View style={{}}>
+        <FlatList
+          data={safeTravellerNames}
+          keyExtractor={(item) => item.uid}
+          renderItem={({ item }) => {
+            const firstName = item.name.split(" ")[0];
+            const capitalizedName =
+              firstName.charAt(0).toUpperCase() + firstName.slice(1);
+            return <TravellerNames name={capitalizedName} />;
           }}
-        >
-          Nikhil
-        </Text>
+          horizontal={true}
+          contentContainerStyle={{ marginHorizontal: 20, gap: 12 }}
+        />
       </View>
 
       <View style={styles.expensesContainer}>
@@ -224,6 +258,7 @@ const TrackOnTrip = ({ route }) => {
         handleDataChange={handleExpenseDataChange}
         expenseDataOnTrip={expenseDataOnTrip}
         onSubmit={handleAddExpense}
+        traveller={safeTravellerNames}
       />
     </SafeAreaView>
   );

@@ -1,6 +1,7 @@
-import { View } from 'react-native'
+import { Text, View } from 'react-native'
 import React from 'react'
 import LottieView from 'lottie-react-native'
+import { COLOR, FONTS } from '../constants/Theme'
 
 const Spinner = () => {
   return (
@@ -11,6 +12,7 @@ const Spinner = () => {
       autoPlay
       loop
       />
+      <Text style={{fontFamily:FONTS.medium, color:COLOR.grey}}>Loading, Please wait ...</Text>
     </View>
   )
 }
