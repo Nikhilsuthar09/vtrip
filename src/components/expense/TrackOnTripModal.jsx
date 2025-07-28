@@ -4,7 +4,7 @@ import { Picker } from '@react-native-picker/picker'
 import { COLOR, FONT_SIZE, FONTS } from '../../constants/Theme'
 import AntDesign from "@expo/vector-icons/AntDesign";
 
-const TrackOnTripModal = ({modalVisible, onclose, handleDataChange, expenseDataOnTrip, onSubmit, traveller}) => {
+const TrackOnTripModal = ({itemIdToUpdate, modalVisible, onclose, handleDataChange, expenseDataOnTrip, onSubmit, traveller}) => {
   
   return (
     <Modal
@@ -33,14 +33,14 @@ const TrackOnTripModal = ({modalVisible, onclose, handleDataChange, expenseDataO
                 onValueChange={(value) => handleDataChange("name", value)}
                 style={styles.picker}
               >
-                <Picker.Item label="" value=""/>
+                <Picker.Item label="Select" style={{color:COLOR.placeholder}} value="Select"/>
                 {traveller.map((item) => {
-                  const capitalisedName = item.name.charAt(0).toUpperCase() + item.name.slice(1)
                   return(
                     <Picker.Item 
                     key={item.uid}
-                    label={capitalisedName}
-                    value={capitalisedName}
+                    label={item.name}
+                    value={item.name}
+                    style={{color:COLOR.textPrimary}}
                     />
                   
                 )})}
@@ -70,7 +70,7 @@ const TrackOnTripModal = ({modalVisible, onclose, handleDataChange, expenseDataO
 
             {/* Submit Button */}
             <Pressable style={styles.addButton} onPress={onSubmit}>
-              <Text style={styles.addButtonText}>Add</Text>
+              <Text style={styles.addButtonText}>{itemIdToUpdate ? "Update" :"Add"}</Text>
             </Pressable>
           </View>
         </View>

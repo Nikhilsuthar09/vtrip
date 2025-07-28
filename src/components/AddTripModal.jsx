@@ -51,6 +51,7 @@ const AddTripModal = ({
       start: "",
       end: "",
     });
+    setRoomId("")
   };
 
   const resetDates = () => {
@@ -77,7 +78,7 @@ const AddTripModal = ({
         if (docSnap.exists()) {
           try{
             const auth = getAuth()
-            const uid = auth.currentUser.uid
+            const uid = auth?.currentUser.uid
             const userDocRef = doc(db, "user", uid);
             await updateDoc(userDocRef, {
               tripIds: arrayUnion(idToRetrieve)
@@ -87,6 +88,7 @@ const AddTripModal = ({
               travellers: arrayUnion(uid)
             })
             console.log("user's Trip array updated")
+            resetTripData()
           }
           catch(e){
             console.log(e)
@@ -289,7 +291,7 @@ const AddTripModal = ({
                 style={styles.createButton}
                 onPress={handleStoreTripData}
               >
-                <Text style={styles.createButtonText}>Create Trip</Text>
+                <Text style={styles.createButtonText}>Add Trip</Text>
               </TouchableOpacity>
             </View>
           </View>

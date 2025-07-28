@@ -61,7 +61,6 @@ const Packing = ({ route }) => {
     }));
   };
   const totalChecked = Object.values(isChecked).filter(Boolean).length;
-
   const markAsPacked = async () => {
     const success = await handlePackedItems(id, isChecked);
     if (success) {
@@ -81,7 +80,7 @@ const Packing = ({ route }) => {
   };
   const handleCloseModal = () => {
     setEditItem(null);
-    setAddbyCategory(null)
+    setAddbyCategory(null);
     setIsModalVisible(!isModalVisible);
   };
 
@@ -96,25 +95,26 @@ const Packing = ({ route }) => {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor:"#fff" }}>
+    <View style={{ flex: 1, backgroundColor: "#fff" }}>
       {safePackingData.length === 0 ? (
         <Placeholder onPress={toggleModal} />
       ) : (
-        <View style={{ flex: 1, paddingTop: 20 }}>
+        <View style={{ flex: 1, paddingTop: 5 }}>
           <ProgressBar
             progress={totalItems > 0 ? checkedItems / totalItems : 0}
             totalitems={totalItems}
           />
-          {totalChecked !== 0 && (
-            <View style={styles.actionButtonContainer}>
-              <TouchableOpacity
-                onPress={markAsPacked}
-                style={styles.actionButton}
-              >
-                <Text style={styles.actionText}>Mark as packed</Text>
-              </TouchableOpacity>
-            </View>
-          )}
+
+          <View style={styles.actionButtonContainer}>
+            <TouchableOpacity
+              disabled={totalChecked === 0}
+              onPress={markAsPacked}
+              style={[styles.actionButton, totalChecked ===0 && {backgroundColor:COLOR.stroke, color:"#000000"}]}
+            >
+              <Text style={[styles.actionText, totalChecked === 0 && { color:COLOR.textSecondary}]}>Mark as packed</Text>
+            </TouchableOpacity>
+          </View>
+
           <ScrollView showsVerticalScrollIndicator={false}>
             <View style={styles.infoContainer}>
               <Ionicons
@@ -147,7 +147,12 @@ const Packing = ({ route }) => {
             activeOpacity={0.8}
             style={styles.addIconContainer}
           >
-            <Ionicons name="add" style={styles.icon} size={28} color={COLOR.actionText} />
+            <Ionicons
+              name="add"
+              style={styles.icon}
+              size={28}
+              color={COLOR.actionText}
+            />
           </TouchableOpacity>
         </View>
       )}
@@ -174,8 +179,7 @@ const styles = StyleSheet.create({
   actionButtonContainer: {
     flexDirection: "row",
     justifyContent: "flex-end",
-    gap: 10,
-    marginHorizontal:20,
+    marginHorizontal: 20,
   },
   actionButton: {
     backgroundColor: COLOR.primaryLight,
@@ -188,7 +192,7 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZE.caption,
   },
   infoContainer: {
-    marginHorizontal:20,
+    marginHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 12,
     marginVertical: 4,

@@ -17,6 +17,7 @@ import {
   deleteDoc,
   doc,
   serverTimestamp,
+  updateDoc,
 } from "firebase/firestore";
 import { db } from "../../Configs/firebaseConfig";
 import { useOnTripExpense } from "../../utils/firebaseTripHandler";
@@ -39,6 +40,7 @@ const TrackOnTrip = ({ route }) => {
     expenseType: "",
     amount: "",
   });
+  const [itemIdToUpdate, setItemIdToUpdate] = useState("");
   if (loading) return <Spinner />;
   if (error) {
     return <ErrorScreen />;
@@ -59,22 +61,72 @@ const TrackOnTrip = ({ route }) => {
   };
 
   const toggleModal = () => {
+    if (modalVisible) {
+      resetData();
+    }
     setModalVisible(!modalVisible);
   };
-  const handleAddExpense = async () => {
+  const resetData = () => {
+    setItemIdToUpdate("")
+    setExpenseDataOnTrip({
+      name: "",
+      expenseType: "",
+      amount: "",
+    });
+  };
+  const onSubmit = () => {
     const amount = parseFloat(expenseDataOnTrip.amount.trim());
     if (
       !expenseDataOnTrip.name.trim() ||
-      !expenseDataOnTrip.expenseType.trim() ||
-      !amount
+      expenseDataOnTrip.name.trim() === "Select"
     ) {
-      Alert.alert("Invalid input");
+      Alert.alert("Invalid input", "Please select a name");
+      return;
+    }
+    if (!expenseDataOnTrip.expenseType.trim()) {
+      Alert.alert("Missing field!", "Please enter an expense type");
+      return;
+    }
+    if (!amount) {
+      Alert.alert("Missing field!", "Please enter an amount");
       return;
     }
     if (isNaN(amount) || amount < 0) {
-      Alert.alert("Invalid amount");
+      Alert.alert("Invalid amount", "Please enter a valid amount");
       return;
     }
+    if (itemIdToUpdate) {
+      updateItem();
+    } else {
+      handleAddExpense();
+    }
+    resetData();
+    setModalVisible(false);
+  };
+  const updateItem = async () => {
+    try {
+      const itemId = itemIdToUpdate
+      const itemToUpdate = {
+        paidBy: expenseDataOnTrip.name.trim(),
+        expenseType: expenseDataOnTrip.expenseType.trim(),
+        amount: parseFloat(expenseDataOnTrip.amount.trim()),
+        upDatedAt: serverTimestamp(),
+      };
+      const itemDocRef = doc(
+        db,
+        "trip",
+        tripId,
+        "onTripExpenses",
+        itemId
+      );
+      await updateDoc(itemDocRef, itemToUpdate);
+      Alert.alert("Success!", "Item updated successfully");
+    } catch (e) {
+      console.log("Error Updating Item", e);
+      Alert.alert("Error Updating Item");
+    }
+  };
+  const handleAddExpense = async () => {
     try {
       const expenseToStore = {
         paidBy: expenseDataOnTrip.name.trim(),
@@ -93,12 +145,7 @@ const TrackOnTrip = ({ route }) => {
     } catch (e) {
       console.log(e);
     }
-    setExpenseDataOnTrip({
-      name: "",
-      expenseType: "",
-      amount: "",
-    });
-    setModalVisible(false);
+
   };
   const deleteExpense = async (itemId) => {
     try {
@@ -130,10 +177,22 @@ const TrackOnTrip = ({ route }) => {
       { cancelable: true }
     );
   };
+  const handleItemPress = (id, name, category, amount) => {
+    setItemIdToUpdate(id)
+    setExpenseDataOnTrip({
+      name,
+      expenseType: category,
+      amount: amount.toString(),
+    });
+    toggleModal();
+  };
   const renderItem = ({ item, index }) => {
     return (
       <TouchableOpacity
         onLongPress={() => handleLongPress(item.id, item.expenseType)}
+        onPress={() =>
+          handleItemPress(item.id, item.paidBy, item.expenseType, item.amount)
+        }
         style={[styles.expenseItem, index === 0 && styles.firstItem]}
       >
         <View style={styles.expenseInfo}>
@@ -211,15 +270,13 @@ const TrackOnTrip = ({ route }) => {
       </View>
 
       {/* horizontal scrolling traveller names */}
-      <View style={{}}>
+      <View>
         <FlatList
           data={safeTravellerNames}
           keyExtractor={(item) => item.uid}
           renderItem={({ item }) => {
             const firstName = item.name.split(" ")[0];
-            const capitalizedName =
-              firstName.charAt(0).toUpperCase() + firstName.slice(1);
-            return <TravellerNames name={capitalizedName} />;
+            return <TravellerNames name={firstName} />;
           }}
           horizontal={true}
           contentContainerStyle={{ marginHorizontal: 20, gap: 12 }}
@@ -253,11 +310,12 @@ const TrackOnTrip = ({ route }) => {
 
       {/* Add Expense Modal */}
       <TrackOnTripModal
+        itemIdToUpdate={itemIdToUpdate}
         modalVisible={modalVisible}
         onclose={toggleModal}
         handleDataChange={handleExpenseDataChange}
         expenseDataOnTrip={expenseDataOnTrip}
-        onSubmit={handleAddExpense}
+        onSubmit={onSubmit}
         traveller={safeTravellerNames}
       />
     </SafeAreaView>

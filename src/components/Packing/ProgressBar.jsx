@@ -1,7 +1,6 @@
 import { View, Text, StyleSheet } from "react-native";
 import React from "react";
 import { COLOR, FONTS } from "../../constants/Theme";
-import { widthPercentageToDP as wp} from "react-native-responsive-screen";
 
 const ProgressBar = ({ progress, totalitems }) => {
   return (
@@ -21,14 +20,14 @@ const styles = StyleSheet.create({
     justifyContent:"center",
     gap:8,
     backgroundColor:"#fff",
-    paddingVertical:10,
+    paddingVertical:4,
     paddingHorizontal:4,
     borderRadius:10,
-    marginBottom:15,
+    marginBottom:10,
   },
   progressContainer: {
     height: 10,
-    width: wp("55%"),
+    width: "55%",
     backgroundColor: COLOR.stroke,
     borderRadius: 5,
     overflow: "hidden",

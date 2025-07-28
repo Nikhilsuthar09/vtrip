@@ -18,7 +18,7 @@ const PackingListCard = ({
   isChecked,
   openModal,
   isLast,
-  handleAddByCategory
+  handleAddByCategory,
 }) => {
   const pressableRefs = useRef({});
   const checkedCount = data.filter((item) => item.isPacked).length;
@@ -49,7 +49,7 @@ const PackingListCard = ({
           </Text>
         </View>
         <TouchableOpacity onPress={() => handleAddByCategory(title)}>
-        <Ionicons name="add" color={COLOR.primary} size={22}  />
+          <Ionicons name="add" color={COLOR.primary} size={22} />
         </TouchableOpacity>
       </View>
       {data.sort().map((item) => {
@@ -94,7 +94,11 @@ const PackingListCard = ({
                   {item.quantity}
                 </Text>
                 <TouchableOpacity onPress={handleMenuPress(item.id)}>
-                  <Entypo name="dots-three-vertical" size={16} color={COLOR.grey} />
+                  <Entypo
+                    name="dots-three-vertical"
+                    size={16}
+                    color={COLOR.grey}
+                  />
                 </TouchableOpacity>
               </View>
             </View>
@@ -110,7 +114,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     padding: 10,
     marginBottom: 10,
-    marginHorizontal:20,
+    marginHorizontal: 20,
     borderRadius: 8,
     elevation: 1,
   },
@@ -136,10 +140,11 @@ const styles = StyleSheet.create({
   },
   itemListContainer: {
     marginTop: 10,
-    borderWidth: 1,
-    borderColor: COLOR.stroke,
     padding: 12,
     borderRadius: 8,
+    backgroundColor: "#f8f9fa",
+    borderWidth: 1,
+    borderColor: "#e9ecef",
   },
   itemContainer: {
     flexDirection: "row",

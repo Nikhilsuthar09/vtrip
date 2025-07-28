@@ -22,30 +22,25 @@ const ShowTripsCard = ({
 }) => {
   const navigation = useNavigation();
   const handleMenuPress = (itemId) => {
-    return (e)=> {
-      console.log("tripcard:",itemId)
+    return (e) => {
+      console.log("tripcard:", itemId);
       e.currentTarget.measure((x, y, width, height, pageX, pageY) => {
         openModal({
           x: pageX,
-          y:pageY + height,
+          y: pageY + height,
           width,
           height,
-          itemId: itemId
-        })
-      })
-    }
+          itemId: itemId,
+        });
+      });
+    };
   };
 
   return (
     <>
       <View style={styles.container}>
         <TouchableOpacity style={styles.menuIcon} onPress={handleMenuPress(id)}>
-          <Entypo
-            name="dots-three-vertical"
-            size={18}
-            color={COLOR.grey}
-            
-          />
+          <Entypo name="dots-three-vertical" size={18} color={COLOR.grey} />
         </TouchableOpacity>
 
         <View style={styles.imgcontainer}>
@@ -81,16 +76,18 @@ const ShowTripsCard = ({
             <Text style={styles.bugdet}>{budget}</Text>
           </View>
           <Text style={styles.noOFdays}>
-            {`${
-              Math.ceil(
-                (new Date(endDate) - new Date(startDate)) /
-                  (1000 * 60 * 60 * 24)
-              ) + 1
-            } Days`}
+            {(() => {
+              const days =
+                Math.ceil(
+                  (new Date(endDate) - new Date(startDate)) /
+                    (1000 * 60 * 60 * 24)
+                ) + 1;
+              return `${days} ${days === 1 ? "Day" : "Days"}`;
+            })()}
           </Text>
           <TouchableOpacity
             style={styles.planButton}
-            onPress={() => navigation.navigate("TopTabs",{id, budget})}
+            onPress={() => navigation.navigate("TopTabs", { id, budget })}
           >
             <Text style={styles.planButtontext}>Start Planning</Text>
           </TouchableOpacity>
@@ -142,10 +139,10 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: 16,
     top: 6,
-    zIndex:10,
-    alignItems:"center",
-    justifyContent:"center",
-    padding:2
+    zIndex: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 2,
   },
   title: {
     fontFamily: FONTS.semiBold,

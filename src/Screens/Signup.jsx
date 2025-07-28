@@ -26,6 +26,7 @@ import {
 } from "../utils/AuthHandlers";
 import { useAuth } from "../Context/AuthContext";
 import { Image } from "expo-image";
+import AirplaneLoading from "../components/AirplaneLoading";
 
 export default function Signup() {
   const [email, setEmail] = useState("");
@@ -39,14 +40,29 @@ export default function Signup() {
     setShowPassword(!showPassword);
   };
   if (loading) {
-    return null;
+    return <AirplaneLoading/>;
   }
+  const resetData = () => {
+    setEmail("")
+    setPassword("")
+    setName("")
+  }
+  const toTitleCase = (str) => {
+    return str
+      .toLowerCase()
+      .trim()
+      .split(/\s+/)
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  };
   const signup = async () => {
     Keyboard.dismiss();
     // input validation
     if (!handleSignupValidation(email, password, name)) {
       return;
     }
+    let userCreated = false
+    let user = null;
     try {
       setLoading(true);
       setRegistrationState(true);
@@ -56,16 +72,26 @@ export default function Signup() {
         password
       );
       // Signed in
-      const user = userCredential.user;
+      user = userCredential.user;
+      userCreated = true;
+      const nameToSave = toTitleCase(name);
       await updateProfile(user, {
-        displayName: name,
+        displayName: nameToSave,
       });
-      console.log(user);
       await signOut(auth);
-      setLoading(false);
+      resetData()
       setRegistrationState(false);
+      setLoading(false);
       navigation.goBack();
     } catch (error) {
+      if(userCreated && user){
+        try{
+          await user.delete()
+        }
+        catch(e){
+          console.log("failed to clean up user account");
+        }
+      }
       const errorMessage = handleFirebaseAuthErrors(error);
       console.log(errorMessage);
       Alert.alert("Error ", errorMessage);
@@ -74,7 +100,7 @@ export default function Signup() {
   };
 
   return (
-    <View style={{flex:1}}>
+    <View style={{ flex: 1 }}>
       <Image
         style={styles.imageRectangle}
         source={require("../../assets/img/rectangle.png")}
@@ -187,15 +213,15 @@ const styles = StyleSheet.create({
   signupTitle: {
     gap: 8,
   },
-    imageRectangle:{
-    position:"absolute",
-    height:"40%",
-    width:"100%",
+  imageRectangle: {
+    position: "absolute",
+    height: "40%",
+    width: "100%",
   },
-  imageEclipse:{
-    position:"absolute",
-    height:"30%",
-    width:"60%",
+  imageEclipse: {
+    position: "absolute",
+    height: "30%",
+    width: "60%",
   },
   signupText: {
     fontFamily: FONTS.bold,
