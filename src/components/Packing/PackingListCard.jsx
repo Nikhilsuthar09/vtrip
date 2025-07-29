@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZE.caption,
     marginTop: 12,
     borderTopWidth: 1,
-    borderColor: COLOR.stroke,
+    borderColor: "#e9ecef",
     paddingTop: 4,
   },
   strikethrough: {

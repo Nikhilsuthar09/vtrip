@@ -1,5 +1,4 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { SafeAreaView } from "react-native-safe-area-context";
 import Signup from "../Screens/Signup";
 import AuthScreen from "../Screens/AuthScreen";
 import { useAuth } from "../Context/AuthContext";
