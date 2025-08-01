@@ -1,11 +1,12 @@
 import { View, Text } from 'react-native'
 import React from 'react'
+import JourneysList from './expenses/itinerary/DayList'
 
-const Itinerary = () => {
+const Itinerary = ({route}) => {
+  const tripData = route.params
   return (
-    <View style = {{ flex:1,backgroundColor:"#fff"}}>
-      <Text>Itinerary</Text>
-    </View>
+      <JourneysList tripData={tripData}/>
+
   )
 }
 

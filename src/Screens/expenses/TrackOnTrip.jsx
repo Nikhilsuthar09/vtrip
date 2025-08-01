@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   Alert,
   FlatList,
+  ActivityIndicator,
 } from "react-native";
 import React, { useState } from "react";
 import { COLOR, FONT_SIZE, FONTS } from "../../constants/Theme";
@@ -271,16 +272,20 @@ const TrackOnTrip = ({ route }) => {
 
       {/* horizontal scrolling traveller names */}
       <View>
-        <FlatList
-          data={safeTravellerNames}
-          keyExtractor={(item) => item.uid}
-          renderItem={({ item }) => {
-            const firstName = item.name.split(" ")[0];
-            return <TravellerNames name={firstName} />;
-          }}
-          horizontal={true}
-          contentContainerStyle={{ marginHorizontal: 20, gap: 12 }}
-        />
+        {travellerLoading ? (
+          <ActivityIndicator size="small" color={COLOR.primary}/>
+        ) : (
+          <FlatList
+            data={safeTravellerNames}
+            keyExtractor={(item) => item.uid}
+            renderItem={({ item }) => {
+              const firstName = item.name.split(" ")[0];
+              return <TravellerNames name={firstName} />;
+            }}
+            horizontal={true}
+            contentContainerStyle={{ marginHorizontal: 20, gap: 12 }}
+          />
+        )}
       </View>
 
       <View style={styles.expensesContainer}>

@@ -12,141 +12,141 @@ import { SafeAreaView } from "react-native-safe-area-context";
 const Tab = createMaterialTopTabNavigator();
 
 export default function TopTabs({ route }) {
-  const { id, budget } = route.params;
+  const { id, budget,destination, startDate, endDate } = route.params;
   return (
-    <SafeAreaView style={{flex:1, backgroundColor:"#fff"}}>
-      <Tab.Navigator
-        screenOptions={{
-          tabBarLabelStyle: {
-            fontFamily: FONTS.semiBold,
-            fontSize: FONT_SIZE.body,
-          },
-          tabBarIndicatorStyle: {
-            height: 0,
-          },
-          tabBarStyle: {
-            backgroundColor: "white",
-            elevation: 0,
-            shadowOpacity: 0,
-          },
-          tabBarPressColor: "transparent",
-        }}
-      >
-        <Tab.Screen
-          name="Itinerary"
-          component={Itinerary}
-          initialParams={{ id }}
-          options={{
-            tabBarLabel: ({ focused }) => (
-              <View
-                style={[
-                  {
-                    backgroundColor: focused
-                      ? COLOR.primaryLight
-                      : "transparent",
-                    borderColor: focused ? COLOR.primaryLight : "transparent",
-                    borderWidth: 1,
-                    borderRadius: 6,
-                  },
-                  styles.labelContainer,
-                ]}
-              >
-                <FontAwesome5
-                  name="list-alt"
-                  size={16}
-                  color={focused ? COLOR.primary : COLOR.grey}
-                />
-                <Text
-                  style={{
-                    color: focused ? COLOR.primary : COLOR.grey,
-                    fontSize: FONT_SIZE.body,
-                    fontFamily: FONTS.semiBold,
-                    marginLeft: 4,
-                  }}
-                >
-                  Itinerary
-                </Text>
-              </View>
-            ),
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+        <Tab.Navigator
+          screenOptions={{
+            tabBarLabelStyle: {
+              fontFamily: FONTS.semiBold,
+              fontSize: FONT_SIZE.body,
+            },
+            tabBarIndicatorStyle: {
+              height: 0,
+            },
+            tabBarStyle: {
+              backgroundColor: "white",
+              elevation: 0,
+              shadowOpacity: 0,
+            },
+            tabBarPressColor: "transparent",
           }}
-        />
-        <Tab.Screen
-          name="Packing"
-          initialParams={{ id }}
-          component={Packing}
-          options={{
-            tabBarLabel: ({ focused }) => (
-              <View
-                style={[
-                  {
-                    backgroundColor: focused
-                      ? COLOR.primaryLight
-                      : "transparent",
-                    borderColor: focused ? COLOR.primaryLight : "transparent",
-                    borderWidth: 1,
-                    borderRadius: 6,
-                  },
-                  styles.labelContainer,
-                ]}
-              >
-                <MaterialIcons
-                  name="card-travel"
-                  size={16}
-                  color={focused ? COLOR.primary : COLOR.grey}
-                />
-                <Text
-                  style={{
-                    color: focused ? COLOR.primary : COLOR.grey,
-                    fontSize: FONT_SIZE.body,
-                    fontFamily: FONTS.semiBold,
-                    marginLeft: 4,
-                  }}
+        >
+          <Tab.Screen
+            name="Itinerary"
+            component={Itinerary}
+            initialParams={{ id, destination, startDate, endDate }}
+            options={{
+              tabBarLabel: ({ focused }) => (
+                <View
+                  style={[
+                    {
+                      backgroundColor: focused
+                        ? COLOR.primaryLight
+                        : "transparent",
+                      borderColor: focused ? COLOR.primaryLight : "transparent",
+                      borderWidth: 1,
+                      borderRadius: 6,
+                    },
+                    styles.labelContainer,
+                  ]}
                 >
-                  Packing
-                </Text>
-              </View>
-            ),
-          }}
-        />
-        <Tab.Screen
-          name="Expenses"
-          initialParams={{ id, budget }}
-          component={Expenses}
-          options={{
-            tabBarLabel: ({ focused }) => (
-              <View
-                style={[
-                  {
-                    backgroundColor: focused
-                      ? COLOR.primaryLight
-                      : "transparent",
-                    borderColor: focused ? COLOR.primaryLight : "transparent",
-                    borderWidth: 1,
-                    borderRadius: 6,
-                  },
-                  styles.labelContainer,
-                ]}
-              >
-                <FontAwesome
-                  name="inr"
-                  size={16}
-                  color={focused ? COLOR.primary : COLOR.grey}
-                />
-                <Text
-                  style={{
-                    color: focused ? COLOR.primary : COLOR.grey,
-                    fontSize: FONT_SIZE.body,
-                    fontFamily: FONTS.semiBold,
-                    marginLeft: 4,
-                  }}
+                  <FontAwesome5
+                    name="list-alt"
+                    size={16}
+                    color={focused ? COLOR.primary : COLOR.grey}
+                  />
+                  <Text
+                    style={{
+                      color: focused ? COLOR.primary : COLOR.grey,
+                      fontSize: FONT_SIZE.body,
+                      fontFamily: FONTS.semiBold,
+                      marginLeft: 4,
+                    }}
+                  >
+                    Itinerary
+                  </Text>
+                </View>
+              ),
+            }}
+          />
+          <Tab.Screen
+            name="Packing"
+            initialParams={{ id }}
+            component={Packing}
+            options={{
+              tabBarLabel: ({ focused }) => (
+                <View
+                  style={[
+                    {
+                      backgroundColor: focused
+                        ? COLOR.primaryLight
+                        : "transparent",
+                      borderColor: focused ? COLOR.primaryLight : "transparent",
+                      borderWidth: 1,
+                      borderRadius: 6,
+                    },
+                    styles.labelContainer,
+                  ]}
                 >
-                  Expenses
-                </Text>
-              </View>
-            ),
-          }}
-        />
-      </Tab.Navigator>
+                  <MaterialIcons
+                    name="card-travel"
+                    size={16}
+                    color={focused ? COLOR.primary : COLOR.grey}
+                  />
+                  <Text
+                    style={{
+                      color: focused ? COLOR.primary : COLOR.grey,
+                      fontSize: FONT_SIZE.body,
+                      fontFamily: FONTS.semiBold,
+                      marginLeft: 4,
+                    }}
+                  >
+                    Packing
+                  </Text>
+                </View>
+              ),
+            }}
+          />
+          <Tab.Screen
+            name="Expenses"
+            initialParams={{ id, budget }}
+            component={Expenses}
+            options={{
+              tabBarLabel: ({ focused }) => (
+                <View
+                  style={[
+                    {
+                      backgroundColor: focused
+                        ? COLOR.primaryLight
+                        : "transparent",
+                      borderColor: focused ? COLOR.primaryLight : "transparent",
+                      borderWidth: 1,
+                      borderRadius: 6,
+                    },
+                    styles.labelContainer,
+                  ]}
+                >
+                  <FontAwesome
+                    name="inr"
+                    size={16}
+                    color={focused ? COLOR.primary : COLOR.grey}
+                  />
+                  <Text
+                    style={{
+                      color: focused ? COLOR.primary : COLOR.grey,
+                      fontSize: FONT_SIZE.body,
+                      fontFamily: FONTS.semiBold,
+                      marginLeft: 4,
+                    }}
+                  >
+                    Expenses
+                  </Text>
+                </View>
+              ),
+            }}
+          />
+        </Tab.Navigator>
     </SafeAreaView>
   );
 }

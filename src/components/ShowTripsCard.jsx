@@ -87,7 +87,7 @@ const ShowTripsCard = ({
           </Text>
           <TouchableOpacity
             style={styles.planButton}
-            onPress={() => navigation.navigate("TopTabs", { id, budget })}
+            onPress={() => navigation.navigate("TopTabs", { id, budget,destination, startDate, endDate })}
           >
             <Text style={styles.planButtontext}>Start Planning</Text>
           </TouchableOpacity>

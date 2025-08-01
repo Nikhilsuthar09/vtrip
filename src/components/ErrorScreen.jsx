@@ -8,7 +8,6 @@ const ErrorScreen = () => {
     <SafeAreaView style={styles.container}>
       <View style={styles.errorContainer}>
         <Text style={styles.errorText}>Something went wrong!</Text>
-        <Text style={styles.errorSubtext}>{error.message}</Text>
       </View>
     </SafeAreaView>
   );

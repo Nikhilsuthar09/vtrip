@@ -109,9 +109,9 @@ const Packing = ({ route }) => {
             <TouchableOpacity
               disabled={totalChecked === 0}
               onPress={markAsPacked}
-              style={[styles.actionButton, totalChecked ===0 && {backgroundColor:COLOR.stroke, color:"#000000"}]}
+              style={[styles.actionButton, totalChecked ===0 && {backgroundColor:COLOR.stroke}]}
             >
-              <Text style={[styles.actionText, totalChecked === 0 && { color:COLOR.textSecondary}]}>Mark as packed</Text>
+              <Text style={[styles.actionText, totalChecked === 0 && { color:COLOR.grey}]}>Mark as packed</Text>
             </TouchableOpacity>
           </View>
 
