@@ -13,9 +13,9 @@ import { useNavigation } from "expo-router";
 import { useItinerary } from "../../utils/itinerary/UseItinerary";
 import {
   formatLastEdited,
-  generateJourneyDays,
   getLastEditedTimestamp,
 } from "../../utils/timestamp/formatAndGetTime";
+import { generateJourneyDays } from "../../utils/itinerary/generateJourneyDays";
 
 const JourneyItemWithStats = ({ item, tripId, onPress}) => {
   const { itinerary } = useItinerary(tripId, item.id);

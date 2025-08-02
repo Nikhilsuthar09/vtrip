@@ -17,8 +17,8 @@ import { getAuth } from "firebase/auth";
 // hook to listen to the changes in tripIds array
 export const useUserTrips = () => {
   const [tripIds, setTripIds] = useState([]);
-  const [idsError, setError] = useState(false);
-  const [idsLoading, setLoading] = useState(false);
+  const [idsError, setError] = useState(null);
+  const [idsLoading, setLoading] = useState(true);
 
   useEffect(() => {
     const userId = getAuth().currentUser.uid;
@@ -32,11 +32,9 @@ export const useUserTrips = () => {
           const userTripIds = userData.tripIds || [];
           setLoading(false);
           setTripIds(userTripIds);
-          console.log("Trip Id updated: ", userTripIds);
         } else {
           console.log("User document does not exist");
         }
-        setError(null);
       },
       (err) => {
         console.log("Error listening to user document: ", err);
@@ -82,7 +80,6 @@ export const useUserTripsData = () => {
             const dateB = new Date(b.startDate);
             return dateA - dateB;
           });
-          console.log(trips);
           setTripsData(trips);
           setLoading(false);
         } else {

@@ -55,14 +55,26 @@ export default function RootStack() {
             name="PlanExpenseInAdvance"
             component={PlanInAdvance}
             options={{
-              headerShown: true,
+              title: "Expenses",
+              headerTitleStyle: {
+                fontFamily: FONTS.semiBold,
+                fontSize: FONT_SIZE.H6,
+                color: "#333",
+              },
+              headerTintColor: COLOR.primary,
             }}
           />
           <Stack.Screen
-            name="TraceOnTrip"
+            name="TrackOnTrip"
             component={TrackOnTrip}
             options={{
-              headerShown: true,
+              title: "Expenses",
+              headerTitleStyle: {
+                fontFamily: FONTS.semiBold,
+                fontSize: FONT_SIZE.H6,
+                color: "#333",
+              },
+              headerTintColor: COLOR.primary,
             }}
           />
         </>

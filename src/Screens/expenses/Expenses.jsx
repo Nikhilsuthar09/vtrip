@@ -15,7 +15,7 @@ const Expenses = ({ route }) => {
     });
   };
   const trackOnTrip = () => {
-    navigation.navigate("TraceOnTrip", {
+    navigation.navigate("TrackOnTrip", {
       id: id,
       budget: budget,
     });

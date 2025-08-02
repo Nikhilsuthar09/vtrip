@@ -46,6 +46,7 @@ const TrackOnTrip = ({ route }) => {
   if (error) {
     return <ErrorScreen />;
   }
+  console.log(onTripExpenseData)
   const safeTripData = onTripExpenseData || [];
   const totalExpenses = safeTripData.reduce((sum, expense) => {
     return sum + parseFloat(expense.amount);
@@ -111,7 +112,7 @@ const TrackOnTrip = ({ route }) => {
         paidBy: expenseDataOnTrip.name.trim(),
         expenseType: expenseDataOnTrip.expenseType.trim(),
         amount: parseFloat(expenseDataOnTrip.amount.trim()),
-        upDatedAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
       };
       const itemDocRef = doc(
         db,
@@ -134,6 +135,7 @@ const TrackOnTrip = ({ route }) => {
         expenseType: expenseDataOnTrip.expenseType.trim(),
         amount: parseFloat(expenseDataOnTrip.amount.trim()),
         createdAt: serverTimestamp(),
+        updatedAt:serverTimestamp()
       };
       const expenseCollectionRef = collection(
         db,
@@ -289,7 +291,7 @@ const TrackOnTrip = ({ route }) => {
       </View>
 
       <View style={styles.expensesContainer}>
-        <Text style={styles.expensesTitle}>Planned Expenses</Text>
+        <Text style={styles.expensesTitle}>Expenses</Text>
         {safeTripData.length > 0 ? (
           <FlatList
             data={safeTripData}
