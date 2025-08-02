@@ -6,64 +6,75 @@ import {
   FlatList,
   SafeAreaView,
   TouchableOpacity,
+  Alert,
 } from "react-native";
 import Feather from "@expo/vector-icons/Feather";
-import { COLOR, FONT_SIZE, FONTS } from "../../../constants/Theme";
+import { COLOR, FONT_SIZE, FONTS } from "../../constants/Theme";
 import { Ionicons } from "@expo/vector-icons";
-import AddItemModal from "../../../components/itinerary/AddItemModal";
-import { useItinerary } from "../../../utils/itinerary/UseItinerary";
-import { formatTime } from "../../../utils/calendar/formatTime";
-import Spinner from "../../../components/Spinner";
-import ErrorScreen from "../../../components/ErrorScreen";
-import EmptyItineraryPlaceholder from "../../../components/itinerary/EmptyItineraryPlaceholder";
-import Entypo from "@expo/vector-icons/Entypo";
-
-const ItineraryItem = ({ item, index, totalItems, isEditing, isDeleting }) => {
-  const isLast = index === totalItems - 1;
-  const isFirst = index === 0;
-
-  return (
-    <View style={styles.itemContainer}>
-      <View style={styles.timeContainer}>
-        <Text style={styles.timeText}>{formatTime(item.time)}</Text>
-      </View>
-
-      <View style={styles.timelineContainer}>
-        <View
-          style={[
-            styles.timelineDot,
-            isFirst ? styles.firstDot : styles.regularDot,
-            item.isCompleted && styles.completedDot,
-          ]}
-        />
-        {!isLast && <View style={styles.timelineLine} />}
-      </View>
-
-      <View style={styles.contentContainer}>
-        <Text style={styles.titleText}>{item.title}</Text>
-        <Text style={styles.subtitleText}>{item.subtitle}</Text>
-      </View>
-      <View style={styles.actionContainer}>
-        {isEditing && <Feather name="edit" size={20} color={COLOR.grey} />}
-        {isDeleting && (
-          <Ionicons name="remove-circle" size={24} color={COLOR.danger} />
-        )}
-      </View>
-    </View>
-  );
-};
+import AddItemModal from "../../components/itinerary/AddItemModal";
+import { useItinerary } from "../../utils/itinerary/UseItinerary";
+import Spinner from "../../components/Spinner";
+import ErrorScreen from "../../components/ErrorScreen";
+import EmptyItineraryPlaceholder from "../../components/itinerary/EmptyItineraryPlaceholder";
+import ItineraryMenuModal from "../../components/itinerary/ItineraryMenuModal";
+import ItineraryListItem from "../../components/itinerary/ItineraryListItems";
+import { deleteDoc, doc } from "firebase/firestore";
+import { db } from "../../Configs/firebaseConfig";
 
 const ItineraryList = ({ route }) => {
+  // firebase data
   const itemListData = route.params;
   const tripId = itemListData.tripData.id || "";
   const dayName = itemListData.item.id;
   const { itinerary, loading, error } = useItinerary(tripId, dayName);
+  //local state variables
   const [modalVisible, setModalVisible] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(true);
-
+  const [buttonPosition, setButtonPosition] = useState(null);
+  const [menuModalVisible, setMenuModalVisible] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [editItem, setEditItem] = useState(null);
   if (loading) return <Spinner />;
   if (error) return <ErrorScreen />;
+  const onMenuPress = (item, event) => {
+    const { pageX, pageY } = event.nativeEvent;
+    setSelectedItem(item);
+    setButtonPosition({ x: pageX, y: pageY });
+    setMenuModalVisible(true);
+  };
+  const handleEdit = (item) => {
+    setEditItem(item);
+    setModalVisible(true);
+  };
+
+  const deleteItem = async (item) => {
+    try {
+      const itemIdToDelete = item.id;
+      const itemDocRef = doc(db, "trip", tripId, dayName, itemIdToDelete);
+      await deleteDoc(itemDocRef);
+    } catch (e) {
+      console.log(e);
+      Alert.alert("Error", "Something went wrong try again..");
+    }
+  };
+  const handleDelete = async (item) => {
+    Alert.alert(
+      "Are you sure?",
+      `Do you want to delete ${item.title}?`,
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Ok",
+          onPress: async () => {
+            await deleteItem(item);
+          },
+        },
+      ],
+      { cancelable: true }
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -73,13 +84,6 @@ const ItineraryList = ({ route }) => {
           <View style={styles.header}>
             <View style={styles.headerContent}>
               <Text style={styles.headerTitle}>{itemListData.item.title}</Text>
-              <TouchableOpacity style={styles.moreButton}>
-                <Entypo
-                  name="dots-three-vertical"
-                  size={18}
-                  color={COLOR.grey}
-                />
-              </TouchableOpacity>
             </View>
             <View style={styles.dateContainer}>
               <Feather
@@ -99,12 +103,11 @@ const ItineraryList = ({ route }) => {
             <FlatList
               data={itinerary}
               renderItem={({ item, index }) => (
-                <ItineraryItem
+                <ItineraryListItem
                   item={item}
                   index={index}
                   totalItems={itinerary.length}
-                  isEditing={isEditing}
-                  isDeleting={isDeleting}
+                  onMenuPress={onMenuPress}
                 />
               )}
               keyExtractor={(item) => item.id}
@@ -130,6 +133,16 @@ const ItineraryList = ({ route }) => {
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
         listData={itemListData}
+        editItem={editItem}
+        setEditItem={setEditItem}
+      />
+      <ItineraryMenuModal
+        visible={menuModalVisible}
+        onClose={() => setMenuModalVisible(false)}
+        buttonPosition={buttonPosition}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        selectedItem={selectedItem}
       />
     </SafeAreaView>
   );
@@ -209,76 +222,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 20,
   },
-  itemContainer: {
-    flexDirection: "row",
-    marginBottom: 24,
-    alignItems: "flex-start",
-  },
-  timeContainer: {
-    width: 80,
-    paddingTop: 4,
-  },
 
-  timeText: {
-    fontFamily: FONTS.semiBold,
-    fontSize: FONT_SIZE.caption,
-    color: "#6c757d",
-  },
-  timelineContainer: {
-    alignItems: "center",
-    marginHorizontal: 16,
-    paddingTop: 4,
-    position: "relative",
-    width: 16,
-  },
-  timelineDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    zIndex: 2,
-    position: "relative",
-  },
-  firstDot: {
-    backgroundColor: COLOR.primary,
-  },
-  regularDot: {
-    backgroundColor: "white",
-    borderWidth: 2,
-    borderColor: COLOR.stroke,
-  },
-  completedDot: {
-    backgroundColor: COLOR.primary,
-    borderColor: COLOR.primary,
-  },
-  timelineLine: {
-    width: 2,
-    backgroundColor: COLOR.stroke,
-    position: "absolute",
-    top: 12,
-    bottom: -24,
-    left: 7,
-    zIndex: 1,
-  },
-  contentContainer: {
-    flex: 1,
-    paddingTop: 2,
-  },
-  titleText: {
-    fontFamily: FONTS.semiBold,
-    fontSize: FONT_SIZE.bodyLarge,
-    color: COLOR.textPrimary,
-    marginBottom: 4,
-  },
-  subtitleText: {
-    fontFamily: FONTS.regular,
-    fontSize: FONT_SIZE.body,
-    color: COLOR.grey,
-    lineHeight: 20,
-  },
-  actionContainer: {
-    paddingTop: 4,
-    paddingRight: 8,
-  },
   fab: {
     position: "absolute",
     bottom: 45,

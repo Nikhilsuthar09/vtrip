@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Alert,
   Modal,
@@ -10,20 +10,35 @@ import {
 } from "react-native";
 import { COLOR, FONT_SIZE, FONTS } from "../../constants/Theme";
 import { Ionicons } from "@expo/vector-icons";
-import DateTimePicker from '@react-native-community/datetimepicker';
+import DateTimePicker from "@react-native-community/datetimepicker";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import { addDoc, collection } from "firebase/firestore";
+import { addDoc, collection, doc, serverTimestamp, updateDoc } from "firebase/firestore";
 import { db } from "../../Configs/firebaseConfig";
-import { formatTime } from "../../utils/calendar/formatTime";
+import { formatTime } from "../../utils/timestamp/formatAndGetTime";
 
-const AddItemModal = ({ visible, onClose, listData }) => {
+const AddItemModal = ({
+  visible,
+  onClose,
+  listData,
+  editItem,
+  setEditItem,
+}) => {
   const [time, setTime] = useState(new Date());
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
   const [showTimePicker, setShowTimePicker] = useState(false);
+  useEffect(() => {
+    if (!visible) return;
+    if (editItem) {
+      setTime(editItem.time);
+      setTitle(editItem.title);
+      setSubtitle(editItem.subtitle);
+    }
+  }, [editItem, visible]);
 
   const handleClose = () => {
     // Reset form when closing
+    setEditItem(null);
     setTime(new Date());
     setTitle("");
     setSubtitle("");
@@ -32,8 +47,8 @@ const AddItemModal = ({ visible, onClose, listData }) => {
   };
 
   const onTimeChange = (event, selectedTime) => {
-      setShowTimePicker(false); 
-    
+    setShowTimePicker(false);
+
     if (selectedTime) {
       setTime(selectedTime);
     }
@@ -41,33 +56,67 @@ const AddItemModal = ({ visible, onClose, listData }) => {
   const showTimePickerModal = () => {
     setShowTimePicker(true);
   };
-
-
-  const handleAddItem = async() => {
-    if(!title){
-      Alert.alert("No title", "Please enter a title for you activity..")
-      return
-    }
-    if(!subtitle){
-      Alert.alert("No subtitle", "Please enter a subtitle for your activity..")
-      return
-    }
-    try{
+  const handleAddItem = async () => {
+    try {
       const itineraryToStore = {
-        time: time,
+        time,
         title,
-        subtitle
-      }
-      const tripDayCollectionRef = collection(db, "trip", listData.tripData.id, listData.item.id)
-      await addDoc(tripDayCollectionRef, itineraryToStore)
+        subtitle,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      };
+      const tripDayCollectionRef = collection(
+        db,
+        "trip",
+        listData.tripData.id,
+        listData.item.id
+      );
+      await addDoc(tripDayCollectionRef, itineraryToStore);
+      handleClose();
+      console.log("Success itinerary stored ");
+    } catch (e) {
+      console.log(e);
+    }
+  };
+  const handleUpdateItem = async() => {
+    try {
+      const itemId = editItem.id
+      const itineraryToUpdate = {
+        time,
+        title,
+        subtitle,
+        updatedAt: serverTimestamp(),
+      };
+      const itemDocRef = doc(
+        db,
+        "trip",
+        listData.tripData.id,
+        listData.item.id,
+        itemId
+      );
+      await updateDoc(itemDocRef, itineraryToUpdate)
       handleClose()
-      console.log("Success itinerary stored ")
+      console.log("Itinerary Updated successfully")
+    } catch (e) {
+      console.log(e);
     }
-    catch(e){
-      console.log(e)
-    }
+  };
 
-  }
+  const handleSubmit = () => {
+    if (!title) {
+      Alert.alert("No title", "Please enter a title for you activity..");
+      return;
+    }
+    if (!subtitle) {
+      Alert.alert("No subtitle", "Please enter a subtitle for your activity..");
+      return;
+    }
+    if (editItem) {
+      handleUpdateItem();
+    } else {
+      handleAddItem();
+    }
+  };
 
   return (
     <Modal
@@ -95,8 +144,8 @@ const AddItemModal = ({ visible, onClose, listData }) => {
                     value={formatTime(time)}
                     placeholder="e.g., 09:00 AM"
                     placeholderTextColor={COLOR.placeholder}
-                    editable={false} 
-                    pointerEvents="none" 
+                    editable={false}
+                    pointerEvents="none"
                   />
                   <MaterialCommunityIcons
                     style={styles.inputIcon}
@@ -118,7 +167,7 @@ const AddItemModal = ({ visible, onClose, listData }) => {
                 onChange={onTimeChange}
               />
             )}
-              <View style={styles.inputGroup}>
+            <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>Title</Text>
               <TextInput
                 style={styles.textInput}
@@ -148,8 +197,13 @@ const AddItemModal = ({ visible, onClose, listData }) => {
             >
               <Text style={styles.cancelButtonText}>Cancel</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={handleAddItem} style={[styles.modalButton, styles.addButton]}>
-              <Text style={styles.addButtonText}>Add Item</Text>
+            <TouchableOpacity
+              onPress={handleSubmit}
+              style={[styles.modalButton, styles.addButton]}
+            >
+              <Text style={styles.addButtonText}>
+                {editItem ? "Update Item" : "Add Item"}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>

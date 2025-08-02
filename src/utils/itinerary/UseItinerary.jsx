@@ -20,11 +20,13 @@ export const useItinerary = (tripId, dayName) => {
         const itineraryItems = [];
 
         querySnapShot.forEach((doc) => {
-          const data = doc.data()
+          const data = doc.data();
           itineraryItems.push({
             id: doc.id,
             ...data,
-            time:data.time && data.time.toDate() ? data.time.toDate() : data.time
+            time: data.time?.toDate?.() ?? data.time ?? null,
+            createdAt: data.createdAt?.toDate?.() ?? null,
+            updatedAt: data.updatedAt?.toDate?.() ?? null,
           });
         });
 
@@ -51,7 +53,7 @@ export const useItinerary = (tripId, dayName) => {
 
     // Cleanup function - unsubscribe when component unmounts
     return () => unsubscribe();
-  }, [tripId,dayName]);
+  }, [tripId, dayName]);
 
   return { itinerary, loading, error };
 };

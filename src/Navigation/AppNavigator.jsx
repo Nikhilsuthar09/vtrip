@@ -7,7 +7,7 @@ import TopTabs from "./TopTabNavigator";
 import HomeTabs from "./BottomTabNavigator";
 import PlanInAdvance from "../Screens/expenses/PlanInAdvance";
 import TrackOnTrip from "../Screens/expenses/TrackOnTrip";
-import ItineraryList from "../Screens/expenses/itinerary/ItineraryList";
+import ItineraryList from "../Screens/itinerary/ItineraryList";
 import { COLOR, FONT_SIZE, FONTS } from "../constants/Theme";
 
 const Stack = createNativeStackNavigator();
@@ -47,8 +47,7 @@ export default function RootStack() {
               },
               headerTitleAlign: "center",
               headerTintColor: COLOR.primary,
-              headerShadowVisible:false
-
+              headerShadowVisible: false,
             }}
           />
 
