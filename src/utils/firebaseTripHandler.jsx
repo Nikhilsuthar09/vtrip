@@ -85,7 +85,7 @@ const useOnTripExpense = (tripId) => {
         const expenseList = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
-          updatedAt: doc.data().updatedAt.toDate(),
+          updatedAt: doc.data().updatedAt?.toDate?.() ?? null,
         }));
         setOnTripExpenseData(expenseList);
         setLoading(false);

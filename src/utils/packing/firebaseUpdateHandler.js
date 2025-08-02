@@ -22,7 +22,7 @@ const handleUpdateItem = async (tripId, editDocId, packingListData) => {
       item: packingListData.item,
       quantity: quantityStrToNumber,
       note: packingListData.note,
-      upDatedAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
     };
     const itemDocRef = doc(db, "trip", tripId, "packing", editDocId);
     await updateDoc(itemDocRef, itemToUpdate);

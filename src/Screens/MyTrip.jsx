@@ -10,15 +10,23 @@ import TripMenuModal from "../components/TripMenuModal";
 const MyTrip = () => {
   const [modalData, setModalData] = useState(null);
   const { tripsData, loading, error, tripIds } = useUserTripsData();
-  const safeTripData = tripsData || []
+  const [searchText, setSearchText] = useState("");
+  const safeTripData = tripsData || [];
+
+    const filteredTrips = searchText.trim === "" ?
+     safeTripData : 
+     safeTripData.filter(trip => 
+      trip.destination.toLowerCase().includes(searchText.toLowerCase().trim()) || 
+      trip.title.toLowerCase().includes(searchText.toLowerCase().trim())
+    )
 
   const openMenu = (position) => {
     setModalData({
       visible: true,
       position,
-      selectedItemId: position.itemId
-    })
-  }
+      selectedItemId: position.itemId,
+    });
+  };
   const closeMenu = () => setModalData(null);
   if (loading) {
     return <Spinner />;
@@ -28,34 +36,36 @@ const MyTrip = () => {
   }
   // to do
   const deleteTrip = () => {
-    console.log("ToDo")
-  }
+    console.log("ToDo");
+  };
   const handleDeleteTrip = () => {
     Alert.alert(
       "Are you sure?",
       `Do you want to delete ?`,
       [
         {
-          text:"Cancel",
-          style:"cancel"
+          text: "Cancel",
+          style: "cancel",
         },
         {
-          text:"Ok",
-          onPress : ()=> {
-            deleteTrip()
-          }
-        }
+          text: "Ok",
+          onPress: () => {
+            deleteTrip();
+          },
+        },
       ],
       { cancelable: true }
-    )
-  }
+    );
+  };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff", paddingTop:20 }}
-    >
-      <HeaderWithSearch />
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff", paddingTop: 20 }}>
+      <HeaderWithSearch 
+      searchText = {searchText}
+      setSearchText = {setSearchText}
+      />
       <FlatList
-        data={safeTripData}
+        data={filteredTrips}
         renderItem={({ item }) => (
           <ShowTripsCard
             id={item.id}
@@ -69,13 +79,13 @@ const MyTrip = () => {
         )}
         keyExtractor={(item) => item.id}
       />
-      <TripMenuModal 
-      visible={modalData?.visible || false} 
-      closeModal={closeMenu}
-      position={modalData?.position}
-      selectedId={modalData?.selectedItemId}
-      isShareVisible={true}
-      onDelete = {handleDeleteTrip}
+      <TripMenuModal
+        visible={modalData?.visible || false}
+        closeModal={closeMenu}
+        position={modalData?.position}
+        selectedId={modalData?.selectedItemId}
+        isShareVisible={true}
+        onDelete={handleDeleteTrip}
       />
     </SafeAreaView>
   );

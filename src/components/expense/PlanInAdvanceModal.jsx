@@ -73,7 +73,7 @@ const PlanInAdvanceModal = ({
       const itemToStore = {
         category: category.trim(),
         amount: parseFloat(amount.trim()),
-        upDatedAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
       };
       const itemDocRef = doc(db, "trip", tripId, "plannedExpenses", itemToUpdate.id);
       await updateDoc(itemDocRef, itemToStore);

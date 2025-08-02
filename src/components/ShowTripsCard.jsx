@@ -8,9 +8,6 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useNavigation } from "expo-router";
 import Entypo from "@expo/vector-icons/Entypo";
 
-const blurhash =
-  "|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[";
-
 const ShowTripsCard = ({
   id,
   title,
@@ -35,7 +32,6 @@ const ShowTripsCard = ({
       });
     };
   };
-
   return (
     <>
       <View style={styles.container}>
@@ -47,7 +43,6 @@ const ShowTripsCard = ({
           <Image
             style={styles.image}
             source={require("./../../assets/default.jpg")}
-            placeholder={{ blurhash }}
             contentFit="cover"
             transition={500}
           />
@@ -87,7 +82,15 @@ const ShowTripsCard = ({
           </Text>
           <TouchableOpacity
             style={styles.planButton}
-            onPress={() => navigation.navigate("TopTabs", { id, budget,destination, startDate, endDate })}
+            onPress={() =>
+              navigation.navigate("TopTabs", {
+                id,
+                budget,
+                destination,
+                startDate,
+                endDate,
+              })
+            }
           >
             <Text style={styles.planButtontext}>Start Planning</Text>
           </TouchableOpacity>

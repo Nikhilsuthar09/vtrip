@@ -1,15 +1,10 @@
 import { View, StyleSheet, Pressable, TextInput } from "react-native";
-import React, { useState } from "react";
 import { COLOR, FONT_SIZE, FONTS } from "../constants/Theme";
-import { FontAwesome, FontAwesome5 } from "@expo/vector-icons";
+import { FontAwesome } from "@expo/vector-icons";
 import SeparationLine from "./SeparationLine";
 
-const HeaderWithSearch = ({ onSearch, onBack }) => {
-  const [searchText, setSearchText] = useState("");
+const HeaderWithSearch = ({ searchText, setSearchText }) => {
 
-  const handleSearch = (text) => {
-    setSearchText(text);
-  };
   return (
     <>
       <View style={styles.container}>
@@ -19,13 +14,13 @@ const HeaderWithSearch = ({ onSearch, onBack }) => {
             placeholder="Search destination..."
             placeholderTextColor={COLOR.placeholder}
             value={searchText}
-            onChangeText={handleSearch}
+            onChangeText={(value) => setSearchText(value)}
             autoCapitalize="none"
             autoCorrect={false}
             />
           <FontAwesome name="search" size={18} color={COLOR.grey} />
         </View>
-            <Pressable style={styles.userButton} onPress={onBack}>
+            <Pressable style={styles.userButton} >
               <FontAwesome name="user-o" size={18} color="#fff" />
             </Pressable>
       </View>
