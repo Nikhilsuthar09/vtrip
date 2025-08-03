@@ -27,7 +27,7 @@ import ErrorScreen from "../../components/ErrorScreen";
 import TravellerNames from "./TravellerNames";
 
 const TrackOnTrip = ({ route }) => {
-  const { id, budget, safeTravellerNames } = route.params;
+  const { id, budget, safeTravellerNames, travellerLoading } = route.params;
   const tripId = id || "";
   const safeBudget = budget || "";
   const { onTripExpenseData, loading, error } = useOnTripExpense(tripId);

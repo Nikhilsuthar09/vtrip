@@ -96,7 +96,8 @@ const ShowTripsCard = ({
                 destination,
                 startDate,
                 endDate,
-                safeTravellerNames
+                safeTravellerNames,
+                travellerLoading
               })
             }
           >
