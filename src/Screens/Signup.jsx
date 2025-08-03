@@ -27,6 +27,7 @@ import {
 import { useAuth } from "../Context/AuthContext";
 import { Image } from "expo-image";
 import AirplaneLoading from "../components/AirplaneLoading";
+import { addUserToDb } from "../utils/firebaseUserHandlers";
 
 export default function Signup() {
   const [email, setEmail] = useState("");
@@ -78,6 +79,7 @@ export default function Signup() {
       await updateProfile(user, {
         displayName: nameToSave,
       });
+      await addUserToDb()
       await signOut(auth);
       resetData()
       setRegistrationState(false);

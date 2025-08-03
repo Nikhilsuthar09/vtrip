@@ -12,7 +12,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 const Tab = createMaterialTopTabNavigator();
 
 export default function TopTabs({ route }) {
-  const { id, budget,destination, startDate, endDate } = route.params;
+  const { id, budget,destination, startDate, endDate, safeTravellerNames } = route.params;
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
         <Tab.Navigator
@@ -110,7 +110,7 @@ export default function TopTabs({ route }) {
           />
           <Tab.Screen
             name="Expenses"
-            initialParams={{ id, budget }}
+            initialParams={{ id, budget, safeTravellerNames }}
             component={Expenses}
             options={{
               tabBarLabel: ({ focused }) => (

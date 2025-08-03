@@ -24,17 +24,13 @@ import { db } from "../../Configs/firebaseConfig";
 import { useOnTripExpense } from "../../utils/firebaseTripHandler";
 import Spinner from "../../components/Spinner";
 import ErrorScreen from "../../components/ErrorScreen";
-import { useTravellerNames } from "../../utils/firebaseTravellerHandler";
 import TravellerNames from "./TravellerNames";
 
 const TrackOnTrip = ({ route }) => {
-  const { id, budget } = route.params;
+  const { id, budget, safeTravellerNames } = route.params;
   const tripId = id || "";
   const safeBudget = budget || "";
   const { onTripExpenseData, loading, error } = useOnTripExpense(tripId);
-  const { travellerNames, travellerLoading, travellerError } =
-    useTravellerNames(tripId);
-  const safeTravellerNames = travellerNames || [];
   const [modalVisible, setModalVisible] = useState(false);
   const [expenseDataOnTrip, setExpenseDataOnTrip] = useState({
     name: "",

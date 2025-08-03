@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { db } from "../Configs/firebaseConfig";
 import {
+  addDoc,
   arrayUnion,
   collection,
   doc,
@@ -10,6 +11,7 @@ import {
   onSnapshot,
   query,
   setDoc,
+  updateDoc,
   where,
 } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
@@ -33,6 +35,7 @@ export const useUserTrips = () => {
           setLoading(false);
           setTripIds(userTripIds);
         } else {
+          setLoading(false)
           console.log("User document does not exist");
         }
       },
@@ -138,17 +141,32 @@ export const AddTripToUser = async (tripId) => {
   try {
     const auth = getAuth();
     const userId = auth.currentUser.uid;
-    const email = auth.currentUser.email;
-    const name = auth.currentUser.displayName
     const userDocRef = doc(db, "user", userId);
     const userDetails = {
-      name: name,
-      email: email,
       tripIds: arrayUnion(tripId),
     };
-    await setDoc(userDocRef, userDetails, { merge: true });
+    await updateDoc(userDocRef, userDetails);
   } catch (e) {
     console.log(e.message);
   }
 };
+
+// function to create user in firestore
+export const addUserToDb = async() => {
+  try{
+    const auth = getAuth();
+    const userId = auth.currentUser.uid;
+    const email = auth.currentUser.email;
+    const name = auth.currentUser.displayName
+    const userDocRef = doc(db, "user", userId)
+    const userDetails = {
+      name,
+      email,
+    }
+    await setDoc(userDocRef, userDetails)
+  }
+  catch(e){
+    console.log(e)
+  }
+}
 

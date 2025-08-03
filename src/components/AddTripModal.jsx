@@ -7,7 +7,7 @@ import {
   ScrollView,
   TouchableOpacity,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Modal from "react-native-modal";
 import { StatusBar } from "expo-status-bar";
 import AntDesign from "@expo/vector-icons/AntDesign";
@@ -24,7 +24,13 @@ import {
   getCurrentDate,
 } from "../utils/calendar/handleCurrentDate";
 import { addTripToDb } from "../utils/tripData/handleStoreTripData";
-import { arrayUnion, doc, getDoc, updateDoc } from "firebase/firestore";
+import {
+  arrayUnion,
+  doc,
+  getDoc,
+  serverTimestamp,
+  updateDoc,
+} from "firebase/firestore";
 import { db } from "../Configs/firebaseConfig";
 import { getAuth } from "firebase/auth";
 
@@ -32,7 +38,8 @@ const AddTripModal = ({
   isModalVisible,
   onClose,
   onBackButtonPressed,
-  backdropPress,
+  editTripData = null,
+  isEditMode = false,
 }) => {
   const [roomId, setRoomId] = useState("");
   const [activeInput, setActiveInput] = useState(null);
@@ -43,6 +50,19 @@ const AddTripModal = ({
     start: "",
     end: "",
   });
+
+  useEffect(() => {
+    if (isEditMode && editTripData) {
+      setTripData({
+        title: editTripData.title || "",
+        destination: editTripData.destination || "",
+        budget: editTripData.budget?.toString() || "",
+        start: editTripData.startDate || "",
+        end: editTripData.endDate || "",
+      });
+    }
+  }, [isEditMode, editTripData]);
+
   const resetTripData = () => {
     setTripData({
       title: "",
@@ -51,7 +71,7 @@ const AddTripModal = ({
       start: "",
       end: "",
     });
-    setRoomId("")
+    setRoomId("");
   };
 
   const resetDates = () => {
@@ -69,44 +89,102 @@ const AddTripModal = ({
     }));
   };
 
+  const noOfDays =
+    Math.ceil(
+      (new Date(tripData.end) - new Date(tripData.start)) /
+        (1000 * 60 * 60 * 24)
+    ) + 1;
+
   const handleStoreTripData = async () => {
-    if (roomId.trim()) {
-      try {
-        const idToRetrieve = roomId.trim();
-        const docRef = doc(db, "trip", idToRetrieve);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          try{
-            const auth = getAuth()
-            const uid = auth?.currentUser.uid
-            const userDocRef = doc(db, "user", uid);
-            await updateDoc(userDocRef, {
-              tripIds: arrayUnion(idToRetrieve)
-            })
-            const tripDocRef = doc(db, "trip", idToRetrieve)
-            await updateDoc(tripDocRef, {
-              travellers: arrayUnion(uid)
-            })
-            console.log("user's Trip array updated")
-            resetTripData()
-          }
-          catch(e){
-            console.log(e)
-          }
-        } else {
-          console.log("No trips found");
-        }
-      } catch (e) {
-        console.log("Something went wrong");
-      }
-    } else {
-      const success = await addTripToDb(tripData);
+    if (isEditMode) {
+      const success = await updateTrip();
       if (success) {
         resetTripData();
         onClose();
       } else {
         return;
       }
+    } else {
+      if (roomId.trim()) {
+        try {
+          const idToRetrieve = roomId.trim();
+          const docRef = doc(db, "trip", idToRetrieve);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            try {
+              const auth = getAuth();
+              const uid = auth?.currentUser.uid;
+              const userDocRef = doc(db, "user", uid);
+              await updateDoc(userDocRef, {
+                tripIds: arrayUnion(idToRetrieve),
+              });
+              const tripDocRef = doc(db, "trip", idToRetrieve);
+              await updateDoc(tripDocRef, {
+                travellers: arrayUnion(uid),
+              });
+              console.log("user's Trip array updated");
+              resetTripData();
+            } catch (e) {
+              console.log(e);
+            }
+          } else {
+            console.log("No trips found");
+          }
+        } catch (e) {
+          console.log("Something went wrong");
+        }
+      } else {
+        const success = await addTripToDb(tripData);
+        if (success) {
+          resetTripData();
+          onClose();
+        } else {
+          return;
+        }
+      }
+    }
+  };
+  const updateTrip = async () => {
+    if (!tripData.title.trim()) {
+      Alert.alert("Please enter a title");
+      return;
+    }
+    if (!tripData.destination.trim()) {
+      Alert.alert("Please enter your destination");
+      return;
+    }
+    if (!tripData.budget.trim()) {
+      Alert.alert("Please enter your budget");
+      return;
+    }
+    const budgetNumber = parseInt(tripData.budget);
+    if (isNaN(budgetNumber)) {
+      Alert.alert("Please enter a valid amount");
+      return;
+    }
+    if (!tripData.start) {
+      Alert.alert("Please select a start date");
+      return;
+    }
+    if (!tripData.end) {
+      Alert.alert("Please select an end date");
+      return;
+    }
+    try {
+      const tripId = editTripData.id;
+      const tripToUpdate = {
+        title: tripData.title.trim(),
+        destination: tripData.destination.trim(),
+        budget: budgetNumber,
+        startDate: tripData.start,
+        endDate: tripData.end,
+        updatedAt: serverTimestamp(),
+      };
+      const tripDocRef = doc(db, "trip", tripId);
+      await updateDoc(tripDocRef, tripToUpdate);
+      console.log("Updated Successfully");
+    } catch (error) {
+      console.log(error.message);
     }
   };
 
@@ -114,7 +192,6 @@ const AddTripModal = ({
     <Modal
       isVisible={isModalVisible}
       onBackButtonPress={onBackButtonPressed}
-      onBackdropPress={backdropPress}
       animationIn="slideInUp"
       animationOut="slideOutDown"
       style={styles.modal}
@@ -124,42 +201,50 @@ const AddTripModal = ({
           <StatusBar style="dark" />
           <View style={styles.modalContainer}>
             <View style={styles.headingContainer}>
-              <Text style={styles.heading}>Add a trip</Text>
+              <Text style={styles.heading}>
+                {isEditMode ? "Edit Trip" : "Add a trip"}
+              </Text>
               <Pressable style={styles.closeButton} onPress={onClose}>
                 <AntDesign name="close" size={24} color={COLOR.primary} />
               </Pressable>
             </View>
             <View style={{ flex: 1 }}>
-              <MaterialIcons
-                name="groups"
-                style={styles.icon}
-                size={18}
-                color={activeInput ==="roomId" ? COLOR.primary : COLOR.grey}
-              />
-              <TextInput
-                onChangeText={(value) => setRoomId(value)}
-                value={roomId}
-                onFocus={() => setActiveInput("roomId")}
-                onBlur={() => setActiveInput(null)}
-                placeholder="Room id"
-                placeholderTextColor={COLOR.placeholder}
-                style={[
-                  styles.input,
-                  activeInput === "roomId"
-                    ? styles.activeColor
-                    : styles.inactiveColor,
-                ]}
-              />
-              <View style={styles.separater}>
-                <View style={styles.separaterLine}></View>
-                <Text style={styles.orText}>Or</Text>
-                <View style={styles.separaterLine}></View>
-              </View>
+              {!isEditMode && (
+                <>
+                  <MaterialIcons
+                    name="groups"
+                    style={styles.icon}
+                    size={18}
+                    color={
+                      activeInput === "roomId" ? COLOR.primary : COLOR.grey
+                    }
+                  />
+                  <TextInput
+                    onChangeText={(value) => setRoomId(value)}
+                    value={roomId}
+                    onFocus={() => setActiveInput("roomId")}
+                    onBlur={() => setActiveInput(null)}
+                    placeholder="Room id"
+                    placeholderTextColor={COLOR.placeholder}
+                    style={[
+                      styles.input,
+                      activeInput === "roomId"
+                        ? styles.activeColor
+                        : styles.inactiveColor,
+                    ]}
+                  />
+                  <View style={styles.separater}>
+                    <View style={styles.separaterLine}></View>
+                    <Text style={styles.orText}>Or</Text>
+                    <View style={styles.separaterLine}></View>
+                  </View>
+                </>
+              )}
               <View style={styles.inputContainer}>
                 <AntDesign
                   name="tags"
                   size={18}
-                  color={activeInput ==="title" ? COLOR.primary : COLOR.grey}
+                  color={activeInput === "title" ? COLOR.primary : COLOR.grey}
                   style={styles.icon}
                 />
                 <TextInput
@@ -181,7 +266,9 @@ const AddTripModal = ({
                 <FontAwesome
                   name="map-marker"
                   size={18}
-                  color={activeInput ==="destination" ? COLOR.primary : COLOR.grey}
+                  color={
+                    activeInput === "destination" ? COLOR.primary : COLOR.grey
+                  }
                   style={styles.icon}
                 />
                 <TextInput
@@ -206,7 +293,7 @@ const AddTripModal = ({
                 <FontAwesome
                   name="inr"
                   size={18}
-                  color={activeInput ==="budget" ? COLOR.primary : COLOR.grey}
+                  color={activeInput === "budget" ? COLOR.primary : COLOR.grey}
                   style={styles.icon}
                 />
                 <TextInput
@@ -257,12 +344,7 @@ const AddTripModal = ({
                     ? "Tap to select start date"
                     : !tripData.end
                     ? "Tap to select end date"
-                    : `${
-                        Math.ceil(
-                          (new Date(tripData.end) - new Date(tripData.start)) /
-                            (1000 * 60 * 60 * 24)
-                        ) + 1
-                      } days selected`}
+                    : `${noOfDays} ${noOfDays === 1 ? "day" : "days"} selected`}
                 </Text>
                 <Calendar
                   onDayPress={(day) =>
@@ -291,7 +373,9 @@ const AddTripModal = ({
                 style={styles.createButton}
                 onPress={handleStoreTripData}
               >
-                <Text style={styles.createButtonText}>Add Trip</Text>
+                <Text style={styles.createButtonText}>
+                  {isEditMode ? "Update trip" : "Add Trip"}
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -336,7 +420,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 15,
-    marginBottom:14
+    marginBottom: 14,
   },
   separaterLine: {
     width: 100,

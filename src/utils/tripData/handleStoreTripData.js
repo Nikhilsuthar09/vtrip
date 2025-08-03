@@ -2,7 +2,7 @@ import { getAuth } from "firebase/auth";
 import { Alert } from "react-native";
 import { generateRandomId } from "./generateTripId";
 import { AddTripToUser } from "../firebaseUserHandlers";
-import { arrayUnion, doc, setDoc } from "firebase/firestore";
+import { arrayUnion, doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { db } from "../../Configs/firebaseConfig";
 
 const addTripToDb = async (tripData) => {
@@ -41,7 +41,7 @@ const addTripToDb = async (tripData) => {
       budget: budgetNumber,
       startDate: tripData.start,
       endDate: tripData.end,
-      createdAt: new Date().toISOString(),
+      createdAt: serverTimestamp(),
       createdBy: userId,
       travellers: arrayUnion(userId),
     };

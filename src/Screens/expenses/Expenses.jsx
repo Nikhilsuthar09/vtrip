@@ -4,7 +4,7 @@ import { COLOR, FONT_SIZE, FONTS } from "../../constants/Theme";
 import { useNavigation } from "expo-router";
 
 const Expenses = ({ route }) => {
-  const { id, budget } = route.params;
+  const { id, budget, safeTravellerNames } = route.params;
   const navigation = useNavigation();
 
 
@@ -18,6 +18,7 @@ const Expenses = ({ route }) => {
     navigation.navigate("TrackOnTrip", {
       id: id,
       budget: budget,
+      safeTravellerNames
     });
   };
 

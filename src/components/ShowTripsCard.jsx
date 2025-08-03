@@ -7,6 +7,7 @@ import FontAwesome from "@expo/vector-icons/FontAwesome";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useNavigation } from "expo-router";
 import Entypo from "@expo/vector-icons/Entypo";
+import { useTravellerNames } from "../utils/firebaseTravellerHandler";
 
 const ShowTripsCard = ({
   id,
@@ -17,10 +18,13 @@ const ShowTripsCard = ({
   budget,
   openModal,
 }) => {
+  const { travellerNames, travellerLoading, travellerError } =
+    useTravellerNames(id);
+  const safeTravellerNames = travellerNames || [];
+
   const navigation = useNavigation();
   const handleMenuPress = (itemId) => {
     return (e) => {
-      console.log("tripcard:", itemId);
       e.currentTarget.measure((x, y, width, height, pageX, pageY) => {
         openModal({
           x: pageX,
@@ -70,16 +74,19 @@ const ShowTripsCard = ({
             </View>
             <Text style={styles.bugdet}>{budget}</Text>
           </View>
-          <Text style={styles.noOFdays}>
-            {(() => {
-              const days =
-                Math.ceil(
-                  (new Date(endDate) - new Date(startDate)) /
-                    (1000 * 60 * 60 * 24)
-                ) + 1;
-              return `${days} ${days === 1 ? "Day" : "Days"}`;
-            })()}
-          </Text>
+          {travellerLoading ? (
+            <Text
+              style={{ fontFamily: FONTS.semiBold, fontSize: FONT_SIZE.body }}
+            >
+              {" "}
+              Loading
+            </Text>
+          ) : (
+            <Text style={styles.noOfTravellers}>
+              {safeTravellerNames.length}{" "}
+              {safeTravellerNames.length === 1 ? "Traveller" : "Travellers"}
+            </Text>
+          )}
           <TouchableOpacity
             style={styles.planButton}
             onPress={() =>
@@ -89,6 +96,7 @@ const ShowTripsCard = ({
                 destination,
                 startDate,
                 endDate,
+                safeTravellerNames
               })
             }
           >
@@ -162,7 +170,7 @@ const styles = StyleSheet.create({
     color: COLOR.grey,
     fontSize: FONT_SIZE.caption,
   },
-  noOFdays: {
+  noOfTravellers: {
     fontFamily: FONTS.medium,
     color: COLOR.grey,
     fontSize: FONT_SIZE.caption,

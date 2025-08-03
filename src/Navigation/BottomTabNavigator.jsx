@@ -17,9 +17,12 @@ function EmptyComponent() {
 export default function HomeTabs() {
   const [isModalVisible, setModalVisible] = useState(false);
    const insets = useSafeAreaInsets();
-  const toggleModal = () => {
-    setModalVisible(!isModalVisible);
-  };
+  const openModal = () => {
+    setModalVisible(true)
+  }
+  const closeModal = () => {
+    setModalVisible(false)
+  }
 
   return (
     <>
@@ -55,7 +58,7 @@ export default function HomeTabs() {
           component={EmptyComponent}
           options={{
             tabBarButton: (props) => (
-              <CreateTripButton {...props} onPress={toggleModal}>
+              <CreateTripButton {...props} onPress={openModal}>
                 <Ionicons name="add" size={28} color={COLOR.actionText} />
               </CreateTripButton>
             ),
@@ -74,9 +77,8 @@ export default function HomeTabs() {
       </Tab.Navigator>
       <AddTripModal
         isModalVisible={isModalVisible}
-        onClose={toggleModal}
-        onBackButtonPressed={toggleModal}
-        backdropPress={toggleModal}
+        onClose={closeModal}
+        onBackButtonPressed={closeModal}
       />
     </>
   );

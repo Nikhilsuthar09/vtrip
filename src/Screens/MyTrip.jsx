@@ -6,19 +6,28 @@ import { useUserTripsData } from "../utils/firebaseUserHandlers";
 import { Alert, FlatList } from "react-native";
 import Spinner from "../components/Spinner";
 import TripMenuModal from "../components/TripMenuModal";
+import AddTripModal from "../components/AddTripModal";
+import EmptyTripsPlaceholder from "../components/EmptyTripsPlaceholder";
 
 const MyTrip = () => {
   const [modalData, setModalData] = useState(null);
-  const { tripsData, loading, error, tripIds } = useUserTripsData();
   const [searchText, setSearchText] = useState("");
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [editTripData, setEditTripData] = useState(null);
+  const [isAddModalVisible, setIsAddModalVisible] = useState(false);
+  const { tripsData, loading, error, tripIds } = useUserTripsData();
   const safeTripData = tripsData || [];
 
-    const filteredTrips = searchText.trim === "" ?
-     safeTripData : 
-     safeTripData.filter(trip => 
-      trip.destination.toLowerCase().includes(searchText.toLowerCase().trim()) || 
-      trip.title.toLowerCase().includes(searchText.toLowerCase().trim())
-    )
+  const filteredTrips =
+    searchText.trim() === ""
+      ? safeTripData
+      : safeTripData.filter(
+          (trip) =>
+            trip.destination
+              .toLowerCase()
+              .includes(searchText.toLowerCase().trim()) ||
+            trip.title.toLowerCase().includes(searchText.toLowerCase().trim())
+        );
 
   const openMenu = (position) => {
     setModalData({
@@ -28,6 +37,7 @@ const MyTrip = () => {
     });
   };
   const closeMenu = () => setModalData(null);
+
   if (loading) {
     return <Spinner />;
   }
@@ -57,28 +67,53 @@ const MyTrip = () => {
       { cancelable: true }
     );
   };
+  const handleEditTrip = (id) => {
+    console.log(id);
+    const tripToEdit = safeTripData.find((trip) => trip.id === id);
+    if (tripToEdit) {
+      setEditTripData(tripToEdit);
+      setIsEditModalVisible(true);
+      closeMenu();
+    }
+  };
+  const closeEditModal = () => {
+    setIsEditModalVisible(false);
+    setEditTripData(null);
+  };
+   const handleAddTrip = () => {
+    setIsAddModalVisible(true);
+  };
+
+  const closeAddModal = () => {
+    setIsAddModalVisible(false);
+  };
+  const showPlaceholder = filteredTrips.length === 0;
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff", paddingTop: 20 }}>
-      <HeaderWithSearch 
-      searchText = {searchText}
-      setSearchText = {setSearchText}
-      />
-      <FlatList
-        data={filteredTrips}
-        renderItem={({ item }) => (
-          <ShowTripsCard
-            id={item.id}
-            title={item.title}
-            destination={item.destination}
-            startDate={item.startDate}
-            endDate={item.endDate}
-            budget={item.budget}
-            openModal={openMenu}
-          />
-        )}
-        keyExtractor={(item) => item.id}
-      />
+      <HeaderWithSearch searchText={searchText} setSearchText={setSearchText} />
+      {showPlaceholder ? (
+        <EmptyTripsPlaceholder
+          searchText={searchText}
+          onAddTrip={handleAddTrip}
+        />
+      ) : (
+        <FlatList
+          data={filteredTrips}
+          renderItem={({ item }) => (
+            <ShowTripsCard
+              id={item.id}
+              title={item.title}
+              destination={item.destination}
+              startDate={item.startDate}
+              endDate={item.endDate}
+              budget={item.budget}
+              openModal={openMenu}
+            />
+          )}
+          keyExtractor={(item) => item.id}
+        />
+      )}
       <TripMenuModal
         visible={modalData?.visible || false}
         closeModal={closeMenu}
@@ -86,6 +121,20 @@ const MyTrip = () => {
         selectedId={modalData?.selectedItemId}
         isShareVisible={true}
         onDelete={handleDeleteTrip}
+        onEdit={handleEditTrip}
+      />
+      <AddTripModal
+        isModalVisible={isEditModalVisible}
+        onClose={closeEditModal}
+        onBackButtonPressed={closeEditModal}
+        editTripData={editTripData}
+        isEditMode={true}
+      />
+      <AddTripModal
+        isModalVisible={isAddModalVisible}
+        onClose={closeAddModal}
+        onBackButtonPressed={closeAddModal}
+        isEditMode={false}
       />
     </SafeAreaView>
   );
