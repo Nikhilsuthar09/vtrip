@@ -25,6 +25,11 @@ const PlanInAdvanceModal = ({
   const [category, setCategory] = useState("");
   const [amount, setAmount] = useState("");
 
+  const resetAndClose = () => {
+    setCategory("");
+    setAmount("");
+    onClose();
+  };
   useEffect(() => {
     if (!isVisible) return;
     if (itemToUpdate) {
@@ -40,12 +45,6 @@ const PlanInAdvanceModal = ({
       amount: amount.trim(),
     });
 
-    // Reset form
-    setCategory("");
-    setAmount("");
-
-    // Close modal
-    onClose();
   };
   const handleSubmitExpense = () => {
     if (!category.trim()) {
@@ -66,6 +65,7 @@ const PlanInAdvanceModal = ({
     } else {
       addItem();
     }
+    resetAndClose();
   };
   const updateItem = async () => {
     // update the expense
@@ -75,27 +75,19 @@ const PlanInAdvanceModal = ({
         amount: parseFloat(amount.trim()),
         updatedAt: serverTimestamp(),
       };
-      const itemDocRef = doc(db, "trip", tripId, "plannedExpenses", itemToUpdate.id);
+      const itemDocRef = doc(
+        db,
+        "trip",
+        tripId,
+        "plannedExpenses",
+        itemToUpdate.id
+      );
       await updateDoc(itemDocRef, itemToStore);
       Alert.alert("Success!", "Item updated successfully");
     } catch (e) {
       console.log("Error Updating Item", e);
       Alert.alert("Error Updating Item");
     }
-
-    // Reset form
-    setCategory("");
-    setAmount("");
-
-    // Close modal
-    onClose();
-  };
-
-  const handleClose = () => {
-    // Reset form when closing without saving
-    setCategory("");
-    setAmount("");
-    onClose();
   };
 
   return (
@@ -113,7 +105,7 @@ const PlanInAdvanceModal = ({
               <Text style={styles.heading}>Plan an Expense</Text>
               <TouchableOpacity
                 style={styles.closeButton}
-                onPress={handleClose}
+                onPress={resetAndClose}
               >
                 <Ionicons name="close" size={24} color={COLOR.grey} />
               </TouchableOpacity>
@@ -160,7 +152,7 @@ const PlanInAdvanceModal = ({
               {/* Cancel Button */}
               <TouchableOpacity
                 style={styles.cancelButton}
-                onPress={handleClose}
+                onPress={resetAndClose}
               >
                 <Text style={styles.cancelButtonText}>Cancel</Text>
               </TouchableOpacity>

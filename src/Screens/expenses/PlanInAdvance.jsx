@@ -7,6 +7,8 @@ import {
   SafeAreaView,
   FlatList,
   Alert,
+  ScrollView,
+  Dimensions,
 } from "react-native";
 import { FONTS, FONT_SIZE, COLOR } from "../../constants/Theme";
 import { Ionicons } from "@expo/vector-icons";
@@ -22,25 +24,33 @@ import { db } from "../../Configs/firebaseConfig";
 import Spinner from "../../components/Spinner";
 import { usePlannedExpense } from "../../utils/firebaseTripHandler";
 import ErrorScreen from "../../components/ErrorScreen";
+import { deleteExpense } from "../../utils/firebase_crud/expenses/deleteExpense";
+
+const { width } = Dimensions.get("window");
 
 const PlanInAdvance = ({ route }) => {
   const { id, budget } = route.params;
   const tripId = id || "";
   const { plannedExpenseData, loading, error } = usePlannedExpense(id);
-  const safePlannedExpenseData = plannedExpenseData || []
+  const safePlannedExpenseData = plannedExpenseData || [];
   const [isVisible, setIsVisible] = useState(false);
-  const [updateItem, setUpdateItem] = useState(null)
+  const [updateItem, setUpdateItem] = useState(null);
+
   if (loading) return <Spinner />;
-  if (error) return <ErrorScreen/>;
+  if (error) return <ErrorScreen />;
 
   const totalExpenses = safePlannedExpenseData.reduce(
     (sum, expense) => sum + expense.amount,
     0
   );
   const budgetPercentage = Math.min((totalExpenses / budget) * 100, 100);
-  const isOverBudget = totalExpenses > budget;
+  const remaining = budget - totalExpenses;
+  const isOverBudget = remaining < 0;
 
   const toggleModal = () => {
+    if (isVisible) {
+      setUpdateItem(null);
+    }
     setIsVisible(!isVisible);
   };
 
@@ -63,159 +73,294 @@ const PlanInAdvance = ({ route }) => {
       console.log("add expense error ", e);
     }
   };
-  const deleteExpense = async(itemId) => {
-     try {
-      const itemDocRef = doc(db, "trip", tripId, "plannedExpenses", itemId);
-      await deleteDoc(itemDocRef);
-      Alert.alert("Success!", "Item deleted Successfully");
-    } catch (e) {
-      console.error("Failed to delete the item", e);
-      Alert.alert("Error!", "Something went wrong");
-    }
-  }
 
   const handleDeletePress = (itemId, categoryName) => {
     Alert.alert(
-      "Are you sure?",
-      `Do you want to delete ${categoryName}?`,
+      "Delete Expense",
+      `Are you sure you want to delete "${categoryName}"?`,
       [
         {
-          text:"Cancel",
-          style:"cancel"
+          text: "Cancel",
+          style: "cancel",
         },
         {
-          text:"Ok",
-          onPress : ()=> {
-            deleteExpense (itemId)
-          }
-        }
+          text: "Delete",
+          style: "destructive",
+          onPress: async() => {
+            await deleteExpense(tripId, itemId, "plannedExpenses");
+          },
+        },
       ],
       { cancelable: true }
-    )
-   
+    );
   };
 
-  const updateExpense = async(editDocId) => {
-    const itemToEdit = safePlannedExpenseData.find((item) => item.id === editDocId);
-    if(itemToEdit){
-      setUpdateItem(itemToEdit)
-      toggleModal()
+  const updateExpense = async (editDocId) => {
+    const itemToEdit = safePlannedExpenseData.find(
+      (item) => item.id === editDocId
+    );
+    if (itemToEdit) {
+      setUpdateItem(itemToEdit);
+      toggleModal();
     }
-     
-  }
+  };
 
-  const renderExpenseItem = ({ item, index }) => (
-    <TouchableOpacity onPress={() => updateExpense(item.id)} style={[styles.expenseItem, index === 0 && styles.firstItem]}>
-      <View style={styles.expenseInfo}>
-        <Text style={styles.expenseCategory}>{item.category}</Text>
-        <Text style={styles.expenseAmount}>₹ {item.amount}</Text>
-      </View>
+  const getCategoryColor = (category) => {
+    const colors = [
+      "#FF6B6B",
+      "#4ECDC4",
+      "#45B7D1",
+      "#96CEB4",
+      "#FFEAA7",
+      "#DDA0DD",
+      "#98D8C8",
+      "#F7DC6F",
+      "#BB8FCE",
+      "#85C1E9",
+      "#F8C471",
+      "#82E0AA",
+    ];
+    let hash = 0;
+    for (let i = 0; i < category.length; i++) {
+      hash = category.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return colors[Math.abs(hash) % colors.length];
+  };
+
+  const renderExpenseItem = ({ item, index }) => {
+    const categoryColor = getCategoryColor(item.category);
+
+    return (
       <TouchableOpacity
-        style={styles.removeButton}
-        onPress={() => handleDeletePress(item.id, item.category)}
+        onPress={() => updateExpense(item.id)}
+        style={[styles.expenseItem, index === 0 && styles.firstItem]}
+        activeOpacity={0.7}
       >
-        <Ionicons name="trash-outline" size={18} color={COLOR.danger} />
+        {/* Left colored indicator */}
+        <View
+          style={[styles.expenseIndicator, { backgroundColor: categoryColor }]}
+        />
+
+        {/* Main content */}
+        <View style={styles.expenseContent}>
+          <View style={styles.expenseHeader}>
+            <Text style={styles.expenseCategory} numberOfLines={1}>
+              {item.category}
+            </Text>
+            <Text style={styles.expenseAmount}>
+              ₹
+              {parseFloat(item.amount).toLocaleString("en-IN", {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 2,
+              })}
+            </Text>
+          </View>
+        </View>
+
+        {/* Action buttons */}
+        <View style={styles.actionButtons}>
+          <TouchableOpacity
+            style={styles.editButton}
+            onPress={() => updateExpense(item.id)}
+          >
+            <Ionicons name="create-outline" size={20} color={COLOR.primary} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.deleteButton}
+            onPress={() => handleDeletePress(item.id, item.category)}
+          >
+            <Ionicons name="trash-outline" size={20} color={COLOR.danger} />
+          </TouchableOpacity>
+        </View>
       </TouchableOpacity>
-    </TouchableOpacity>
-  );
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Budget Progress Bar */}
-      <View style={styles.progressBarContainer}>
-        <View
-          style={[
-            styles.progressBar,
-            {
-              backgroundColor: isOverBudget ? COLOR.danger : COLOR.primaryLight,
-            },
-          ]}
-        >
-          <View
-            style={[
-              styles.progressFill,
-              {
-                width: `${budgetPercentage}%`,
-                backgroundColor: isOverBudget ? COLOR.danger : COLOR.primary,
-              },
-            ]}
-          />
-        </View>
-        {isOverBudget && (
-          <Text style={styles.overBudgetText}>Over Budget!</Text>
-        )}
-      </View>
-
-      {/* Expense Summary Box */}
-      <View style={styles.summaryBox}>
-        <View style={styles.summaryItem}>
-          <Text style={styles.summaryLabel}>Total Expenses</Text>
-          <Text
-            style={[
-              styles.summaryValue,
-              { color: isOverBudget ? COLOR.danger : COLOR.textPrimary },
-            ]}
-          >
-            ₹{totalExpenses.toLocaleString()}
-          </Text>
-        </View>
-        <View style={styles.divider} />
-        <View style={styles.summaryItem}>
-          <Text style={styles.summaryLabel}>Budget</Text>
-          <Text style={styles.summaryValue}>₹{budget?.toLocaleString()}</Text>
-        </View>
-      </View>
-
-      {/* Remaining Amount */}
-      <View style={styles.remainingBox}>
-        <Text style={styles.remainingLabel}>
-          {isOverBudget ? "Over Budget by" : "Remaining"}
-        </Text>
-        <Text
-          style={[
-            styles.remainingAmount,
-            { color: isOverBudget ? COLOR.danger : COLOR.primary },
-          ]}
-        >
-          ₹{Math.abs(budget - totalExpenses).toLocaleString()}
-        </Text>
-      </View>
-
-      {/* Expenses List */}
-      <View style={styles.expensesContainer}>
-        <Text style={styles.expensesTitle}>Planned Expenses</Text>
-        {safePlannedExpenseData.length > 0 ? (
-          <FlatList
-            data={safePlannedExpenseData}
-            keyExtractor={(item) => item.id}
-            renderItem={(item, index ) => renderExpenseItem(item, index)}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.expensesList}
-          />
-        ) : (
-          <View style={styles.emptyState}>
-            <Ionicons name="wallet-outline" size={48} color={COLOR.grey} />
-            <Text style={styles.emptyStateText}>No expenses planned yet</Text>
-            <Text style={styles.emptyStateSubtext}>
-              Tap the + button to add your first expense
-            </Text>
+      <ScrollView
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Enhanced Header Section */}
+        <View style={styles.headerSection}>
+          {/* Progress Section */}
+          <View style={styles.progressSection}>
+            <View style={styles.progressHeader}>
+              <Text style={styles.progressTitle}>Budget Planning</Text>
+              <Text style={styles.progressPercentage}>
+                {Math.round(budgetPercentage)}%
+              </Text>
+            </View>
+            <View style={styles.progressBarContainer}>
+              <View
+                style={[
+                  styles.progressBar,
+                  {
+                    backgroundColor: isOverBudget
+                      ? COLOR.danger + "20"
+                      : COLOR.primaryLight + "30",
+                  },
+                ]}
+              >
+                <View
+                  style={[
+                    styles.progressFill,
+                    {
+                      width: `${budgetPercentage}%`,
+                      backgroundColor: isOverBudget
+                        ? COLOR.danger
+                        : COLOR.primary,
+                    },
+                  ]}
+                />
+              </View>
+            </View>
+            {isOverBudget && (
+              <View style={styles.overBudgetBadge}>
+                <Ionicons
+                  name="warning-outline"
+                  size={16}
+                  color={COLOR.danger}
+                />
+                <Text style={styles.overBudgetText}>Over Budget!</Text>
+              </View>
+            )}
           </View>
-        )}
-      </View>
 
-      {/* Floating Action Button */}
-      <TouchableOpacity style={styles.fab} onPress={toggleModal}>
-        <Ionicons name="add" size={24} color={COLOR.actionText} />
+          {/* Enhanced Summary Cards */}
+          <View style={styles.summaryContainer}>
+            <View style={[styles.summaryCard, styles.plannedCard]}>
+              <View style={styles.summaryIconContainer}>
+                <Ionicons
+                  name="clipboard-outline"
+                  size={24}
+                  color={COLOR.primary}
+                />
+              </View>
+              <Text style={styles.summaryLabel}>Total Planned</Text>
+              <Text
+                style={[
+                  styles.summaryValue,
+                  { color: isOverBudget ? COLOR.danger : COLOR.textPrimary },
+                ]}
+              >
+                ₹{totalExpenses.toLocaleString("en-IN")}
+              </Text>
+            </View>
+
+            <View style={[styles.summaryCard, styles.budgetCard]}>
+              <View style={styles.summaryIconContainer}>
+                <Ionicons name="wallet-outline" size={24} color={COLOR.grey} />
+              </View>
+              <Text style={styles.summaryLabel}>Budget</Text>
+              <Text style={styles.summaryValue}>
+                ₹{budget?.toLocaleString("en-IN")}
+              </Text>
+            </View>
+
+            <View style={[styles.summaryCard, styles.remainingCard]}>
+              <View style={styles.summaryIconContainer}>
+                <Ionicons
+                  name={
+                    isOverBudget
+                      ? "alert-circle-outline"
+                      : "checkmark-circle-outline"
+                  }
+                  size={24}
+                  color={
+                    isOverBudget ? COLOR.danger : COLOR.success || "#4CAF50"
+                  }
+                />
+              </View>
+              <Text style={styles.summaryLabel}>
+                {isOverBudget ? "Over by" : "Remaining"}
+              </Text>
+              <Text
+                style={[
+                  styles.summaryValue,
+                  {
+                    color: isOverBudget
+                      ? COLOR.danger
+                      : COLOR.success || "#4CAF50",
+                  },
+                ]}
+              >
+                ₹{Math.abs(remaining).toLocaleString("en-IN")}
+              </Text>
+            </View>
+          </View>
+
+          {/* Planning Tip */}
+          <View style={styles.tipContainer}>
+            <View style={styles.tipIcon}>
+              <Ionicons name="bulb-outline" size={20} color={COLOR.primary} />
+            </View>
+            <View style={styles.tipContent}>
+              <Text style={styles.tipTitle}>Planning Tip</Text>
+              <Text style={styles.tipText}>
+                Add all your expected expenses to get a better overview of your
+                trip budget
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Enhanced Expenses Section */}
+        <View style={styles.expensesContainer}>
+          <View style={styles.expensesHeader}>
+            <Text style={styles.sectionTitle}>Planned Expenses</Text>
+            {safePlannedExpenseData.length > 0 && (
+              <Text style={styles.expenseCount}>
+                {safePlannedExpenseData.length} item
+                {safePlannedExpenseData.length !== 1 ? "s" : ""}
+              </Text>
+            )}
+          </View>
+
+          {safePlannedExpenseData.length > 0 ? (
+            <View style={styles.expensesList}>
+              {safePlannedExpenseData.map((item, index) => (
+                <View key={item.id}>{renderExpenseItem({ item, index })}</View>
+              ))}
+            </View>
+          ) : (
+            <View style={styles.emptyState}>
+              <View style={styles.emptyStateIcon}>
+                <Ionicons
+                  name="clipboard-outline"
+                  size={64}
+                  color={COLOR.grey + "60"}
+                />
+              </View>
+              <Text style={styles.emptyStateTitle}>
+                No expenses planned yet
+              </Text>
+              <Text style={styles.emptyStateSubtext}>
+                Start planning your trip by adding expected expenses below
+              </Text>
+            </View>
+          )}
+        </View>
+      </ScrollView>
+
+      {/* Enhanced Floating Action Button */}
+      <TouchableOpacity
+        style={styles.fab}
+        onPress={toggleModal}
+        activeOpacity={0.8}
+      >
+        <Ionicons name="add" size={28} color={COLOR.actionText || "#fff"} />
       </TouchableOpacity>
 
       {/* Modal */}
       <PlanInAdvanceModal
-        tripId = {tripId}
+        tripId={tripId}
         isVisible={isVisible}
         onClose={toggleModal}
         onBackButtonPress={toggleModal}
         onAddExpense={addExpense}
-        itemToUpdate = {updateItem}
+        itemToUpdate={updateItem}
       />
     </SafeAreaView>
   );
@@ -224,171 +369,281 @@ const PlanInAdvance = ({ route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#F8F9FA",
+  },
+
+  scrollView: {
+    flex: 1,
+  },
+
+  // Header Section
+  headerSection: {
     backgroundColor: "#fff",
+    paddingBottom: 20,
+    marginBottom: 8,
+  },
+
+  // Progress Section
+  progressSection: {
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 20,
+  },
+  progressHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  progressTitle: {
+    fontSize: FONT_SIZE.bodyLarge,
+    fontFamily: FONTS.semiBold,
+    color: COLOR.textPrimary,
+  },
+  progressPercentage: {
+    fontSize: FONT_SIZE.body,
+    fontFamily: FONTS.medium,
+    color: COLOR.grey,
   },
   progressBarContainer: {
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 10,
-    alignItems: "center",
+    marginBottom: 8,
   },
   progressBar: {
     width: "100%",
-    height: 8,
-    borderRadius: 4,
+    height: 12,
+    borderRadius: 6,
     overflow: "hidden",
   },
   progressFill: {
     height: "100%",
-    borderRadius: 4,
-    transition: "width 0.3s ease",
+    borderRadius: 6,
+    minWidth: 4,
+  },
+  overBudgetBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
+    backgroundColor: COLOR.danger + "15",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
   },
   overBudgetText: {
-    marginTop: 8,
+    marginLeft: 4,
     fontSize: FONT_SIZE.caption,
     fontFamily: FONTS.medium,
     color: COLOR.danger,
   },
-  summaryBox: {
+
+  // Summary Cards
+  summaryContainer: {
     flexDirection: "row",
+    paddingHorizontal: 16,
+    gap: 12,
+    marginBottom: 16,
+  },
+  summaryCard: {
+    flex: 1,
     backgroundColor: "#fff",
-    marginHorizontal: 20,
-    marginTop: 10,
-    borderRadius: 12,
-    padding: 20,
+    borderRadius: 16,
+    padding: 16,
+    alignItems: "center",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
     elevation: 3,
+    borderWidth: 1,
+    borderColor: "#F0F0F0",
   },
-  summaryItem: {
-    flex: 1,
-    alignItems: "center",
+  summaryIconContainer: {
+    marginBottom: 8,
   },
   summaryLabel: {
     fontSize: FONT_SIZE.caption,
     fontFamily: FONTS.regular,
     color: COLOR.grey,
     marginBottom: 4,
+    textAlign: "center",
   },
   summaryValue: {
-    fontSize: FONT_SIZE.H5,
+    fontSize: FONT_SIZE.bodyLarge,
+    fontFamily: FONTS.bold,
+    color: COLOR.textPrimary,
+    textAlign: "center",
+  },
+
+  // Tip Container
+  tipContainer: {
+    flexDirection: "row",
+    backgroundColor: COLOR.primary + "10",
+    marginHorizontal: 16,
+    borderRadius: 12,
+    padding: 16,
+    borderLeftWidth: 4,
+    borderLeftColor: COLOR.primary,
+  },
+  tipIcon: {
+    marginRight: 12,
+    marginTop: 2,
+  },
+  tipContent: {
+    flex: 1,
+  },
+  tipTitle: {
+    fontSize: FONT_SIZE.body,
     fontFamily: FONTS.semiBold,
     color: COLOR.textPrimary,
+    marginBottom: 4,
   },
-  divider: {
-    width: 1,
-    backgroundColor: COLOR.stroke,
-    marginHorizontal: 20,
-  },
-  remainingBox: {
-    backgroundColor: "#fff",
-    marginHorizontal: 20,
-    marginTop: 12,
-    borderRadius: 10,
-    padding: 16,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  remainingLabel: {
+  tipText: {
     fontSize: FONT_SIZE.caption,
     fontFamily: FONTS.regular,
     color: COLOR.grey,
-    marginBottom: 4,
+    lineHeight: 18,
   },
-  remainingAmount: {
-    fontSize: FONT_SIZE.H5,
-    fontFamily: FONTS.bold,
-  },
+
+  // Expenses Section
   expensesContainer: {
-    flex: 1,
-    marginTop: 20,
+    backgroundColor: "#fff",
+    paddingBottom: 120,
   },
-  expensesTitle: {
-    fontSize: FONT_SIZE.H6,
-    fontFamily: FONTS.semiBold,
-    color: COLOR.textPrimary,
-    marginLeft: 20,
-  },
-  firstItem:{
-    marginTop: 16,
-    
-  },
-  expensesList: {
-    paddingBottom: 100,
-    marginHorizontal: 20,
-  },
-  expenseItem: {
+  expensesHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 8,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 12,
   },
-  expenseInfo: {
-    flex: 1,
-  },
-  expenseCategory: {
-    fontSize: FONT_SIZE.body,
-    fontFamily: FONTS.medium,
+  sectionTitle: {
+    fontSize: FONT_SIZE.H6,
+    fontFamily: FONTS.semiBold,
     color: COLOR.textPrimary,
-    marginBottom: 4,
   },
-  expenseAmount: {
+  expenseCount: {
     fontSize: FONT_SIZE.caption,
     fontFamily: FONTS.regular,
     color: COLOR.grey,
   },
-  removeButton: {
-    padding: 8,
+
+  // Expense Items
+  expensesList: {
+    paddingBottom: 20,
   },
+  firstItem: {
+    marginTop: 8,
+  },
+  expenseItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#fff",
+    marginHorizontal: 16,
+    marginBottom: 12,
+    borderRadius: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: "#F5F5F5",
+  },
+  expenseIndicator: {
+    width: 4,
+    height: "100%",
+    borderTopLeftRadius: 16,
+    borderBottomLeftRadius: 16,
+  },
+  expenseContent: {
+    flex: 1,
+    padding: 16,
+  },
+  expenseHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 8,
+  },
+  expenseCategory: {
+    flex: 1,
+    fontSize: FONT_SIZE.bodyLarge,
+    fontFamily: FONTS.semiBold,
+    color: COLOR.textPrimary,
+    marginRight: 12,
+    textTransform: "capitalize",
+  },
+  expenseAmount: {
+    fontSize: FONT_SIZE.H6,
+    fontFamily: FONTS.bold,
+    color: COLOR.primary,
+  },
+  // Action Buttons
+  actionButtons: {
+    flexDirection: "row",
+    marginRight: 8,
+    gap: 8,
+  },
+  editButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: COLOR.primary + "10",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  deleteButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: COLOR.danger + "10",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  // Empty State
   emptyState: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    paddingTop: 60,
+    paddingHorizontal: 40,
+    paddingTop: 80,
+    paddingBottom: 80,
   },
-  emptyStateText: {
-    fontSize: FONT_SIZE.bodyLarge,
-    fontFamily: FONTS.medium,
-    color: COLOR.grey,
-    marginTop: 16,
+  emptyStateIcon: {
+    marginBottom: 24,
+  },
+  emptyStateTitle: {
+    fontSize: FONT_SIZE.H5,
+    fontFamily: FONTS.semiBold,
+    color: COLOR.textPrimary,
     marginBottom: 8,
+    textAlign: "center",
   },
   emptyStateSubtext: {
     fontSize: FONT_SIZE.body,
     fontFamily: FONTS.regular,
     color: COLOR.grey,
     textAlign: "center",
-    paddingHorizontal: 40,
+    lineHeight: 22,
   },
+
+  // Floating Action Button
   fab: {
     position: "absolute",
-    bottom: 35,
-    right: 25,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: COLOR.actionButton,
+    bottom: 32,
+    right: 24,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: COLOR.actionButton || COLOR.primary,
     justifyContent: "center",
     alignItems: "center",
     shadowColor: COLOR.primary,
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 6,
+    shadowRadius: 12,
+    elevation: 8,
   },
 });
 
