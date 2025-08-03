@@ -6,7 +6,6 @@ import {
   Alert,
   FlatList,
   ActivityIndicator,
-  Dimensions,
   ScrollView,
 } from "react-native";
 import React, { useState } from "react";
@@ -14,22 +13,17 @@ import { COLOR, FONT_SIZE, FONTS } from "../../constants/Theme";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import TrackOnTripModal from "../../components/expense/TrackOnTripModal";
-import {
-  addDoc,
-  collection,
-  deleteDoc,
-  doc,
-  serverTimestamp,
-  updateDoc,
-} from "firebase/firestore";
-import { db } from "../../Configs/firebaseConfig";
 import { useOnTripExpense } from "../../utils/firebaseTripHandler";
 import Spinner from "../../components/Spinner";
 import ErrorScreen from "../../components/ErrorScreen";
 import TravellerNames from "./TravellerNames";
 import { formatLastEdited } from "../../utils/timestamp/formatAndGetTime";
 import { getExpenseColor } from "../../utils/expenses/getExpenseColor";
-import { deleteExpense } from "../../utils/firebase_crud/expenses/deleteExpense";
+import {
+  addExpense,
+  deleteExpense,
+  updateExpense,
+} from "../../utils/firebase_crud/expenses/expenseCrud";
 
 const TrackOnTrip = ({ route }) => {
   const { id, budget, safeTravellerNames, travellerLoading } = route.params;
@@ -80,7 +74,7 @@ const TrackOnTrip = ({ route }) => {
     });
   };
 
-  const onSubmit = () => {
+  const onSubmit = async () => {
     const amount = parseFloat(expenseDataOnTrip.amount.trim());
     if (
       !expenseDataOnTrip.name.trim() ||
@@ -102,52 +96,35 @@ const TrackOnTrip = ({ route }) => {
       return;
     }
     if (itemIdToUpdate) {
-      updateItem();
+      await updateItem();
     } else {
-      handleAddExpense();
+      await handleAddExpense();
     }
     resetData();
     setModalVisible(false);
   };
 
   const updateItem = async () => {
-    try {
-      const itemId = itemIdToUpdate;
-      const itemToUpdate = {
-        paidBy: expenseDataOnTrip.name.trim(),
-        expenseType: expenseDataOnTrip.expenseType.trim(),
-        amount: parseFloat(expenseDataOnTrip.amount.trim()),
-        updatedAt: serverTimestamp(),
-      };
-      const itemDocRef = doc(db, "trip", tripId, "onTripExpenses", itemId);
-      await updateDoc(itemDocRef, itemToUpdate);
-      Alert.alert("Success!", "Item updated successfully");
-    } catch (e) {
-      console.log("Error Updating Item", e);
-      Alert.alert("Error Updating Item");
-    }
+    const itemToUpdate = {
+      paidBy: expenseDataOnTrip.name.trim(),
+      expenseType: expenseDataOnTrip.expenseType.trim(),
+      amount: parseFloat(expenseDataOnTrip.amount.trim()),
+    };
+    await updateExpense(
+      tripId,
+      itemIdToUpdate,
+      itemToUpdate,
+      (expensePathName = "onTripExpenses")
+    );
   };
 
   const handleAddExpense = async () => {
-    try {
-      const expenseToStore = {
-        paidBy: expenseDataOnTrip.name.trim(),
-        expenseType: expenseDataOnTrip.expenseType.trim(),
-        amount: parseFloat(expenseDataOnTrip.amount.trim()),
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-      };
-      const expenseCollectionRef = collection(
-        db,
-        "trip",
-        tripId,
-        "onTripExpenses"
-      );
-      await addDoc(expenseCollectionRef, expenseToStore);
-      console.log("expenses stored Successfully");
-    } catch (e) {
-      console.log(e);
-    }
+    const newExpense = {
+      paidBy: expenseDataOnTrip.name.trim(),
+      expenseType: expenseDataOnTrip.expenseType.trim(),
+      amount: parseFloat(expenseDataOnTrip.amount.trim()),
+    };
+    await addExpense(tripId, newExpense, (expensePathName = "onTripExpenses"));
   };
 
   const handleLongPress = (itemId, expense) => {

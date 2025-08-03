@@ -13,20 +13,11 @@ import {
 import { FONTS, FONT_SIZE, COLOR } from "../../constants/Theme";
 import { Ionicons } from "@expo/vector-icons";
 import PlanInAdvanceModal from "../../components/expense/PlanInAdvanceModal";
-import {
-  addDoc,
-  collection,
-  deleteDoc,
-  doc,
-  serverTimestamp,
-} from "firebase/firestore";
-import { db } from "../../Configs/firebaseConfig";
 import Spinner from "../../components/Spinner";
 import { usePlannedExpense } from "../../utils/firebaseTripHandler";
 import ErrorScreen from "../../components/ErrorScreen";
-import { deleteExpense } from "../../utils/firebase_crud/expenses/deleteExpense";
+import { deleteExpense } from "../../utils/firebase_crud/expenses/expenseCrud";
 
-const { width } = Dimensions.get("window");
 
 const PlanInAdvance = ({ route }) => {
   const { id, budget } = route.params;
@@ -54,25 +45,6 @@ const PlanInAdvance = ({ route }) => {
     setIsVisible(!isVisible);
   };
 
-  const addExpense = async (newExpense) => {
-    const expenseToStore = {
-      category: newExpense.category.trim(),
-      amount: parseFloat(newExpense.amount),
-      createdAt: serverTimestamp(),
-    };
-    try {
-      const advExpenseCollectionRef = collection(
-        db,
-        "trip",
-        tripId,
-        "plannedExpenses"
-      );
-      await addDoc(advExpenseCollectionRef, expenseToStore);
-      console.log("successful");
-    } catch (e) {
-      console.log("add expense error ", e);
-    }
-  };
 
   const handleDeletePress = (itemId, categoryName) => {
     Alert.alert(
@@ -86,7 +58,7 @@ const PlanInAdvance = ({ route }) => {
         {
           text: "Delete",
           style: "destructive",
-          onPress: async() => {
+          onPress: async () => {
             await deleteExpense(tripId, itemId, "plannedExpenses");
           },
         },
@@ -128,7 +100,7 @@ const PlanInAdvance = ({ route }) => {
   };
 
   const renderExpenseItem = ({ item, index }) => {
-    const categoryColor = getCategoryColor(item.category);
+    const categoryColor = getCategoryColor(item.expenseType);
 
     return (
       <TouchableOpacity
@@ -145,7 +117,7 @@ const PlanInAdvance = ({ route }) => {
         <View style={styles.expenseContent}>
           <View style={styles.expenseHeader}>
             <Text style={styles.expenseCategory} numberOfLines={1}>
-              {item.category}
+              {item.expenseType}
             </Text>
             <Text style={styles.expenseAmount}>
               ₹
@@ -167,7 +139,7 @@ const PlanInAdvance = ({ route }) => {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.deleteButton}
-            onPress={() => handleDeletePress(item.id, item.category)}
+            onPress={() => handleDeletePress(item.id, item.expenseType)}
           >
             <Ionicons name="trash-outline" size={20} color={COLOR.danger} />
           </TouchableOpacity>
@@ -359,7 +331,6 @@ const PlanInAdvance = ({ route }) => {
         isVisible={isVisible}
         onClose={toggleModal}
         onBackButtonPress={toggleModal}
-        onAddExpense={addExpense}
         itemToUpdate={updateItem}
       />
     </SafeAreaView>

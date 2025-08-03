@@ -13,45 +13,46 @@ import { COLOR, FONT_SIZE, FONTS } from "../../constants/Theme";
 import { Ionicons } from "@expo/vector-icons";
 import { doc, serverTimestamp, updateDoc } from "firebase/firestore";
 import { db } from "../../Configs/firebaseConfig";
+import {
+  addExpense,
+  updateExpense,
+} from "../../utils/firebase_crud/expenses/expenseCrud";
 
 const PlanInAdvanceModal = ({
   tripId,
   isVisible,
   onClose,
   onBackButtonPress,
-  onAddExpense,
   itemToUpdate,
 }) => {
-  const [category, setCategory] = useState("");
+  const [expenseType, setExpenseType] = useState("");
   const [amount, setAmount] = useState("");
 
   const resetAndClose = () => {
-    setCategory("");
+    setExpenseType("");
     setAmount("");
     onClose();
   };
   useEffect(() => {
     if (!isVisible) return;
     if (itemToUpdate) {
-      setCategory(itemToUpdate.category);
+      setExpenseType(itemToUpdate.expenseType);
       setAmount(String(itemToUpdate.amount));
     }
   }, [itemToUpdate, isVisible]);
 
-  const addItem = () => {
-    // Add the expense
-    onAddExpense({
-      category: category.trim(),
-      amount: amount.trim(),
-    });
-
+  const addItem = async () => {
+    const newExpense = {
+      expenseType: expenseType.trim(),
+      amount: parseFloat(amount.trim()),
+    };
+    await addExpense(tripId, newExpense, (expensePathName = "plannedExpenses"));
   };
-  const handleSubmitExpense = () => {
-    if (!category.trim()) {
-      Alert.alert("Error", "Please enter an expense category");
+  const handleSubmitExpense = async () => {
+    if (!expenseType.trim()) {
+      Alert.alert("Error", "Please enter an expense type");
       return;
     }
-
     if (
       !amount.trim() ||
       isNaN(parseFloat(amount)) ||
@@ -61,33 +62,24 @@ const PlanInAdvanceModal = ({
       return;
     }
     if (itemToUpdate) {
-      updateItem();
+      await updateItem();
     } else {
-      addItem();
+      await addItem();
     }
     resetAndClose();
   };
   const updateItem = async () => {
     // update the expense
-    try {
-      const itemToStore = {
-        category: category.trim(),
-        amount: parseFloat(amount.trim()),
-        updatedAt: serverTimestamp(),
-      };
-      const itemDocRef = doc(
-        db,
-        "trip",
-        tripId,
-        "plannedExpenses",
-        itemToUpdate.id
-      );
-      await updateDoc(itemDocRef, itemToStore);
-      Alert.alert("Success!", "Item updated successfully");
-    } catch (e) {
-      console.log("Error Updating Item", e);
-      Alert.alert("Error Updating Item");
-    }
+    const expense = {
+      expenseType: expenseType.trim(),
+      amount: parseFloat(amount.trim()),
+    };
+    await updateExpense(
+      tripId,
+      itemToUpdate.id,
+      expense,
+      (expensePathName = "plannedExpenses")
+    );
   };
 
   return (
@@ -118,8 +110,8 @@ const PlanInAdvanceModal = ({
                 style={styles.input}
                 placeholder="e.g. Hotel, Food, Transport"
                 placeholderTextColor={COLOR.placeholder}
-                value={category}
-                onChangeText={setCategory}
+                value={expenseType}
+                onChangeText={setExpenseType}
                 maxLength={50}
               />
 
@@ -138,11 +130,11 @@ const PlanInAdvanceModal = ({
               <TouchableOpacity
                 style={[
                   styles.addButton,
-                  (!category.trim() || !amount.trim()) &&
+                  (!expenseType.trim() || !amount.trim()) &&
                     styles.addButtonDisabled,
                 ]}
                 onPress={handleSubmitExpense}
-                disabled={!category.trim() || !amount.trim()}
+                disabled={!expenseType.trim() || !amount.trim()}
               >
                 <Text style={styles.addButtonText}>
                   {itemToUpdate ? "Update" : "Add Expense"}
