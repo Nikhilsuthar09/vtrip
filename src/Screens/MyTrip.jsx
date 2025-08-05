@@ -16,8 +16,8 @@ const MyTrip = () => {
   const [editTripData, setEditTripData] = useState(null);
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const { tripsData, loading, error, tripIds } = useUserTripsData();
-  console.log(tripsData) 
   const safeTripData = tripsData || [];
+  console.log(safeTripData) 
 
   const filteredTrips =
     searchText.trim() === ""

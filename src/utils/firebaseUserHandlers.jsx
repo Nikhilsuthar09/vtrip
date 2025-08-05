@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { db } from "../Configs/firebaseConfig";
 import {
-  addDoc,
   arrayUnion,
   collection,
   doc,
