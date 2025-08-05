@@ -14,8 +14,7 @@ import { useEffect, useState } from "react";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import CreateNewCategory from "./CreateNewCategory";
-import { handleAddPackingItem } from "../../utils/packing/firebaseAddHandler";
-import { handleUpdateItem } from "../../utils/packing/firebaseUpdateHandler";
+import { handleAddPackingItem, handleUpdateItem } from "../../utils/firebase_crud/packing/packingCrud";
 const AddPackingModal = ({
   isVisible,
   onClose,
@@ -116,6 +115,21 @@ const AddPackingModal = ({
     setIsNewCategoryModalVisible(!isNewCategoryModalVisible);
   };
   const handleSubmitItem = () => {
+    if (!packingListData.category.trim()) {
+      Alert.alert("Hold on!", "Choose a category to organize your item.");
+      return;
+    }
+    if (!packingListData.item.trim()) {
+      Alert.alert(
+        "Missing Item Name",
+        "Enter the packing item name to proceed."
+      );
+      return;
+    }
+    if (isNaN(parseInt(packingListData.quantity))) {
+      Alert.alert("Error!", "Please enter a valid quantity");
+      return;
+    }
     if (editingItem) {
       updateItem();
     } else {

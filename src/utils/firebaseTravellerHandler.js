@@ -9,11 +9,16 @@ import {
 } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { db } from "../Configs/firebaseConfig";
+import { getAuth } from "firebase/auth";
 
 export const useTravellerNames = (tripId) => {
   const [travellerNames, setTravellerNames] = useState([]);
   const [travellerLoading, setLoading] = useState(true);
   const [travellerError, setError] = useState(null);
+  const auth = getAuth()
+  const uid = auth?.currentUser?.uid
+  const name = auth?.currentUser?.displayName
+  const email = auth?.currentUser?.email
 
   useEffect(() => {
     if (!tripId) {
@@ -29,13 +34,25 @@ export const useTravellerNames = (tripId) => {
           throw new Error("Trip not found");
         }
         const { travellers } = tripDoc.data();
+        console.log(travellers)
         if (!travellers || travellers.length === 0) {
           setTravellerNames([]);
           setLoading(false);
           return;
         }
-
+        // return current user when there is only 1 traveller
         const names = [];
+        if(travellers.length === 1){
+          names.push({
+             uid,
+              name: name || "Unknown User",
+              email: email || null,
+          })
+          setTravellerNames(names)
+          setLoading(false);
+          return;
+        }
+
 
         // process in chunks of 10
         for (let i = 0; i < travellers.length; i += 10) {
