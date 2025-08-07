@@ -469,7 +469,7 @@ const styles = StyleSheet.create({
   progressFill: {
     height: "100%",
     borderRadius: 6,
-    minWidth: 4,
+    minWidth:2,
   },
   overBudgetBadge: {
     flexDirection: "row",

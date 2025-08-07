@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
 import React from "react";
 import { COLOR, FONT_SIZE, FONTS } from "../constants/Theme";
 import { Image } from "expo-image";
@@ -8,6 +8,7 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useNavigation } from "expo-router";
 import Entypo from "@expo/vector-icons/Entypo";
 import { useTravellerNames } from "../utils/firebaseTravellerHandler";
+import { formatDate } from "../utils/calendar/handleCurrentDate";
 
 const ShowTripsCard = ({
   id,
@@ -20,9 +21,14 @@ const ShowTripsCard = ({
 }) => {
   const { travellerNames, travellerLoading, travellerError } =
     useTravellerNames(id);
+  const navigation = useNavigation();
   const safeTravellerNames = travellerNames || [];
 
-  const navigation = useNavigation();
+  if (travellerError) {
+    Alert.alert("Error", "cannot load traveller names");
+    return;
+  }
+
   const handleMenuPress = (itemId) => {
     return (e) => {
       e.currentTarget.measure((x, y, width, height, pageX, pageY) => {
@@ -36,6 +42,7 @@ const ShowTripsCard = ({
       });
     };
   };
+
   return (
     <>
       <View style={styles.container}>
@@ -65,7 +72,7 @@ const ShowTripsCard = ({
               <MaterialIcons name="date-range" size={16} color={COLOR.grey} />
             </View>
             <Text style={styles.dates}>
-              {startDate} - {endDate}
+              {formatDate(startDate)} - {formatDate(endDate)}
             </Text>
           </View>
           <View style={styles.icon_text_container}>
@@ -74,41 +81,57 @@ const ShowTripsCard = ({
             </View>
             <Text style={styles.bugdet}>{budget}</Text>
           </View>
-          {travellerLoading ? (
-            <Text
-              style={{ fontFamily: FONTS.semiBold, fontSize: FONT_SIZE.body }}
-            >
-              {" "}
-              Loading
-            </Text>
-          ) : (
-            <Text style={styles.noOfTravellers}>
-              {safeTravellerNames.length}{" "}
-              {safeTravellerNames.length === 1 ? "Traveller" : "Travellers"}
-            </Text>
-          )}
-          <TouchableOpacity
-            style={styles.planButton}
-            onPress={() =>
-              navigation.navigate("TopTabs", {
-                id,
-                budget,
-                destination,
-                startDate,
-                endDate,
-                safeTravellerNames,
-                travellerLoading
-              })
-            }
+          <View
+            style={{
+              marginTop: 6,
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 5,
+            }}
           >
-            <Text style={styles.planButtontext}>Start Planning</Text>
-          </TouchableOpacity>
+            <View>
+              {travellerLoading ? (
+                <Text
+                  style={{
+                    fontFamily: FONTS.semiBold,
+                    fontSize: FONT_SIZE.body,
+                    color: COLOR.placeholder,
+                  }}
+                >
+                  {" "}
+                  Loading
+                </Text>
+              ) : (
+                <Text style={styles.noOfTravellers}>
+                  {safeTravellerNames.length}{" "}
+                  {safeTravellerNames.length === 1 ? "Traveller" : "Travellers"}
+                </Text>
+              )}
+            </View>
+            <TouchableOpacity
+              style={styles.planButton}
+              onPress={() =>
+                navigation.navigate("TopTabs", {
+                  id,
+                  budget,
+                  destination,
+                  startDate,
+                  endDate,
+                  safeTravellerNames,
+                  travellerLoading,
+                })
+              }
+            >
+              <Text style={styles.planButtontext}>Start Planning</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
       <SeparationLine />
     </>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     position: "relative",
@@ -117,8 +140,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
   },
   imgcontainer: {
-    width: 120,
-    height: 120,
+    width: 110,
+    height: 110,
     backgroundColor: "#fff",
     alignItems: "center",
     justifyContent: "center",
@@ -184,10 +207,9 @@ const styles = StyleSheet.create({
   },
   planButton: {
     backgroundColor: COLOR.primaryLight,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
+    paddingVertical: 5,
+    paddingHorizontal: 12,
     borderRadius: 4,
-    marginTop: 4,
   },
   planButtontext: {
     fontFamily: FONTS.semiBold,

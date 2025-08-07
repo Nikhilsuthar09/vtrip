@@ -44,6 +44,7 @@ const addTripToDb = async (tripData) => {
       createdAt: serverTimestamp(),
       createdBy: userId,
       travellers: arrayUnion(userId),
+      dayIds: arrayUnion(),
     };
 
     const tripId = generateRandomId();

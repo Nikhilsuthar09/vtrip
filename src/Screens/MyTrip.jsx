@@ -1,13 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { SectionList, View, Text, StyleSheet, Alert } from "react-native";
 import ShowTripsCard from "../components/ShowTripsCard";
 import HeaderWithSearch from "../components/HeaderWithSearch";
 import { useUserTripsData } from "../utils/firebaseUserHandlers";
-import { Alert, FlatList } from "react-native";
 import Spinner from "../components/Spinner";
 import TripMenuModal from "../components/TripMenuModal";
 import AddTripModal from "../components/AddTripModal";
 import EmptyTripsPlaceholder from "../components/EmptyTripsPlaceholder";
+import { COLOR, FONT_SIZE, FONTS } from "../constants/Theme";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { getTripStatus } from "../utils/calendar/getTripStatus";
+import { deleteTrip } from "../utils/tripData/deleteTripData";
 
 const MyTrip = () => {
   const [modalData, setModalData] = useState(null);
@@ -17,57 +21,150 @@ const MyTrip = () => {
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const { tripsData, loading, error, tripIds } = useUserTripsData();
   const safeTripData = tripsData || [];
-  console.log(safeTripData) 
 
-  const filteredTrips =
-    searchText.trim() === ""
-      ? safeTripData
-      : safeTripData.filter(
-          (trip) =>
-            trip.destination
-              .toLowerCase()
-              .includes(searchText.toLowerCase().trim()) ||
-            trip.title.toLowerCase().includes(searchText.toLowerCase().trim())
-        );
+  // Organize and filter trips
+  const organizedTrips = useMemo(() => {
+    let filteredTrips = safeTripData;
+
+    // Apply search filter
+    if (searchText.trim() !== "") {
+      filteredTrips = safeTripData.filter(
+        (trip) =>
+          trip.destination
+            .toLowerCase()
+            .includes(searchText.toLowerCase().trim()) ||
+          trip.title.toLowerCase().includes(searchText.toLowerCase().trim())
+      );
+    }
+
+    // Categorize trips
+    const categorized = {
+      ongoing: [],
+      upcoming: [],
+      completed: [],
+    };
+
+    filteredTrips.forEach((trip) => {
+      const status = getTripStatus(trip.startDate, trip.endDate);
+      categorized[status].push(trip);
+    });
+
+    // Sort each category
+    categorized.ongoing.sort(
+      (a, b) => new Date(a.startDate) - new Date(b.startDate)
+    );
+    categorized.upcoming.sort(
+      (a, b) => new Date(a.startDate) - new Date(b.startDate)
+    );
+    categorized.completed.sort(
+      (a, b) => new Date(b.endDate) - new Date(a.endDate)
+    );
+
+    // Create sections for SectionList - always show all sections in order
+    const sections = [
+      {
+        title: "Ongoing",
+        data: categorized.ongoing,
+        key: "ongoing",
+        icon: "flight-takeoff",
+        color: COLOR.success || "#4CAF50",
+      },
+      {
+        title: "Upcoming",
+        data: categorized.upcoming,
+        key: "upcoming",
+        icon: "schedule",
+        color: COLOR.primary || "#2196F3",
+      },
+      {
+        title: "Completed",
+        data: categorized.completed,
+        key: "completed",
+        icon: "check-circle",
+        color: COLOR.grey || "#757575",
+      },
+    ];
+
+    return sections;
+  }, [safeTripData, searchText]);
+
+  const totalTrips = organizedTrips.reduce(
+    (sum, section) => sum + section.data.length,
+    0
+  );
 
   const openMenu = (position) => {
+    const selectedItemData = safeTripData.find(
+      (item) => item.id === position.itemId
+    );
+
     setModalData({
       visible: true,
       position,
       selectedItemId: position.itemId,
+      selectedItemData,
     });
   };
+
   const closeMenu = () => setModalData(null);
 
   if (loading) {
     return <Spinner />;
   }
+
   if (error) {
     console.log(error);
   }
+
   // to do
-  const deleteTrip = () => {
-    console.log("ToDo");
+  const handleDeleteTrip = async (tripId) => {
+    const travellerArray = modalData.selectedItemData.travellers;
+    const result = await deleteTrip(tripId, travellerArray);
+
+    if(result.success){
+      Alert.alert("Success",result.message)
+    }
+    else{
+      Alert.alert("Error",result.message)
+    }
+
+    // // delete days collection
+    // const daysdeleted = await deleteDays(tripId);
+    // // delete packing collection
+    // const packingDeleted = await deletePackingFromTripId(tripId)
+    // // delete trip from user's array
+    // const deletedTripIdFromUser = await deleteTripIdFromUser(tripId, travellerArray);
+    // // delete trip document from id
+    // const tripIdDeleted = await deleteTripId(tripId)
+    // if(daysdeleted && deletedTripIdFromUser && tripIdDeleted){
+    //   Alert.alert("Success","Trip deleted successfully")
+    // }
+    // else{
+    //   Alert.alert("Error","Something went wrong!")
+    // }
   };
-  const handleDeleteTrip = () => {
+
+  const handleDeleteButton = (id) => {
     Alert.alert(
       "Are you sure?",
-      `Do you want to delete ?`,
+      `Do you want to delete this trip?`,
       [
         {
           text: "Cancel",
           style: "cancel",
         },
         {
-          text: "Ok",
-          onPress: () => {
-            deleteTrip();
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            await handleDeleteTrip(id);
           },
         },
       ],
       { cancelable: true }
     );
   };
+
   const handleEditTrip = (id) => {
     console.log(id);
     const tripToEdit = safeTripData.find((trip) => trip.id === id);
@@ -77,53 +174,97 @@ const MyTrip = () => {
       closeMenu();
     }
   };
+
   const closeEditModal = () => {
     setIsEditModalVisible(false);
     setEditTripData(null);
   };
-   const handleAddTrip = () => {
+
+  const handleAddTrip = () => {
     setIsAddModalVisible(true);
   };
 
   const closeAddModal = () => {
     setIsAddModalVisible(false);
   };
-  const showPlaceholder = filteredTrips.length === 0;
+
+  const renderSectionHeader = ({ section }) => {
+    // Only show section header if there are trips in that section
+    if (section.data.length === 0) return null;
+
+    return (
+      <View style={styles.sectionHeader}>
+        <View style={styles.sectionHeaderContent}>
+          <View style={styles.sectionHeaderLeft}>
+            <MaterialIcons
+              name={section.icon}
+              size={20}
+              color={section.color}
+              style={styles.sectionIcon}
+            />
+            <Text style={[styles.sectionTitle, { color: section.color }]}>
+              {section.title}
+            </Text>
+            <View
+              style={[styles.countBadge, { backgroundColor: section.color }]}
+            >
+              <Text style={styles.countText}>{section.data.length}</Text>
+            </View>
+          </View>
+        </View>
+      </View>
+    );
+  };
+
+  const renderItem = ({ item }) => (
+    <ShowTripsCard
+      id={item.id}
+      title={item.title}
+      destination={item.destination}
+      startDate={item.startDate}
+      endDate={item.endDate}
+      budget={item.budget}
+      openModal={openMenu}
+    />
+  );
+
+  const renderEmptyState = () => (
+    <EmptyTripsPlaceholder searchText={searchText} onAddTrip={handleAddTrip} />
+  );
+
+  const showPlaceholder = totalTrips === 0;
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff", paddingTop: 20 }}>
+    <SafeAreaView style={styles.container}>
       <HeaderWithSearch searchText={searchText} setSearchText={setSearchText} />
+
       {showPlaceholder ? (
         <EmptyTripsPlaceholder
           searchText={searchText}
           onAddTrip={handleAddTrip}
         />
       ) : (
-        <FlatList
-          data={filteredTrips}
-          renderItem={({ item }) => (
-            <ShowTripsCard
-              id={item.id}
-              title={item.title}
-              destination={item.destination}
-              startDate={item.startDate}
-              endDate={item.endDate}
-              budget={item.budget}
-              openModal={openMenu}
-            />
-          )}
+        <SectionList
+          sections={organizedTrips}
+          renderItem={renderItem}
+          renderSectionHeader={renderSectionHeader}
           keyExtractor={(item) => item.id}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.listContainer}
+          stickySectionHeadersEnabled={false}
         />
       )}
+
       <TripMenuModal
         visible={modalData?.visible || false}
         closeModal={closeMenu}
         position={modalData?.position}
         selectedId={modalData?.selectedItemId}
         isShareVisible={true}
-        onDelete={handleDeleteTrip}
+        onDelete={handleDeleteButton}
         onEdit={handleEditTrip}
       />
+
       <AddTripModal
         isModalVisible={isEditModalVisible}
         onClose={closeEditModal}
@@ -131,6 +272,7 @@ const MyTrip = () => {
         editTripData={editTripData}
         isEditMode={true}
       />
+
       <AddTripModal
         isModalVisible={isAddModalVisible}
         onClose={closeAddModal}
@@ -140,5 +282,53 @@ const MyTrip = () => {
     </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+    paddingTop: 20,
+  },
+  listContainer: {
+    paddingBottom: 20,
+  },
+  sectionHeader: {
+    backgroundColor: "#f8f9fa",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: COLOR.stroke || "#e0e0e0",
+  },
+  sectionHeaderContent: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  sectionHeaderLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  sectionIcon: {
+    marginRight: 8,
+  },
+  sectionTitle: {
+    fontSize: FONT_SIZE.h3 || 16,
+    fontFamily: FONTS.semiBold,
+    marginRight: 12,
+  },
+  countBadge: {
+    minWidth: 24,
+    height: 20,
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 6,
+  },
+  countText: {
+    color: "#fff",
+    fontSize: FONT_SIZE.caption || 12,
+    fontFamily: FONTS.medium,
+  },
+});
 
 export default MyTrip;

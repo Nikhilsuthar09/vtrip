@@ -12,7 +12,14 @@ import { COLOR, FONT_SIZE, FONTS } from "../../constants/Theme";
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import { addDoc, collection, doc, serverTimestamp, updateDoc } from "firebase/firestore";
+import {
+  addDoc,
+  arrayUnion,
+  collection,
+  doc,
+  serverTimestamp,
+  updateDoc,
+} from "firebase/firestore";
 import { db } from "../../Configs/firebaseConfig";
 import { formatTime } from "../../utils/timestamp/formatAndGetTime";
 
@@ -68,19 +75,23 @@ const AddItemModal = ({
       const tripDayCollectionRef = collection(
         db,
         "trip",
-        listData.tripData.id,
-        listData.item.id
+        listData?.tripData?.id,
+        listData?.item.id
       );
+      const tripDocRef = doc(db, "trip", listData.tripData.id);
       await addDoc(tripDayCollectionRef, itineraryToStore);
+      await updateDoc(tripDocRef, {
+        dayIds: arrayUnion(listData?.item?.id),
+      });
       handleClose();
       console.log("Success itinerary stored ");
     } catch (e) {
       console.log(e);
     }
   };
-  const handleUpdateItem = async() => {
+  const handleUpdateItem = async () => {
     try {
-      const itemId = editItem.id
+      const itemId = editItem.id;
       const itineraryToUpdate = {
         time,
         title,
@@ -94,9 +105,9 @@ const AddItemModal = ({
         listData.item.id,
         itemId
       );
-      await updateDoc(itemDocRef, itineraryToUpdate)
-      handleClose()
-      console.log("Itinerary Updated successfully")
+      await updateDoc(itemDocRef, itineraryToUpdate);
+      handleClose();
+      console.log("Itinerary Updated successfully");
     } catch (e) {
       console.log(e);
     }
