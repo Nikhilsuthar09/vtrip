@@ -44,6 +44,14 @@ const deleteSubCollections = async (tripId, dayIds) => {
   const packingColRef = collection(db, "trip", tripId, "packing");
   subCollectionsDeletions.push(deleteSubcollectionInBatches(packingColRef));
 
+  // delete plannedExpenses subcollection
+  const plannedExpensesColRef = collection(db, "trip", tripId, "plannedExpenses");
+  subCollectionsDeletions.push(deleteSubcollectionInBatches(plannedExpensesColRef));
+
+  // delete onTripExpenses subcollection
+  const onTripExpensesColRef = collection(db, "trip", tripId, "onTripExpenses");
+  subCollectionsDeletions.push(deleteSubcollectionInBatches(onTripExpensesColRef));
+
   await Promise.all(subCollectionsDeletions);
 };
 // transaction approach
