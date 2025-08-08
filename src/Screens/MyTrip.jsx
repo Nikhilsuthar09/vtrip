@@ -127,21 +127,6 @@ const MyTrip = () => {
     else{
       Alert.alert("Error",result.message)
     }
-
-    // // delete days collection
-    // const daysdeleted = await deleteDays(tripId);
-    // // delete packing collection
-    // const packingDeleted = await deletePackingFromTripId(tripId)
-    // // delete trip from user's array
-    // const deletedTripIdFromUser = await deleteTripIdFromUser(tripId, travellerArray);
-    // // delete trip document from id
-    // const tripIdDeleted = await deleteTripId(tripId)
-    // if(daysdeleted && deletedTripIdFromUser && tripIdDeleted){
-    //   Alert.alert("Success","Trip deleted successfully")
-    // }
-    // else{
-    //   Alert.alert("Error","Something went wrong!")
-    // }
   };
 
   const handleDeleteButton = (id) => {

@@ -30,16 +30,20 @@ const TrackOnTripModal = ({itemIdToUpdate, modalVisible, onclose, handleDataChan
             <View style={styles.pickerContainer}>
               <Picker
                 selectedValue={expenseDataOnTrip.name}
-                onValueChange={(value) => handleDataChange("name", value)}
+                onValueChange={(uid) => {
+                  const selectedTraveller = traveller.find(t => t.uid === uid)
+                  handleDataChange("name", selectedTraveller.name)
+                  handleDataChange("uid", uid)
+                }}
                 style={styles.picker}
               >
-                <Picker.Item label="Select" style={{color:COLOR.placeholder}} value="Select"/>
+                <Picker.Item label="Select" style={{color:COLOR.placeholder}} value=""/>
                 {traveller.map((item) => {
                   return(
                     <Picker.Item 
                     key={item.uid}
                     label={item.name}
-                    value={item.name}
+                    value={item.uid}
                     style={{color:COLOR.textPrimary}}
                     />
                   

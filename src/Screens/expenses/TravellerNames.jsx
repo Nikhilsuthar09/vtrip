@@ -2,26 +2,38 @@ import { Text, StyleSheet, TouchableOpacity } from "react-native";
 import React from "react";
 import { COLOR, FONTS } from "../../constants/Theme";
 
-const TravellerNames = ({name}) => {
+const TravellerNames = ({ name, selectedName, setSelectedName, id }) => {
+  const toggle = (id) => {
+    setSelectedName((prev) => prev === id ? "" : id)
+  }
   return (
-    <TouchableOpacity style={styles.container}>
-      <Text style={styles.text}>{name}</Text>
+    <TouchableOpacity
+      key={id}
+      onPress={() => toggle(id)}
+      style={[
+        styles.container,
+        id === selectedName && { backgroundColor: COLOR.primary },
+      ]}
+    >
+      <Text style={[styles.text, id === selectedName && { color: "#fff" }]}>
+        {name}
+      </Text>
     </TouchableOpacity>
   );
 };
 const styles = StyleSheet.create({
   container: {
     marginTop: 20,
+    backgroundColor: COLOR.primaryLight,
+    borderRadius: 6,
+    borderWidth: 0.5,
+    borderColor: COLOR.primary,
   },
   text: {
-    backgroundColor: COLOR.primaryLight,
     paddingVertical: 10,
     paddingHorizontal: 20,
     color: COLOR.primary,
-    borderRadius: 6,
     fontFamily: FONTS.medium,
-    borderWidth:.5,
-    borderColor:COLOR.primary
   },
 });
 

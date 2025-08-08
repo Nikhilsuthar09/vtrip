@@ -29,6 +29,7 @@ export const addExpense = async (tripId, newExpense, expensePathName) => {
   };
   if (expensePathName === "onTripExpenses") {
     expenseToStore.paidBy = newExpense.paidBy;
+    expenseToStore.uid = newExpense.uid;
   }
   try {
     const expenseCollectionRef = collection(
@@ -59,6 +60,7 @@ export const updateExpense = async (
     };
     if (expensePathName === "onTripExpenses") {
       itemToUpdate.paidBy = expense.paidBy;
+      itemToUpdate.uid = expense.uid;
     }
     const itemDocRef = doc(db, "trip", tripId, expensePathName, itemId);
     await updateDoc(itemDocRef, itemToUpdate);

@@ -17,13 +17,12 @@ import { useOnTripExpense } from "../../utils/firebaseTripHandler";
 import Spinner from "../../components/Spinner";
 import ErrorScreen from "../../components/ErrorScreen";
 import TravellerNames from "./TravellerNames";
-import { formatLastEdited } from "../../utils/timestamp/formatAndGetTime";
-import { getExpenseColor } from "../../utils/expenses/getExpenseColor";
 import {
   addExpense,
   deleteExpense,
   updateExpense,
 } from "../../utils/firebase_crud/expenses/expenseCrud";
+import { renderItem } from "../../components/expense/RenderOnTripExpenseList";
 
 const TrackOnTrip = ({ route }) => {
   const { id, budget, safeTravellerNames, travellerLoading } = route.params;
@@ -31,7 +30,9 @@ const TrackOnTrip = ({ route }) => {
   const safeBudget = budget || "";
   const { onTripExpenseData, loading, error } = useOnTripExpense(tripId);
   const [modalVisible, setModalVisible] = useState(false);
+  const [selectedName, setSelectedName] = useState("");
   const [expenseDataOnTrip, setExpenseDataOnTrip] = useState({
+    uid:"",
     name: "",
     expenseType: "",
     amount: "",
@@ -68,6 +69,7 @@ const TrackOnTrip = ({ route }) => {
   const resetData = () => {
     setItemIdToUpdate("");
     setExpenseDataOnTrip({
+      uid:"",
       name: "",
       expenseType: "",
       amount: "",
@@ -106,6 +108,7 @@ const TrackOnTrip = ({ route }) => {
 
   const updateItem = async () => {
     const itemToUpdate = {
+      uid: expenseDataOnTrip.uid.trim(),
       paidBy: expenseDataOnTrip.name.trim(),
       expenseType: expenseDataOnTrip.expenseType.trim(),
       amount: parseFloat(expenseDataOnTrip.amount.trim()),
@@ -120,6 +123,7 @@ const TrackOnTrip = ({ route }) => {
 
   const handleAddExpense = async () => {
     const newExpense = {
+      uid: expenseDataOnTrip.uid.trim(),
       paidBy: expenseDataOnTrip.name.trim(),
       expenseType: expenseDataOnTrip.expenseType.trim(),
       amount: parseFloat(expenseDataOnTrip.amount.trim()),
@@ -148,9 +152,10 @@ const TrackOnTrip = ({ route }) => {
     );
   };
 
-  const handleItemPress = (id, name, category, amount) => {
+  const handleItemPress = (id, uid, name, category, amount) => {
     setItemIdToUpdate(id);
     setExpenseDataOnTrip({
+      uid,
       name,
       expenseType: category,
       amount: amount.toString(),
@@ -158,65 +163,9 @@ const TrackOnTrip = ({ route }) => {
     toggleModal();
   };
 
-  // Enhanced render item with better UI
-  const renderItem = ({ item, index }) => {
-    const expenseColor = getExpenseColor(item.paidBy);
-
-    return (
-      <TouchableOpacity
-        onLongPress={() => handleLongPress(item.id, item.expenseType)}
-        onPress={() =>
-          handleItemPress(item.id, item.paidBy, item.expenseType, item.amount)
-        }
-        style={[styles.expenseItem, index === 0 && styles.firstItem]}
-        activeOpacity={0.7}
-      >
-        {/* Left colored indicator */}
-        <View
-          style={[styles.expenseIndicator, { backgroundColor: expenseColor }]}
-        />
-
-        {/* Main content */}
-        <View style={styles.expenseContent}>
-          <View style={styles.expenseHeader}>
-            <Text style={styles.expenseType} numberOfLines={1}>
-              {item.expenseType}
-            </Text>
-            <Text style={styles.expenseAmount}>
-              ₹
-              {parseFloat(item.amount).toLocaleString("en-IN", {
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 2,
-              })}
-            </Text>
-          </View>
-
-          <View style={styles.expenseFooter}>
-            <View style={styles.paidBySection}>
-              <Ionicons name="person-outline" size={14} color={COLOR.grey} />
-              <Text style={styles.paidBy} numberOfLines={1}>
-                {item.paidBy}
-              </Text>
-            </View>
-            <View style={styles.timestampSection}>
-              <Ionicons name="time-outline" size={14} color={COLOR.grey} />
-              <Text style={styles.timestamp}>
-                {formatLastEdited(item.updatedAt)}
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Right arrow */}
-        <Ionicons
-          name="chevron-forward-outline"
-          size={20}
-          color={COLOR.grey}
-          style={styles.chevronIcon}
-        />
-      </TouchableOpacity>
-    );
-  };
+    const expenseList = selectedName ? 
+    (safeTripData.filter((item) => item.uid === selectedName)) : 
+    safeTripData
 
   return (
     <SafeAreaView edges={["bottom", "left", "right"]} style={styles.container}>
@@ -350,7 +299,14 @@ const TrackOnTrip = ({ route }) => {
               keyExtractor={(item) => item.uid}
               renderItem={({ item }) => {
                 const firstName = item.name.split(" ")[0];
-                return <TravellerNames name={firstName} />;
+                return (
+                  <TravellerNames
+                    setSelectedName={setSelectedName}
+                    selectedName={selectedName}
+                    name={firstName}
+                    id={item.uid}
+                  />
+                );
               }}
               horizontal={true}
               showsHorizontalScrollIndicator={false}
@@ -363,7 +319,7 @@ const TrackOnTrip = ({ route }) => {
         <View style={styles.expensesContainer}>
           <View style={styles.expensesHeader}>
             <Text style={styles.sectionTitle}>Recent Expenses</Text>
-            {safeTripData.length > 0 && (
+            {expenseList.length > 0 && (
               <Text style={styles.expenseCount}>
                 {safeTripData.length} expense
                 {safeTripData.length !== 1 ? "s" : ""}
@@ -371,10 +327,17 @@ const TrackOnTrip = ({ route }) => {
             )}
           </View>
 
-          {safeTripData.length > 0 ? (
+          {expenseList.length > 0 ? (
             <View style={styles.expensesList}>
-              {safeTripData.map((item, index) => (
-                <View key={item.id}>{renderItem({ item, index })}</View>
+              {expenseList.map((item, index) => (
+                <View key={item.id}>
+                  {renderItem({
+                    item,
+                    index,
+                    handleLongPress,
+                    handleItemPress,
+                  })}
+                </View>
               ))}
             </View>
           ) : (
@@ -469,7 +432,7 @@ const styles = StyleSheet.create({
   progressFill: {
     height: "100%",
     borderRadius: 6,
-    minWidth:2,
+    minWidth: 2,
   },
   overBudgetBadge: {
     flexDirection: "row",
@@ -567,87 +530,6 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZE.caption,
     fontFamily: FONTS.regular,
     color: COLOR.grey,
-  },
-
-  // Expense Items
-  expensesList: {
-    paddingBottom: 20,
-  },
-  firstItem: {
-    marginTop: 8,
-  },
-  expenseItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#fff",
-    marginHorizontal: 16,
-    marginBottom: 12,
-    borderRadius: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
-    borderWidth: 1,
-    borderColor: "#F5F5F5",
-  },
-  expenseIndicator: {
-    width: 4,
-    height: "100%",
-    borderTopLeftRadius: 16,
-    borderBottomLeftRadius: 16,
-  },
-  expenseContent: {
-    flex: 1,
-    padding: 16,
-  },
-  expenseHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: 8,
-  },
-  expenseType: {
-    flex: 1,
-    fontSize: FONT_SIZE.bodyLarge,
-    fontFamily: FONTS.semiBold,
-    color: COLOR.textPrimary,
-    marginRight: 12,
-    textTransform: "capitalize",
-  },
-  expenseAmount: {
-    fontSize: FONT_SIZE.H6,
-    fontFamily: FONTS.bold,
-    color: COLOR.primary,
-  },
-  expenseFooter: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  paidBySection: {
-    flexDirection: "row",
-    alignItems: "center",
-    flex: 1,
-  },
-  paidBy: {
-    marginLeft: 4,
-    fontSize: FONT_SIZE.body,
-    fontFamily: FONTS.medium,
-    color: COLOR.textPrimary,
-  },
-  timestampSection: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  timestamp: {
-    marginLeft: 4,
-    fontSize: FONT_SIZE.caption,
-    fontFamily: FONTS.regular,
-    color: COLOR.grey,
-  },
-  chevronIcon: {
-    marginRight: 16,
   },
 
   // Empty State
