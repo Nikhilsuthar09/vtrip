@@ -9,6 +9,8 @@ import PlanInAdvance from "../Screens/expenses/PlanInAdvance";
 import TrackOnTrip from "../Screens/expenses/TrackOnTrip";
 import ItineraryList from "../Screens/itinerary/ItineraryList";
 import { COLOR, FONT_SIZE, FONTS } from "../constants/Theme";
+import { Text, View } from "react-native";
+import { formatDate } from "../utils/calendar/handleCurrentDate";
 
 const Stack = createNativeStackNavigator();
 
@@ -31,23 +33,57 @@ export default function RootStack() {
           <Stack.Screen
             name="TopTabs"
             component={TopTabs}
-            options={{
-              headerShown: false,
-            }}
+            options={({ route }) => ({
+              headerTitle: () => {
+                const title = route?.params?.destination
+                const subtitle = `${formatDate(route?.params?.startDate)} - ${formatDate(route?.params?.endDate)}`
+                return (
+                <View style={{ paddingVertical: 4 }}>
+                  <Text
+                    style={{
+                      fontFamily: FONTS.semiBold,
+                      fontSize: FONT_SIZE.H6,
+                      color: "#fff",
+                    }}
+                  >
+                    {title}
+                  </Text>
+                  <Text
+                    style={{
+                      fontFamily: FONTS.regular,
+                      fontSize: FONT_SIZE.caption,
+                      color: "#eee",
+                      marginTop: 2,
+                    }}
+                  >
+                    {subtitle}
+                  </Text>
+                </View>
+              )},
+              headerTintColor: "#fff",
+              headerTitleStyle: {
+                fontFamily: FONTS.semiBold,
+                fontSize: FONT_SIZE.H6,
+              },
+              headerStyle: {
+                backgroundColor: COLOR.primary,
+                height:100
+              },
+            })}
           />
           <Stack.Screen
             name="itineraryList"
             component={ItineraryList}
             options={{
               title: "Itinerary",
+              headerTintColor: "#fff",
               headerTitleStyle: {
                 fontFamily: FONTS.semiBold,
-                fontSize: FONT_SIZE.H5,
-                color: "#333",
+                fontSize: FONT_SIZE.H6,
               },
-              headerTitleAlign: "center",
-              headerTintColor: COLOR.primary,
-              headerShadowVisible: false,
+              headerStyle: {
+                backgroundColor: COLOR.primary,
+              },
             }}
           />
 
@@ -55,26 +91,30 @@ export default function RootStack() {
             name="PlanExpenseInAdvance"
             component={PlanInAdvance}
             options={{
-              title: "Expenses",
+              title: "Planned Costs",
+              headerTintColor: "#fff",
               headerTitleStyle: {
                 fontFamily: FONTS.semiBold,
                 fontSize: FONT_SIZE.H6,
-                color: "#333",
               },
-              headerTintColor: COLOR.primary,
+              headerStyle: {
+                backgroundColor: COLOR.primary,
+              },
             }}
           />
           <Stack.Screen
             name="TrackOnTrip"
             component={TrackOnTrip}
             options={{
-              title: "Expenses",
+              title: "On-Trip Spending",
+              headerTintColor: "#fff",
               headerTitleStyle: {
                 fontFamily: FONTS.semiBold,
                 fontSize: FONT_SIZE.H6,
-                color: "#333",
               },
-              headerTintColor: COLOR.primary,
+              headerStyle: {
+                backgroundColor: COLOR.primary,
+              },
             }}
           />
         </>

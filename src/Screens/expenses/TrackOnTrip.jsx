@@ -32,7 +32,7 @@ const TrackOnTrip = ({ route }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedName, setSelectedName] = useState("");
   const [expenseDataOnTrip, setExpenseDataOnTrip] = useState({
-    uid:"",
+    uid: "",
     name: "",
     expenseType: "",
     amount: "",
@@ -69,7 +69,7 @@ const TrackOnTrip = ({ route }) => {
   const resetData = () => {
     setItemIdToUpdate("");
     setExpenseDataOnTrip({
-      uid:"",
+      uid: "",
       name: "",
       expenseType: "",
       amount: "",
@@ -163,9 +163,9 @@ const TrackOnTrip = ({ route }) => {
     toggleModal();
   };
 
-    const expenseList = selectedName ? 
-    (safeTripData.filter((item) => item.uid === selectedName)) : 
-    safeTripData
+  const expenseList = selectedName
+    ? safeTripData.filter((item) => item.uid === selectedName)
+    : safeTripData;
 
   return (
     <SafeAreaView edges={["bottom", "left", "right"]} style={styles.container}>
@@ -220,7 +220,7 @@ const TrackOnTrip = ({ route }) => {
             )}
           </View>
 
-          {/* Enhanced Summary Cards */}
+          {/* Summary Cards */}
           <View style={styles.summaryContainer}>
             <View style={[styles.summaryCard, styles.expenseCard]}>
               <View style={styles.summaryIconContainer}>
@@ -286,7 +286,12 @@ const TrackOnTrip = ({ route }) => {
 
         {/* sticky Travellers Section */}
         <View style={styles.travellersSection}>
-          <Text style={styles.sectionTitle}>Travellers</Text>
+          <View style={styles.travellersHeader}>
+            <Text style={styles.sectionTitle}>Travellers</Text>
+            <Text style={styles.sectionDescription}>
+              Tap on any traveller to view their individual expenses
+            </Text>
+          </View>
           {travellerLoading ? (
             <ActivityIndicator
               size="small"
@@ -499,11 +504,21 @@ const styles = StyleSheet.create({
     elevation: 3,
     zIndex: 1,
   },
+  travellersHeader: {
+    paddingHorizontal: 20,
+    marginBottom: 4,
+  },
   sectionTitle: {
     fontSize: FONT_SIZE.H6,
     fontFamily: FONTS.semiBold,
     color: COLOR.textPrimary,
-    marginLeft: 20,
+    marginBottom: 4,
+  },
+  sectionDescription: {
+    fontSize: FONT_SIZE.caption,
+    fontFamily: FONTS.regular,
+    color: COLOR.grey,
+    lineHeight: 16,
   },
   travellersContainer: {
     paddingHorizontal: 20,

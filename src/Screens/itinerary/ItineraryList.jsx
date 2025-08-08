@@ -20,6 +20,7 @@ import ItineraryMenuModal from "../../components/itinerary/ItineraryMenuModal";
 import ItineraryListItem from "../../components/itinerary/ItineraryListItems";
 import { deleteDoc, doc } from "firebase/firestore";
 import { db } from "../../Configs/firebaseConfig";
+import { StatusBar } from "expo-status-bar";
 
 const ItineraryList = ({ route }) => {
   // firebase data

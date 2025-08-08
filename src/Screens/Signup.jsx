@@ -28,6 +28,9 @@ import { useAuth } from "../Context/AuthContext";
 import { Image } from "expo-image";
 import AirplaneLoading from "../components/AirplaneLoading";
 import { addUserToDb } from "../utils/firebaseUserHandlers";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import Entypo from "@expo/vector-icons/Entypo";
+import FontAwesome from "@expo/vector-icons/FontAwesome";
 
 export default function Signup() {
   const [email, setEmail] = useState("");
@@ -41,13 +44,13 @@ export default function Signup() {
     setShowPassword(!showPassword);
   };
   if (loading) {
-    return <AirplaneLoading/>;
+    return <AirplaneLoading />;
   }
   const resetData = () => {
-    setEmail("")
-    setPassword("")
-    setName("")
-  }
+    setEmail("");
+    setPassword("");
+    setName("");
+  };
   const toTitleCase = (str) => {
     return str
       .toLowerCase()
@@ -62,7 +65,7 @@ export default function Signup() {
     if (!handleSignupValidation(email, password, name)) {
       return;
     }
-    let userCreated = false
+    let userCreated = false;
     let user = null;
     try {
       setLoading(true);
@@ -79,18 +82,17 @@ export default function Signup() {
       await updateProfile(user, {
         displayName: nameToSave,
       });
-      await addUserToDb()
+      await addUserToDb();
       await signOut(auth);
-      resetData()
+      resetData();
       setRegistrationState(false);
       setLoading(false);
       navigation.goBack();
     } catch (error) {
-      if(userCreated && user){
-        try{
-          await user.delete()
-        }
-        catch(e){
+      if (userCreated && user) {
+        try {
+          await user.delete();
+        } catch (e) {
           console.log("failed to clean up user account");
         }
       }
@@ -147,38 +149,62 @@ export default function Signup() {
             <View>
               <View>
                 <Text style={styles.label}>Full Name</Text>
-                <TextInput
-                  placeholder="eg John Doe"
-                  placeholderTextColor={COLOR.placeholder}
-                  style={styles.input}
-                  value={name}
-                  onChangeText={(value) => setName(value)}
-                />
+                <View style={styles.icon_input_container}>
+                  <FontAwesome
+                    name="user"
+                    size={18}
+                    style={styles.inputIcon}
+                    color={COLOR.placeholder}
+                  />
+                  <TextInput
+                    placeholder="eg John Doe"
+                    placeholderTextColor={COLOR.placeholder}
+                    style={styles.input}
+                    value={name}
+                    onChangeText={(value) => setName(value)}
+                  />
+                </View>
               </View>
               <View>
                 <Text style={styles.label}>Email</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="name@email.com"
-                  placeholderTextColor={COLOR.placeholder}
-                  onChangeText={(value) => setEmail(value)}
-                  value={email}
-                  autoCorrect={false}
-                />
+                <View style={styles.icon_input_container}>
+                  <MaterialIcons
+                    name="email"
+                    style={styles.inputIcon}
+                    size={18}
+                    color={COLOR.placeholder}
+                  />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="name@email.com"
+                    placeholderTextColor={COLOR.placeholder}
+                    onChangeText={(value) => setEmail(value)}
+                    value={email}
+                    autoCorrect={false}
+                  />
+                </View>
               </View>
               <View>
                 <Text style={styles.label}>Set Password</Text>
                 <View style={styles.passwordContainer}>
-                  <TextInput
-                    style={styles.passwordInput}
-                    placeholder="Create a Password"
-                    placeholderTextColor={COLOR.placeholder}
-                    onChangeText={(value) => setPassword(value)}
-                    value={password}
-                    secureTextEntry={!showPassword}
-                    autoCorrect={false}
-                    underlineColorAndroid="transparent"
-                  />
+                  <View style={styles.icon_input_container}>
+                    <Entypo
+                      name="lock-open"
+                      style={styles.inputIcon}
+                      size={18}
+                      color={COLOR.placeholder}
+                    />
+                    <TextInput
+                      style={styles.passwordInput}
+                      placeholder="Create a Password"
+                      placeholderTextColor={COLOR.placeholder}
+                      onChangeText={(value) => setPassword(value)}
+                      value={password}
+                      secureTextEntry={!showPassword}
+                      autoCorrect={false}
+                      underlineColorAndroid="transparent"
+                    />
+                  </View>
                   <Pressable
                     onPress={togglePasswordVisibility}
                     style={styles.eyeIcon}
@@ -261,10 +287,19 @@ const styles = StyleSheet.create({
     borderColor: COLOR.stroke,
     borderRadius: 10,
     paddingVertical: 10,
-    paddingHorizontal: 12,
+    paddingRight: 12,
+    paddingLeft: 35,
     fontFamily: FONTS.medium,
     color: COLOR.textSecondary,
     fontSize: FONT_SIZE.body,
+  },
+  icon_input_container: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  inputIcon: {
+    position: "absolute",
+    paddingLeft: 8,
   },
   passwordContainer: {
     position: "relative",
@@ -277,7 +312,8 @@ const styles = StyleSheet.create({
     borderColor: COLOR.stroke,
     borderRadius: 10,
     paddingVertical: 10,
-    paddingHorizontal: 12,
+    paddingRight: 12,
+    paddingLeft: 35,
     paddingRight: 45,
     fontFamily: FONTS.medium,
     color: COLOR.textSecondary,

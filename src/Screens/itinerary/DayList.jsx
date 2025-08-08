@@ -78,13 +78,15 @@ const JourneysList = ({ tripData }) => {
 
   const renderJourneyItem = ({ item }) => {
     return (
+      <>
       <JourneyItemWithStats
         item={item}
         tripId={tripData.id}
         onPress={() => {
           navigation.navigate("itineraryList", { item, tripData });
         }}
-      />
+        />
+        </>
     );
   };
 

@@ -22,8 +22,8 @@ import {
   handleLoginValidation,
 } from "../utils/AuthHandlers";
 import { Image } from "expo-image";
-import Fontisto from "@expo/vector-icons/Fontisto";
-import Ionicons from "@expo/vector-icons/Ionicons";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import Entypo from '@expo/vector-icons/Entypo';
 
 export default function AuthScreen() {
   const email = useRef("");
@@ -107,7 +107,7 @@ export default function AuthScreen() {
               <View>
                 <Text style={styles.label}>Email</Text>
                 <View style={styles.icon_input_container}>
-                  <Fontisto
+                  <MaterialIcons
                     name="email"
                     style={styles.inputIcon}
                     size={18}
@@ -126,8 +126,8 @@ export default function AuthScreen() {
                 <Text style={styles.label}>Password</Text>
                 <View style={styles.passwordContainer}>
                   <View style={styles.icon_input_container}>
-                    <Ionicons
-                      name="lock-open-outline"
+                    <Entypo
+                      name="lock-open"
                       style={styles.inputIcon}
                       size={18}
                       color={COLOR.placeholder}
@@ -161,7 +161,7 @@ export default function AuthScreen() {
             </View>
             <View style={styles.loginbuttons}>
               {isLoading ? (
-                <ActivityIndicator size="large" color={COLOR.primary}/>
+                <ActivityIndicator size="large" color={COLOR.primary} />
               ) : (
                 <Pressable
                   onPress={() => signin(email.current, password.current)}
