@@ -5,10 +5,8 @@ import {
   View,
   TouchableOpacity,
   SafeAreaView,
-  FlatList,
   Alert,
   ScrollView,
-  Dimensions,
 } from "react-native";
 import { FONTS, FONT_SIZE, COLOR } from "../../constants/Theme";
 import { Ionicons } from "@expo/vector-icons";

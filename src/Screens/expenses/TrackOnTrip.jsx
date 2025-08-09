@@ -45,7 +45,11 @@ const TrackOnTrip = ({ route }) => {
   }
 
   const safeTripData = onTripExpenseData || [];
-  const totalExpenses = safeTripData.reduce((sum, expense) => {
+  const expenseList = selectedName
+    ? safeTripData.filter((item) => item.uid === selectedName)
+    : safeTripData;
+
+  const totalExpenses = expenseList.reduce((sum, expense) => {
     return sum + parseFloat(expense.amount);
   }, 0);
   const budgetPercentage = Math.min((totalExpenses / safeBudget) * 100, 100);
@@ -162,10 +166,6 @@ const TrackOnTrip = ({ route }) => {
     });
     toggleModal();
   };
-
-  const expenseList = selectedName
-    ? safeTripData.filter((item) => item.uid === selectedName)
-    : safeTripData;
 
   return (
     <SafeAreaView edges={["bottom", "left", "right"]} style={styles.container}>

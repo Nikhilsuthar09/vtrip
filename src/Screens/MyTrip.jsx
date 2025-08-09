@@ -19,7 +19,8 @@ const MyTrip = () => {
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [editTripData, setEditTripData] = useState(null);
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
-  const { tripsData, loading, error, tripIds } = useUserTripsData();
+  const [refreshing, setRefreshing] = useState(false);
+  const { tripsData, loading, error, tripIds, refetch } = useUserTripsData();
   const safeTripData = tripsData || [];
 
   // Organize and filter trips
@@ -121,11 +122,10 @@ const MyTrip = () => {
     const travellerArray = modalData.selectedItemData.travellers;
     const result = await deleteTrip(tripId, travellerArray);
 
-    if(result.success){
-      Alert.alert("Success",result.message)
-    }
-    else{
-      Alert.alert("Error",result.message)
+    if (result.success) {
+      Alert.alert("Success", result.message);
+    } else {
+      Alert.alert("Error", result.message);
     }
   };
 
@@ -172,6 +172,11 @@ const MyTrip = () => {
   const closeAddModal = () => {
     setIsAddModalVisible(false);
   };
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  };
 
   const renderSectionHeader = ({ section }) => {
     // Only show section header if there are trips in that section
@@ -212,11 +217,6 @@ const MyTrip = () => {
       openModal={openMenu}
     />
   );
-
-  const renderEmptyState = () => (
-    <EmptyTripsPlaceholder searchText={searchText} onAddTrip={handleAddTrip} />
-  );
-
   const showPlaceholder = totalTrips === 0;
 
   return (
@@ -230,6 +230,8 @@ const MyTrip = () => {
         />
       ) : (
         <SectionList
+          refreshing={refreshing}
+          onRefresh={onRefresh}
           sections={organizedTrips}
           renderItem={renderItem}
           renderSectionHeader={renderSectionHeader}
