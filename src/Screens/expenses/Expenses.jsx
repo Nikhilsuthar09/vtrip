@@ -14,11 +14,9 @@ import { useNavigation } from "expo-router";
 import {
   useOnTripExpenseOnce,
   usePlannedExpenseOnce,
-  useTripExpenses,
 } from "../../utils/firebaseTripHandler";
 import Spinner from "../../components/Spinner";
 import { PieChart, BarChart } from "react-native-chart-kit";
-import { useFocusEffect } from "@react-navigation/native";
 
 const { width: screenWidth } = Dimensions.get("window");
 const chartWidth = screenWidth - 60;
@@ -242,10 +240,10 @@ const Expenses = ({ route }) => {
           colors: travellerEntries.map((_, index) => {
             const colors = [
               () => COLOR.primary,
-              () => COLOR.success || "#4CAF50",
-              () => COLOR.warning || "#FF9800",
+              () => "#4CAF50",
+              () => "#FF9800",
               () => COLOR.danger,
-              () => COLOR.info || "#2196F3",
+              () => "#2196F3",
               () => "#9C27B0",
               () => "#607D8B",
               () => "#FF5722",
@@ -371,12 +369,12 @@ const Expenses = ({ route }) => {
   };
 
   // Placeholder Component
-  const PlaceholderBox = ({ title, subtitle, icon }) => (
-    <View style={styles.dashedBox}>
+  const PlaceholderBox = ({ title, subtitle, icon, onPress }) => (
+    <TouchableOpacity onPress={onPress} style={styles.dashedBox}>
       <Ionicons name={icon} size={32} color={COLOR.primary} />
       <Text style={styles.boxTitle}>{title}</Text>
       <Text style={styles.boxSubtitle}>{subtitle}</Text>
-    </View>
+    </TouchableOpacity>
   );
 
   return (
@@ -405,6 +403,7 @@ const Expenses = ({ route }) => {
             title="Plan in Advance"
             subtitle="Set budgets for hotels, food, and transport before your trip starts."
             icon="add-circle-outline"
+            onPress={handlePlanInAdv}
           />
         )}
 
@@ -433,6 +432,7 @@ const Expenses = ({ route }) => {
             title="Track During Trip"
             subtitle="Log your expenses in real-time to stay on budget."
             icon="add-circle-outline"
+            onPress={trackOnTrip}
           />
         )}
 

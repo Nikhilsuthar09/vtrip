@@ -20,7 +20,6 @@ const TrackOnTripModal = ({
   onSubmit,
   traveller,
 }) => {
-  console.log(expenseDataOnTrip.name)
   return (
     <Modal
       visible={modalVisible}
