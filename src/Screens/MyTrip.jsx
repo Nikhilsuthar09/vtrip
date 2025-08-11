@@ -3,7 +3,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { SectionList, View, Text, StyleSheet, Alert } from "react-native";
 import ShowTripsCard from "../components/ShowTripsCard";
 import HeaderWithSearch from "../components/HeaderWithSearch";
-import { useUserTripsData } from "../utils/firebaseUserHandlers";
 import Spinner from "../components/Spinner";
 import TripMenuModal from "../components/TripMenuModal";
 import AddTripModal from "../components/AddTripModal";
@@ -12,6 +11,7 @@ import { COLOR, FONT_SIZE, FONTS } from "../constants/Theme";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { getTripStatus } from "../utils/calendar/getTripStatus";
 import { deleteTrip } from "../utils/tripData/deleteTripData";
+import { useUserTripsData } from "../utils/firebaseUserHandlers";
 
 const MyTrip = () => {
   const [modalData, setModalData] = useState(null);
@@ -89,6 +89,13 @@ const MyTrip = () => {
     return sections;
   }, [safeTripData, searchText]);
 
+  if (loading) {
+    return <Spinner />;
+  }
+
+  if (error) {
+    console.log(error);
+  }
   const totalTrips = organizedTrips.reduce(
     (sum, section) => sum + section.data.length,
     0
@@ -108,14 +115,6 @@ const MyTrip = () => {
   };
 
   const closeMenu = () => setModalData(null);
-
-  if (loading) {
-    return <Spinner />;
-  }
-
-  if (error) {
-    console.log(error);
-  }
 
   // to do
   const handleDeleteTrip = async (tripId) => {

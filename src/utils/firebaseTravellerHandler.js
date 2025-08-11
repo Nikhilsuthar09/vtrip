@@ -9,20 +9,16 @@ import {
 } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { db } from "../Configs/firebaseConfig";
-import { getAuth } from "firebase/auth";
+import { useAuth } from "../Context/AuthContext";
 
 export const useTravellerNames = (tripId) => {
   const [travellerNames, setTravellerNames] = useState([]);
   const [travellerLoading, setLoading] = useState(true);
   const [travellerError, setError] = useState(null);
-  const auth = getAuth();
-  const uid = auth?.currentUser?.uid;
-  const name = auth?.currentUser?.displayName;
-  const email = auth?.currentUser?.email;
-
+  const { email, name, uid, isLoading:authLoading} = useAuth()
   useEffect(() => {
-    if (!tripId) {
-      setLoading(false);
+    if (!tripId || authLoading) {
+      setLoading(authLoading);
       return;
     }
     const fetchTravellerNames = async () => {
@@ -43,7 +39,7 @@ export const useTravellerNames = (tripId) => {
         const names = [];
         if (travellers.length === 1) {
           names.push({
-            uid,
+            uid: uid || "Unknown User",
             name: name || "Unknown User",
             email: email || null,
           });
@@ -79,6 +75,6 @@ export const useTravellerNames = (tripId) => {
       }
     };
     fetchTravellerNames();
-  }, [tripId]);
+  }, [tripId, email, name, uid,authLoading]);
   return { travellerNames, travellerLoading, travellerError };
 };

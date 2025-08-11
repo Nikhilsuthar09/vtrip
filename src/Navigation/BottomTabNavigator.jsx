@@ -5,7 +5,7 @@ import AddTripModal from "../components/AddTripModal";
 import CreateTripButton from "../components/CreateTripButton";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { COLOR, FONT_SIZE, FONTS } from "../constants/Theme";
-import Ionicons from '@expo/vector-icons/Ionicons';
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Platform } from "react-native";
 
@@ -16,22 +16,22 @@ function EmptyComponent() {
 }
 export default function HomeTabs() {
   const [isModalVisible, setModalVisible] = useState(false);
-   const insets = useSafeAreaInsets();
+  const insets = useSafeAreaInsets();
   const openModal = () => {
-    setModalVisible(true)
-  }
+    setModalVisible(true);
+  };
   const closeModal = () => {
-    setModalVisible(false)
-  }
+    setModalVisible(false);
+  };
 
   return (
     <>
       <Tab.Navigator
         screenOptions={{
-        animation: 'shift',
+          animation: "shift",
           tabBarStyle: {
-            height: 60 + (Platform.OS === 'android' ? insets.bottom : 0),
-            paddingBottom: Platform.OS === 'android' ? insets.bottom : 0,
+            height: 60 + (Platform.OS === "android" ? insets.bottom : 0),
+            paddingBottom: Platform.OS === "android" ? insets.bottom : 0,
             paddingTop: 2,
           },
           tabBarActiveTintColor: COLOR.primary,
@@ -40,7 +40,7 @@ export default function HomeTabs() {
             fontFamily: FONTS.medium,
             fontSize: FONT_SIZE.caption,
           },
-          tabBarPressColor: 'transparent',
+          tabBarPressColor: "transparent",
         }}
       >
         <Tab.Screen

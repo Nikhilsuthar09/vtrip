@@ -23,7 +23,6 @@ import {
   updateExpense,
 } from "../../utils/firebase_crud/expenses/expenseCrud";
 import { renderItem } from "../../components/expense/RenderOnTripExpenseList";
-import { firstName } from "../../utils/common/getUserDetails";
 
 const TrackOnTrip = ({ route }) => {
   const { id, budget, safeTravellerNames, travellerLoading } = route.params;

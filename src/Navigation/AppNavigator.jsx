@@ -35,31 +35,34 @@ export default function RootStack() {
             component={TopTabs}
             options={({ route }) => ({
               headerTitle: () => {
-                const title = route?.params?.destination
-                const subtitle = `${formatDate(route?.params?.startDate)} - ${formatDate(route?.params?.endDate)}`
+                const title = route?.params?.destination;
+                const subtitle = `${formatDate(
+                  route?.params?.startDate
+                )} - ${formatDate(route?.params?.endDate)}`;
                 return (
-                <View style={{ paddingVertical: 4 }}>
-                  <Text
-                    style={{
-                      fontFamily: FONTS.semiBold,
-                      fontSize: FONT_SIZE.H6,
-                      color: "#fff",
-                    }}
-                  >
-                    {title}
-                  </Text>
-                  <Text
-                    style={{
-                      fontFamily: FONTS.regular,
-                      fontSize: FONT_SIZE.caption,
-                      color: "#eee",
-                      marginTop: 2,
-                    }}
-                  >
-                    {subtitle}
-                  </Text>
-                </View>
-              )},
+                  <View style={{ paddingVertical: 4 }}>
+                    <Text
+                      style={{
+                        fontFamily: FONTS.semiBold,
+                        fontSize: FONT_SIZE.H6,
+                        color: "#fff",
+                      }}
+                    >
+                      {title}
+                    </Text>
+                    <Text
+                      style={{
+                        fontFamily: FONTS.regular,
+                        fontSize: FONT_SIZE.caption,
+                        color: "#eee",
+                        marginTop: 2,
+                      }}
+                    >
+                      {subtitle}
+                    </Text>
+                  </View>
+                );
+              },
               headerTintColor: "#fff",
               headerTitleStyle: {
                 fontFamily: FONTS.semiBold,
@@ -67,7 +70,7 @@ export default function RootStack() {
               },
               headerStyle: {
                 backgroundColor: COLOR.primary,
-                height:100
+                height: 100,
               },
             })}
           />

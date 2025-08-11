@@ -2,14 +2,10 @@ import { View, StyleSheet, Pressable, TextInput, Text } from "react-native";
 import { COLOR, FONT_SIZE, FONTS } from "../constants/Theme";
 import { FontAwesome } from "@expo/vector-icons";
 import SeparationLine from "./SeparationLine";
-import { getAuth } from "firebase/auth";
+import { useAuth } from "../Context/AuthContext";
 
 const HeaderWithSearch = ({ searchText, setSearchText }) => {
-  const auth = getAuth();
-  const name = auth?.currentUser?.displayName;
-  const cleanedName = name.trim().replace(/\s+/g, " ");
-  const splitted = cleanedName.split(" ");
-  const userNameChars = splitted[0][0] + splitted[splitted.length - 1][0];
+  const {userNameChars} = useAuth()
   return (
     <>
       <View style={styles.container}>
@@ -26,8 +22,17 @@ const HeaderWithSearch = ({ searchText, setSearchText }) => {
           <FontAwesome name="search" size={18} color={COLOR.grey} />
         </View>
         <Pressable style={styles.userButton}>
-          {name ? (
-            <Text style={{fontFamily:FONTS.medium, color:"#fff", fontSize:FONT_SIZE.body, paddingVertical:1}} >{userNameChars}</Text>
+          {userNameChars && userNameChars !=="U" ? (
+            <Text
+              style={{
+                fontFamily: FONTS.medium,
+                color: "#fff",
+                fontSize: FONT_SIZE.body,
+                paddingVertical: 1,
+              }}
+            >
+              {userNameChars}
+            </Text>
           ) : (
             <FontAwesome name="user-o" size={18} color="#fff" />
           )}

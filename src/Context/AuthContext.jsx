@@ -11,16 +11,53 @@ export const useAuth = () => {
   }
   return context;
 };
+const processUserData = (user) => {
+  if (!user) {
+    return {
+      name: null,
+      uid: null,
+      email: null,
+      firstName: "User",
+      userNameChars: "U",
+    };
+  }
+
+  const name = user.displayName;
+  const uid = user.uid;
+  const email = user.email;
+  const cleanedName = name?.trim().replace(/\s+/g, " ");
+  const splitted = cleanedName?.split(" ") || [];
+  const firstName = splitted.length > 0 ? splitted[0] : "User";
+  const userNameChars =
+    splitted.length > 0
+      ? (
+          splitted[0][0] +
+          (splitted[splitted.length - 1][0] || splitted[0][1] || "")
+        ).toUpperCase()
+      : "U";
+
+  return { name, uid, email, firstName, userNameChars };
+};
 
 export const AuthProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setLoading] = useState(true);
   const [isRegistering, setIsRegistering] = useState(false);
+  const [user, setUser] = useState(null);
+  const [userDetails, setUserDetails] = useState({
+    name: null,
+    uid: null,
+    email: null,
+    firstName: "User",
+    userNameChars: "U",
+  });
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      setUser(firebaseUser)
+      setUserDetails(processUserData(firebaseUser))
       if (!isRegistering) {
-        setIsLoggedIn(!!user);
+        setIsLoggedIn(!!firebaseUser);
       }
       setLoading(false);
     });
@@ -37,6 +74,8 @@ export const AuthProvider = ({ children }) => {
         isLoading,
         isRegistering,
         setRegistrationState,
+        user,
+        ...userDetails
       }}
     >
       {children}

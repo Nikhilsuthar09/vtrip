@@ -14,16 +14,22 @@ import {
   where,
 } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
+import { useAuth } from "../Context/AuthContext";
 
 // hook to listen to the changes in tripIds array
 export const useUserTrips = () => {
+  const {uid} = useAuth()
   const [tripIds, setTripIds] = useState([]);
   const [idsError, setError] = useState(null);
   const [idsLoading, setLoading] = useState(true);
 
   useEffect(() => {
-    const userId = getAuth().currentUser.uid;
-    const userDocRef = doc(db, "user", userId);
+    if(!uid) {
+      setLoading(false)
+      setTripIds([])
+      return
+    }
+    const userDocRef = doc(db, "user", uid);
 
     const unsubscribe = onSnapshot(
       userDocRef,
@@ -46,7 +52,7 @@ export const useUserTrips = () => {
     );
 
     return () => unsubscribe();
-  }, []);
+  }, [uid]);
   return { tripIds, idsLoading, idsError };
 };
 

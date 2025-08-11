@@ -32,7 +32,7 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import { db } from "../Configs/firebaseConfig";
-import { getAuth } from "firebase/auth";
+import { useAuth } from "../Context/AuthContext";
 
 const AddTripModal = ({
   isModalVisible,
@@ -62,6 +62,7 @@ const AddTripModal = ({
       });
     }
   }, [isEditMode, editTripData]);
+  const { uid } = useAuth();
 
   const resetTripData = () => {
     setTripData({
@@ -112,8 +113,6 @@ const AddTripModal = ({
           const docSnap = await getDoc(docRef);
           if (docSnap.exists()) {
             try {
-              const auth = getAuth();
-              const uid = auth?.currentUser.uid;
               const userDocRef = doc(db, "user", uid);
               await updateDoc(userDocRef, {
                 tripIds: arrayUnion(idToRetrieve),
