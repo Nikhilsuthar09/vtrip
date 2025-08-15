@@ -46,7 +46,6 @@ export const uploadImageToCloudinary = async (imageUrl) => {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const json = await response.json();
-    console.log("Uploaded response:", json);
     if (json.secure_url) {
       return json.secure_url;
     } else {

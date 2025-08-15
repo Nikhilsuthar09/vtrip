@@ -5,7 +5,7 @@ import Octicons from "@expo/vector-icons/Octicons";
 import React from "react";
 import { COLOR, FONT_SIZE, FONTS } from "../../constants/Theme";
 
-const QuickActions = () => {
+const QuickActions = ({ onItineraryPress }) => {
   return (
     <View style={styles.quickActionsSection}>
       <Text style={styles.sectionTitle}>Quick Actions</Text>
@@ -18,7 +18,10 @@ const QuickActions = () => {
           <Text style={styles.actionLabel}>New Trip</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.actionButton}>
+        <TouchableOpacity
+          onPress={onItineraryPress}
+          style={styles.actionButton}
+        >
           <View style={styles.actionIcon}>
             <FontAwesome6
               name="calendar-check"

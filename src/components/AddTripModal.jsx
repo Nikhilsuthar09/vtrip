@@ -107,16 +107,19 @@ const AddTripModal = ({
   const handleStoreTripData = async () => {
     try {
       setLoading(true);
+
+      let updatedTripData = { ...tripData };
       if (tripData.image) {
         const imageUrl = await uploadImageToCloudinary(tripData.image);
-        setTripData((prevData) => ({
-          ...prevData,
+        updatedTripData = {
+          ...updatedTripData,
           image: imageUrl,
-        }));
+        };
+        setTripData(updatedTripData);
       }
 
       if (isEditMode) {
-        const success = await updateTrip();
+        const success = await updateTrip(updatedTripData);
         if (success) {
           resetTripData();
           await refetch();
@@ -152,7 +155,7 @@ const AddTripModal = ({
             console.log("Something went wrong");
           }
         } else {
-          const success = await addTripToDb(tripData);
+          const success = await addTripToDb(updatedTripData);
           if (success) {
             resetTripData();
             onClose();
@@ -166,7 +169,7 @@ const AddTripModal = ({
       setLoading(false);
     }
   };
-  const updateTrip = async () => {
+  const updateTrip = async (tripData) => {
     if (!tripData.title.trim()) {
       Alert.alert("Please enter a title");
       return false;

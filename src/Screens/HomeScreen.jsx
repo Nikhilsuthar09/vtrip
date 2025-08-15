@@ -23,12 +23,12 @@ import React, { useMemo } from "react";
 import {
   View,
   Text,
-  Image,
   ScrollView,
   TouchableOpacity,
   StyleSheet,
   FlatList,
 } from "react-native";
+import { Image } from "expo-image";
 import { COLOR, FONT_SIZE, FONTS } from "../constants/Theme";
 import horizontalList from "../components/home/horizontalList";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -36,10 +36,13 @@ import { useUserTripsData } from "../utils/firebaseUserHandlers";
 import QuickActions from "../components/home/QuickActions";
 import { getTripStatus } from "../utils/calendar/getTripStatus";
 import { useAuth } from "../Context/AuthContext";
+import { useNavigation } from "@react-navigation/native";
+import { useTravellerNames } from "../utils/firebaseTravellerHandler";
 
 const TravelApp = () => {
   const { firstName, userNameChars } = useAuth();
   const { tripsData, loading, error, tripIds, refetch } = useUserTripsData();
+  const navigation = useNavigation();
   const safeTripData = tripsData || [];
 
   // Get the primary trip to display (ongoing takes priority over upcoming)
@@ -77,6 +80,10 @@ const TravelApp = () => {
     return null;
   }, [safeTripData]);
 
+  const { travellerNames, travellerLoading, travellerError } =
+    useTravellerNames(primaryTrip?.id);
+  const safeTravellerNames = travellerNames || [];
+
   // Calculate trip timing text based on status
   const getTripTimingText = (trip) => {
     if (!trip) return "No active trips";
@@ -101,6 +108,25 @@ const TravelApp = () => {
   const getTripStatusIndicator = (trip) => {
     if (!trip) return "";
     return trip.status === "ongoing" ? "🌟 Ongoing" : "📅 Upcoming";
+  };
+
+  // get quick actions data
+  const handleActionNavigation = () => {
+    if (primaryTrip) {
+      const tripDetails = safeTripData.find(
+        (item) => item.id === primaryTrip.id
+      );
+      navigation.navigate("TopTabs", {
+        id: tripDetails.id,
+        budget: tripDetails.budget,
+        destination: tripDetails.destination,
+        startDate: tripDetails.startDate,
+        endDate: tripDetails.endDate,
+        safeTravellerNames: safeTravellerNames,
+        travellerLoading: travellerLoading,
+        screen: "Itinerary",
+      });
+    }
   };
   const recentTrips = useMemo(() => {
     if (safeTripData.length === 0) return [];
@@ -148,11 +174,9 @@ const TravelApp = () => {
         {/* Upcoming Trip Card */}
         <View style={styles.tripCard}>
           <Image
-            source={{
-              uri:
-                primaryTrip?.imageUrl ||
-                "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&h=400&fit=crop",
-            }}
+            source={
+              primaryTrip?.imageUrl || require("../../assets/default.jpg")
+            }
             style={styles.tripImage}
           />
           <View style={styles.tripOverlay}>
@@ -183,7 +207,7 @@ const TravelApp = () => {
         </View>
 
         {/* Quick Actions */}
-        <QuickActions />
+        <QuickActions onItineraryPress={handleActionNavigation} />
 
         {/* Recent Trips */}
         {recentTrips.length > 0 && (
@@ -245,7 +269,7 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.medium,
     fontSize: FONT_SIZE.body,
   },
-    sectionTitle: {
+  sectionTitle: {
     fontSize: FONT_SIZE.H6,
     fontFamily: FONTS.semiBold,
     color: COLOR.textPrimary,
@@ -291,7 +315,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: "rgba(0,0,0,0.3)",
+    backgroundColor: "rgba(0,0,0,0.4)",
     paddingTop: 25,
     paddingLeft: 20,
   },

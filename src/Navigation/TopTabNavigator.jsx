@@ -20,11 +20,13 @@ export default function TopTabs({ route }) {
     endDate,
     safeTravellerNames,
     travellerLoading,
+    screen
   } = route.params;
   return (
     <>
-      <StatusBar style="light"/>
+      <StatusBar style="light" />
       <Tab.Navigator
+        initialRouteName={screen || "Itinerary"}
         screenOptions={{
           tabBarLabelStyle: {
             fontFamily: FONTS.semiBold,
