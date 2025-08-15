@@ -5,7 +5,7 @@ import Octicons from "@expo/vector-icons/Octicons";
 import React from "react";
 import { COLOR, FONT_SIZE, FONTS } from "../../constants/Theme";
 
-const QuickActions = ({ onItineraryPress }) => {
+const QuickActions = ({ onActionPress }) => {
   return (
     <View style={styles.quickActionsSection}>
       <Text style={styles.sectionTitle}>Quick Actions</Text>
@@ -19,7 +19,7 @@ const QuickActions = ({ onItineraryPress }) => {
         </TouchableOpacity>
 
         <TouchableOpacity
-          onPress={onItineraryPress}
+          onPress={() => onActionPress("Itinerary")}
           style={styles.actionButton}
         >
           <View style={styles.actionIcon}>
@@ -33,7 +33,10 @@ const QuickActions = ({ onItineraryPress }) => {
           <Text style={styles.actionLabel}>Itinerary</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.actionButton}>
+        <TouchableOpacity
+          onPress={() => onActionPress("Expenses")}
+          style={styles.actionButton}
+        >
           <View style={styles.actionIcon}>
             <FontAwesome name="inr" size={24} color={COLOR.primary} />
           </View>
@@ -41,7 +44,10 @@ const QuickActions = ({ onItineraryPress }) => {
           <Text style={styles.actionLabel}>Expenses</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.actionButton}>
+        <TouchableOpacity
+          onPress={() => onActionPress("Packing")}
+          style={styles.actionButton}
+        >
           <View style={styles.actionIcon}>
             <Octicons name="checklist" size={24} color={COLOR.primary} />
           </View>

@@ -6,7 +6,6 @@ import {
   Pressable,
 } from "react-native";
 import Modal from "react-native-modal";
-import React, { useState } from "react";
 import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,

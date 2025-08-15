@@ -111,7 +111,7 @@ const TravelApp = () => {
   };
 
   // get quick actions data
-  const handleActionNavigation = () => {
+  const handleActionNavigation = (screen) => {
     if (primaryTrip) {
       const tripDetails = safeTripData.find(
         (item) => item.id === primaryTrip.id
@@ -124,7 +124,7 @@ const TravelApp = () => {
         endDate: tripDetails.endDate,
         safeTravellerNames: safeTravellerNames,
         travellerLoading: travellerLoading,
-        screen: "Itinerary",
+        screen: screen,
       });
     }
   };
@@ -207,7 +207,7 @@ const TravelApp = () => {
         </View>
 
         {/* Quick Actions */}
-        <QuickActions onItineraryPress={handleActionNavigation} />
+        <QuickActions onActionPress={handleActionNavigation} />
 
         {/* Recent Trips */}
         {recentTrips.length > 0 && (
