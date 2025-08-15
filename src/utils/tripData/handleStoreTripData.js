@@ -41,6 +41,7 @@ const addTripToDb = async (tripData) => {
       budget: budgetNumber,
       startDate: tripData.start,
       endDate: tripData.end,
+      imageUrl:tripData.image,
       createdAt: serverTimestamp(),
       createdBy: userId,
       travellers: arrayUnion(userId),

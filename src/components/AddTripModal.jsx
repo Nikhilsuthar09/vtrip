@@ -6,6 +6,7 @@ import {
   TextInput,
   ScrollView,
   TouchableOpacity,
+  Alert,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import Modal from "react-native-modal";
@@ -33,6 +34,8 @@ import {
 } from "firebase/firestore";
 import { db } from "../Configs/firebaseConfig";
 import { useAuth } from "../Context/AuthContext";
+import ImagePickerComponent from "./ImagePickerComponent";
+import { uploadImageToCloudinary } from "../utils/tripData/uploadImage";
 
 const AddTripModal = ({
   isModalVisible,
@@ -47,9 +50,11 @@ const AddTripModal = ({
     title: "",
     destination: "",
     budget: "",
+    image: null,
     start: "",
     end: "",
   });
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (isEditMode && editTripData) {
@@ -69,6 +74,7 @@ const AddTripModal = ({
       title: "",
       destination: "",
       budget: "",
+      image: null,
       start: "",
       end: "",
     });
@@ -89,7 +95,6 @@ const AddTripModal = ({
       [field]: value,
     }));
   };
-
   const noOfDays =
     Math.ceil(
       (new Date(tripData.end) - new Date(tripData.start)) /
@@ -97,50 +102,64 @@ const AddTripModal = ({
     ) + 1;
 
   const handleStoreTripData = async () => {
-    if (isEditMode) {
-      const success = await updateTrip();
-      if (success) {
-        resetTripData();
-        onClose();
-      } else {
-        return;
+    try {
+      setLoading(true);
+      if (tripData.image) {
+        imageUrl = await uploadImageToCloudinary(tripData.image);
+        setTripData((prevData) => ({
+          ...prevData,
+          image: imageUrl,
+        }));
       }
-    } else {
-      if (roomId.trim()) {
-        try {
-          const idToRetrieve = roomId.trim();
-          const docRef = doc(db, "trip", idToRetrieve);
-          const docSnap = await getDoc(docRef);
-          if (docSnap.exists()) {
-            try {
-              const userDocRef = doc(db, "user", uid);
-              await updateDoc(userDocRef, {
-                tripIds: arrayUnion(idToRetrieve),
-              });
-              const tripDocRef = doc(db, "trip", idToRetrieve);
-              await updateDoc(tripDocRef, {
-                travellers: arrayUnion(uid),
-              });
-              console.log("user's Trip array updated");
-              resetTripData();
-            } catch (e) {
-              console.log(e);
-            }
-          } else {
-            console.log("No trips found");
-          }
-        } catch (e) {
-          console.log("Something went wrong");
-        }
-      } else {
-        const success = await addTripToDb(tripData);
+
+      if (isEditMode) {
+        const success = await updateTrip();
         if (success) {
           resetTripData();
           onClose();
         } else {
           return;
         }
+      } else {
+        if (roomId.trim()) {
+          try {
+            const idToRetrieve = roomId.trim();
+            const docRef = doc(db, "trip", idToRetrieve);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+              try {
+                const userDocRef = doc(db, "user", uid);
+                await updateDoc(userDocRef, {
+                  tripIds: arrayUnion(idToRetrieve),
+                });
+                const tripDocRef = doc(db, "trip", idToRetrieve);
+                await updateDoc(tripDocRef, {
+                  travellers: arrayUnion(uid),
+                });
+                console.log("user's Trip array updated");
+                resetTripData();
+              } catch (e) {
+                console.log(e);
+              }
+            } else {
+              console.log("No trips found");
+            }
+          } catch (e) {
+            console.log("Something went wrong");
+          }
+        } else {
+          const success = await addTripToDb(tripData);
+          if (success) {
+            resetTripData();
+            onClose();
+          }
+        }
       }
+    } catch (e) {
+      Alert.alert("Error", "Failed to save the trip. Please try again");
+      console.log(e);
+    } finally {
+      setLoading(false);
     }
   };
   const updateTrip = async () => {
@@ -312,6 +331,11 @@ const AddTripModal = ({
                   ]}
                 />
               </View>
+              <ImagePickerComponent
+                onImageSelected={(uri) => handleTripDataChange("image", uri)}
+                selectedImage={tripData.image}
+                placeholder="Add Trip Cover Image"
+              />
               {/* Date Selection Info */}
               <View style={styles.dateInfoContainer}>
                 <View style={styles.dateRow}>
