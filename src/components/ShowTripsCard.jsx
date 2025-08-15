@@ -17,6 +17,7 @@ const ShowTripsCard = ({
   startDate,
   endDate,
   budget,
+  image,
   openModal,
 }) => {
   const { travellerNames, travellerLoading, travellerError } =
@@ -53,7 +54,7 @@ const ShowTripsCard = ({
         <View style={styles.imgcontainer}>
           <Image
             style={styles.image}
-            source={require("./../../assets/default.jpg")}
+            source={image || require("../../assets/default.jpg")}
             contentFit="cover"
             transition={500}
           />

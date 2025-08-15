@@ -12,6 +12,7 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { getTripStatus } from "../utils/calendar/getTripStatus";
 import { deleteTrip } from "../utils/tripData/deleteTripData";
 import { useUserTripsData } from "../utils/firebaseUserHandlers";
+import ErrorScreen from "../components/ErrorScreen";
 
 const MyTrip = () => {
   const [modalData, setModalData] = useState(null);
@@ -95,6 +96,7 @@ const MyTrip = () => {
 
   if (error) {
     console.log(error);
+    return <ErrorScreen/>
   }
   const totalTrips = organizedTrips.reduce(
     (sum, section) => sum + section.data.length,
@@ -150,7 +152,6 @@ const MyTrip = () => {
   };
 
   const handleEditTrip = (id) => {
-    console.log(id);
     const tripToEdit = safeTripData.find((trip) => trip.id === id);
     if (tripToEdit) {
       setEditTripData(tripToEdit);
@@ -213,6 +214,7 @@ const MyTrip = () => {
       startDate={item.startDate}
       endDate={item.endDate}
       budget={item.budget}
+      image={item?.imageUrl}
       openModal={openMenu}
     />
   );
@@ -257,6 +259,7 @@ const MyTrip = () => {
         onBackButtonPressed={closeEditModal}
         editTripData={editTripData}
         isEditMode={true}
+        refetch= {refetch}
       />
 
       <AddTripModal

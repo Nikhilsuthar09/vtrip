@@ -7,6 +7,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import Modal from "react-native-modal";
@@ -43,6 +44,7 @@ const AddTripModal = ({
   onBackButtonPressed,
   editTripData = null,
   isEditMode = false,
+  refetch,
 }) => {
   const [roomId, setRoomId] = useState("");
   const [activeInput, setActiveInput] = useState(null);
@@ -64,6 +66,7 @@ const AddTripModal = ({
         budget: editTripData.budget?.toString() || "",
         start: editTripData.startDate || "",
         end: editTripData.endDate || "",
+        image: editTripData?.imageUrl || null,
       });
     }
   }, [isEditMode, editTripData]);
@@ -105,7 +108,7 @@ const AddTripModal = ({
     try {
       setLoading(true);
       if (tripData.image) {
-        imageUrl = await uploadImageToCloudinary(tripData.image);
+        const imageUrl = await uploadImageToCloudinary(tripData.image);
         setTripData((prevData) => ({
           ...prevData,
           image: imageUrl,
@@ -116,6 +119,7 @@ const AddTripModal = ({
         const success = await updateTrip();
         if (success) {
           resetTripData();
+          await refetch();
           onClose();
         } else {
           return;
@@ -165,28 +169,28 @@ const AddTripModal = ({
   const updateTrip = async () => {
     if (!tripData.title.trim()) {
       Alert.alert("Please enter a title");
-      return;
+      return false;
     }
     if (!tripData.destination.trim()) {
       Alert.alert("Please enter your destination");
-      return;
+      return false;
     }
     if (!tripData.budget.trim()) {
       Alert.alert("Please enter your budget");
-      return;
+      return false;
     }
     const budgetNumber = parseInt(tripData.budget);
     if (isNaN(budgetNumber)) {
       Alert.alert("Please enter a valid amount");
-      return;
+      return false;
     }
     if (!tripData.start) {
       Alert.alert("Please select a start date");
-      return;
+      return false;
     }
     if (!tripData.end) {
       Alert.alert("Please select an end date");
-      return;
+      return false;
     }
     try {
       const tripId = editTripData.id;
@@ -196,13 +200,16 @@ const AddTripModal = ({
         budget: budgetNumber,
         startDate: tripData.start,
         endDate: tripData.end,
+        imageUrl: tripData.image,
         updatedAt: serverTimestamp(),
       };
       const tripDocRef = doc(db, "trip", tripId);
       await updateDoc(tripDocRef, tripToUpdate);
       console.log("Updated Successfully");
+      return true;
     } catch (error) {
       console.log(error.message);
+      return false;
     }
   };
 
@@ -396,9 +403,13 @@ const AddTripModal = ({
                 style={styles.createButton}
                 onPress={handleStoreTripData}
               >
-                <Text style={styles.createButtonText}>
-                  {isEditMode ? "Update trip" : "Add Trip"}
-                </Text>
+                {loading ? (
+                  <ActivityIndicator size={"small"} color="#fff" />
+                ) : (
+                  <Text style={styles.createButtonText}>
+                    {isEditMode ? "Update trip" : "Add Trip"}
+                  </Text>
+                )}
               </TouchableOpacity>
             </View>
           </View>
