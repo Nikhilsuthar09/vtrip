@@ -1,10 +1,10 @@
-import { View, StyleSheet, Pressable, TextInput, Text } from "react-native";
+import { View, StyleSheet, TextInput, Text, TouchableOpacity } from "react-native";
 import { COLOR, FONT_SIZE, FONTS } from "../constants/Theme";
 import { FontAwesome } from "@expo/vector-icons";
 import SeparationLine from "./SeparationLine";
 import { useAuth } from "../Context/AuthContext";
 
-const HeaderWithSearch = ({ searchText, setSearchText }) => {
+const HeaderWithSearch = ({openDrawer, searchText, setSearchText }) => {
   const {userNameChars} = useAuth()
   return (
     <>
@@ -21,7 +21,7 @@ const HeaderWithSearch = ({ searchText, setSearchText }) => {
           />
           <FontAwesome name="search" size={18} color={COLOR.grey} />
         </View>
-        <Pressable style={styles.userButton}>
+        <TouchableOpacity onPress={openDrawer} style={styles.userButton}>
           {userNameChars && userNameChars !=="U" ? (
             <Text
               style={{
@@ -36,7 +36,7 @@ const HeaderWithSearch = ({ searchText, setSearchText }) => {
           ) : (
             <FontAwesome name="user-o" size={18} color="#fff" />
           )}
-        </Pressable>
+        </TouchableOpacity>
       </View>
       <SeparationLine />
     </>

@@ -1,4 +1,5 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { createDrawerNavigator } from "@react-navigation/drawer";
 import Signup from "../Screens/Signup";
 import AuthScreen from "../Screens/AuthScreen";
 import { useAuth } from "../Context/AuthContext";
@@ -11,8 +12,128 @@ import ItineraryList from "../Screens/itinerary/ItineraryList";
 import { COLOR, FONT_SIZE, FONTS } from "../constants/Theme";
 import { Text, View } from "react-native";
 import { formatDate } from "../utils/calendar/handleCurrentDate";
+import CustomDrawerContent from "../components/CustomDrawerContent";
 
 const Stack = createNativeStackNavigator();
+const Drawer = createDrawerNavigator();
+
+export function MainStackNavigator() {
+  return (
+    <Stack.Navigator screenOptions={{ animation: "fade" }}>
+      <Stack.Screen
+        name="BottomTabs"
+        component={HomeTabs}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="TopTabs"
+        component={TopTabs}
+        options={({ route }) => ({
+          headerTitle: () => {
+            const title = route?.params?.destination;
+            const subtitle = `${formatDate(
+              route?.params?.startDate
+            )} - ${formatDate(route?.params?.endDate)}`;
+            return (
+              <View style={{ paddingVertical: 4 }}>
+                <Text
+                  style={{
+                    fontFamily: FONTS.semiBold,
+                    fontSize: FONT_SIZE.H6,
+                    color: "#fff",
+                  }}
+                >
+                  {title}
+                </Text>
+                <Text
+                  style={{
+                    fontFamily: FONTS.regular,
+                    fontSize: FONT_SIZE.caption,
+                    color: "#eee",
+                    marginTop: 2,
+                  }}
+                >
+                  {subtitle}
+                </Text>
+              </View>
+            );
+          },
+          headerTintColor: "#fff",
+          headerTitleStyle: {
+            fontFamily: FONTS.semiBold,
+            fontSize: FONT_SIZE.H6,
+          },
+          headerStyle: {
+            backgroundColor: COLOR.primary,
+            height: 100,
+          },
+        })}
+      />
+      <Stack.Screen
+        name="itineraryList"
+        component={ItineraryList}
+        options={{
+          title: "Itinerary",
+          headerTintColor: "#fff",
+          headerTitleStyle: {
+            fontFamily: FONTS.semiBold,
+            fontSize: FONT_SIZE.H6,
+          },
+          headerStyle: {
+            backgroundColor: COLOR.primary,
+          },
+        }}
+      />
+      <Stack.Screen
+        name="PlanExpenseInAdvance"
+        component={PlanInAdvance}
+        options={{
+          title: "Planned Costs",
+          headerTintColor: "#fff",
+          headerTitleStyle: {
+            fontFamily: FONTS.semiBold,
+            fontSize: FONT_SIZE.H6,
+          },
+          headerStyle: {
+            backgroundColor: COLOR.primary,
+          },
+        }}
+      />
+      <Stack.Screen
+        name="TrackOnTrip"
+        component={TrackOnTrip}
+        options={{
+          title: "On-Trip Spending",
+          headerTintColor: "#fff",
+          headerTitleStyle: {
+            fontFamily: FONTS.semiBold,
+            fontSize: FONT_SIZE.H6,
+          },
+          headerStyle: {
+            backgroundColor: COLOR.primary,
+          },
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
+function MainAppNavigator() {
+  return (
+    <Drawer.Navigator
+      drawerContent={(props) => <CustomDrawerContent {...props} />}
+      screenOptions={{
+        headerShown: false,
+        drawerType: 'front',
+        drawerStyle: {
+          width: "80%",
+        },
+        swipeEnabled: true, 
+      }}
+    >
+      <Drawer.Screen name="MainApp" component={MainStackNavigator} />
+    </Drawer.Navigator>
+  );
+}
 
 export default function RootStack() {
   const { isLoggedIn, isLoading } = useAuth();
@@ -24,103 +145,11 @@ export default function RootStack() {
   return (
     <Stack.Navigator screenOptions={{ animation: "fade" }}>
       {isLoggedIn ? (
-        <>
-          <Stack.Screen
-            name="BottomTabs"
-            component={HomeTabs}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="TopTabs"
-            component={TopTabs}
-            options={({ route }) => ({
-              headerTitle: () => {
-                const title = route?.params?.destination;
-                const subtitle = `${formatDate(
-                  route?.params?.startDate
-                )} - ${formatDate(route?.params?.endDate)}`;
-                return (
-                  <View style={{ paddingVertical: 4 }}>
-                    <Text
-                      style={{
-                        fontFamily: FONTS.semiBold,
-                        fontSize: FONT_SIZE.H6,
-                        color: "#fff",
-                      }}
-                    >
-                      {title}
-                    </Text>
-                    <Text
-                      style={{
-                        fontFamily: FONTS.regular,
-                        fontSize: FONT_SIZE.caption,
-                        color: "#eee",
-                        marginTop: 2,
-                      }}
-                    >
-                      {subtitle}
-                    </Text>
-                  </View>
-                );
-              },
-              headerTintColor: "#fff",
-              headerTitleStyle: {
-                fontFamily: FONTS.semiBold,
-                fontSize: FONT_SIZE.H6,
-              },
-              headerStyle: {
-                backgroundColor: COLOR.primary,
-                height: 100,
-              },
-            })}
-          />
-          <Stack.Screen
-            name="itineraryList"
-            component={ItineraryList}
-            options={{
-              title: "Itinerary",
-              headerTintColor: "#fff",
-              headerTitleStyle: {
-                fontFamily: FONTS.semiBold,
-                fontSize: FONT_SIZE.H6,
-              },
-              headerStyle: {
-                backgroundColor: COLOR.primary,
-              },
-            }}
-          />
-
-          <Stack.Screen
-            name="PlanExpenseInAdvance"
-            component={PlanInAdvance}
-            options={{
-              title: "Planned Costs",
-              headerTintColor: "#fff",
-              headerTitleStyle: {
-                fontFamily: FONTS.semiBold,
-                fontSize: FONT_SIZE.H6,
-              },
-              headerStyle: {
-                backgroundColor: COLOR.primary,
-              },
-            }}
-          />
-          <Stack.Screen
-            name="TrackOnTrip"
-            component={TrackOnTrip}
-            options={{
-              title: "On-Trip Spending",
-              headerTintColor: "#fff",
-              headerTitleStyle: {
-                fontFamily: FONTS.semiBold,
-                fontSize: FONT_SIZE.H6,
-              },
-              headerStyle: {
-                backgroundColor: COLOR.primary,
-              },
-            }}
-          />
-        </>
+        <Stack.Screen
+          name="MainDrawer"
+          component={MainAppNavigator}
+          options={{ headerShown: false }}
+        />
       ) : (
         <>
           <Stack.Screen

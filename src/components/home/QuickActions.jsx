@@ -5,12 +5,12 @@ import Octicons from "@expo/vector-icons/Octicons";
 import React from "react";
 import { COLOR, FONT_SIZE, FONTS } from "../../constants/Theme";
 
-const QuickActions = ({ onActionPress }) => {
+const QuickActions = ({ onActionPress, onAddPress }) => {
   return (
     <View style={styles.quickActionsSection}>
       <Text style={styles.sectionTitle}>Quick Actions</Text>
       <View style={styles.quickActionsGrid}>
-        <TouchableOpacity style={styles.actionButton}>
+        <TouchableOpacity onPress={onAddPress} style={styles.actionButton}>
           <View style={styles.actionIcon}>
             <FontAwesome6 name="add" size={24} color={COLOR.primary} />
           </View>

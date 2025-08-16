@@ -13,6 +13,7 @@ import { getTripStatus } from "../utils/calendar/getTripStatus";
 import { deleteTrip } from "../utils/tripData/deleteTripData";
 import { useUserTripsData } from "../utils/firebaseUserHandlers";
 import ErrorScreen from "../components/ErrorScreen";
+import { useNavigation } from "@react-navigation/native";
 
 const MyTrip = () => {
   const [modalData, setModalData] = useState(null);
@@ -22,6 +23,7 @@ const MyTrip = () => {
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const { tripsData, loading, error, tripIds, refetch } = useUserTripsData();
+  const navigation = useNavigation()
   const safeTripData = tripsData || [];
 
   // Organize and filter trips
@@ -96,8 +98,11 @@ const MyTrip = () => {
 
   if (error) {
     console.log(error);
-    return <ErrorScreen/>
+    return <ErrorScreen />;
   }
+  const openDrawer = () => {
+    navigation.openDrawer();
+  };
   const totalTrips = organizedTrips.reduce(
     (sum, section) => sum + section.data.length,
     0
@@ -222,7 +227,7 @@ const MyTrip = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <HeaderWithSearch searchText={searchText} setSearchText={setSearchText} />
+      <HeaderWithSearch openDrawer= {openDrawer} searchText={searchText} setSearchText={setSearchText} />
 
       {showPlaceholder ? (
         <EmptyTripsPlaceholder
@@ -259,7 +264,7 @@ const MyTrip = () => {
         onBackButtonPressed={closeEditModal}
         editTripData={editTripData}
         isEditMode={true}
-        refetch= {refetch}
+        refetch={refetch}
       />
 
       <AddTripModal

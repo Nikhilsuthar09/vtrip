@@ -10,7 +10,6 @@ import { useEffect, useState } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import RootStack from "./src/Navigation/AppNavigator";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { StatusBar } from "expo-status-bar";
 import AirplaneLoading from "./src/components/AirplaneLoading";
 import { AuthProvider } from "./src/Context/AuthContext";
 
@@ -36,7 +35,6 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <StatusBar style="auto" />
       <AuthProvider>
         <NavigationContainer>
           <RootStack />

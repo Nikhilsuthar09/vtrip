@@ -22,11 +22,11 @@ const processUserData = (user) => {
     };
   }
 
-  const name = user.displayName;
+  const displayName = user.displayName;
   const uid = user.uid;
   const email = user.email;
-  const cleanedName = name?.trim().replace(/\s+/g, " ");
-  const splitted = cleanedName?.split(" ") || [];
+  const name = displayName?.trim().replace(/\s+/g, " ");
+  const splitted = name?.split(" ") || [];
   const firstName = splitted.length > 0 ? splitted[0] : "User";
   const userNameChars =
     splitted.length > 0

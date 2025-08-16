@@ -1,24 +1,3 @@
-// const handlelogout = async () => {
-//   try {
-//     await signOut(auth);
-//     console.log("user signed out ");
-//   } catch (e) {
-//     console.error(e);
-//   }
-// };
-
-//         <Pressable
-//           onPress={handlelogout}
-//           style={{
-//             backgroundColor: "#007AFF",
-//             paddingHorizontal: 20,
-//             paddingVertical: 10,
-//             borderRadius: 8,
-//           }}
-//         >
-//           <Text style={{ color: "white", fontSize: FONT_SIZE.bodyLarge }}>logout</Text>
-//         </Pressable>
-
 import React, { useMemo } from "react";
 import {
   View,
@@ -39,7 +18,7 @@ import { useAuth } from "../Context/AuthContext";
 import { useNavigation } from "@react-navigation/native";
 import { useTravellerNames } from "../utils/firebaseTravellerHandler";
 
-const TravelApp = () => {
+const TravelApp = ({onpress}) => {
   const { firstName, userNameChars } = useAuth();
   const { tripsData, loading, error, tripIds, refetch } = useUserTripsData();
   const navigation = useNavigation();
@@ -136,7 +115,6 @@ const TravelApp = () => {
       const status = getTripStatus(trip.startDate, trip.endDate);
       return status === "completed";
     });
-
     // Sort by end date (most recent first) and take first 3
     return completedTrips
       .sort((a, b) => new Date(b.endDate) - new Date(a.endDate))
@@ -148,11 +126,12 @@ const TravelApp = () => {
           month: "short",
         }),
         destination: trip.destination,
-        image:
-          trip.imageUrl ||
-          "https://images.unsplash.com/photo-1537953773345-d172ccf13cf1?w=400&h=200&fit=crop",
+        imageUrl: trip?.imageUrl,
       }));
   }, [safeTripData]);
+  const openDrawer = () => {
+    navigation.openDrawer();
+  };
 
   return (
     <SafeAreaView
@@ -166,9 +145,13 @@ const TravelApp = () => {
             <Text style={styles.greeting}>Hi, {firstName} 👋</Text>
             <Text style={styles.subtitle}>Ready for your next adventure?</Text>
           </View>
-          <View style={styles.profileContainer}>
+          <TouchableOpacity
+            onPress={openDrawer}
+            activeOpacity={0.8}
+            style={styles.profileContainer}
+          >
             <Text style={styles.profileText}>{userNameChars}</Text>
-          </View>
+          </TouchableOpacity>
         </View>
 
         {/* Upcoming Trip Card */}
@@ -207,7 +190,7 @@ const TravelApp = () => {
         </View>
 
         {/* Quick Actions */}
-        <QuickActions onActionPress={handleActionNavigation} />
+        <QuickActions onAddPress={onpress} onActionPress={handleActionNavigation} />
 
         {/* Recent Trips */}
         {recentTrips.length > 0 && (

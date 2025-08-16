@@ -6,9 +6,7 @@ const horizontalList = ({ item }) => {
   return (
     <TouchableOpacity activeOpacity={0.8} style={styles.recentTripCard}>
       <Image
-        source={{
-          uri: "https://images.unsplash.com/photo-1537953773345-d172ccf13cf1?w=400&h=200&fit=crop",
-        }}
+        source={item.imageUrl || require("../../../assets/default.jpg")}
         style={styles.recentTripImage}
       />
       <View style={styles.recentTripInfo}>
