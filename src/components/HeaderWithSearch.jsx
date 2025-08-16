@@ -1,11 +1,17 @@
-import { View, StyleSheet, TextInput, Text, TouchableOpacity } from "react-native";
+import {
+  View,
+  StyleSheet,
+  TextInput,
+  Text,
+  TouchableOpacity,
+} from "react-native";
 import { COLOR, FONT_SIZE, FONTS } from "../constants/Theme";
 import { FontAwesome } from "@expo/vector-icons";
 import SeparationLine from "./SeparationLine";
 import { useAuth } from "../Context/AuthContext";
 
-const HeaderWithSearch = ({openDrawer, searchText, setSearchText }) => {
-  const {userNameChars} = useAuth()
+const HeaderWithSearch = ({ openDrawer, searchText, setSearchText }) => {
+  const { userNameChars } = useAuth();
   return (
     <>
       <View style={styles.container}>
@@ -22,13 +28,13 @@ const HeaderWithSearch = ({openDrawer, searchText, setSearchText }) => {
           <FontAwesome name="search" size={18} color={COLOR.grey} />
         </View>
         <TouchableOpacity onPress={openDrawer} style={styles.userButton}>
-          {userNameChars && userNameChars !=="U" ? (
+          {userNameChars && userNameChars !== "U" ? (
             <Text
               style={{
                 fontFamily: FONTS.medium,
                 color: "#fff",
                 fontSize: FONT_SIZE.body,
-                paddingVertical: 1,
+                // paddingVertical: 1,
               }}
             >
               {userNameChars}
@@ -72,9 +78,11 @@ const styles = StyleSheet.create({
   },
   userButton: {
     backgroundColor: COLOR.primary,
-    paddingVertical: 9,
-    paddingHorizontal: 11,
-    borderRadius: 20,
+    width: 40,
+    height: 40,
+    borderRadius: 50,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });
 export default HeaderWithSearch;
