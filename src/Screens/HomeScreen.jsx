@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -23,9 +23,13 @@ import { StatusBar } from "expo-status-bar";
 import Entypo from "@expo/vector-icons/Entypo";
 
 const TravelApp = () => {
+  const [travellerByTripId, setTravellerByTripId] = useState(null);
   const { firstName, userNameChars } = useAuth();
   const { tripsData, loading, error, tripIds, refetch } = useUserTripsData();
   const navigation = useNavigation();
+  const { travellerNames, travellerLoading, travellerError } =
+    useTravellerNames(travellerByTripId);
+  const safeTravellerNames = travellerNames || [];
   const safeTripData = tripsData || [];
 
   // Get the primary trip to display (ongoing takes priority over upcoming)
@@ -63,10 +67,6 @@ const TravelApp = () => {
     return null;
   }, [safeTripData]);
 
-  const { travellerNames, travellerLoading, travellerError } =
-    useTravellerNames(primaryTrip?.id);
-  const safeTravellerNames = travellerNames || [];
-
   // Calculate trip timing text based on status
   const getTripTimingText = (trip) => {
     if (!trip) return "No active trips";
@@ -103,6 +103,7 @@ const TravelApp = () => {
       const tripDetails = safeTripData.find(
         (item) => item.id === primaryTrip.id
       );
+      setTravellerByTripId(tripDetails.id);
       navigation.navigate("TopTabs", {
         id: tripDetails.id,
         budget: tripDetails.budget,
@@ -113,13 +114,16 @@ const TravelApp = () => {
         travellerLoading: travellerLoading,
         screen: screen,
       });
+      setTravellerByTripId(null);
     }
   };
+  // navigate to invite screen
   const handleInvitePress = () => {
     if (primaryTrip) {
       const tripDetails = safeTripData.find(
         (item) => item.id === primaryTrip.id
       );
+      setTravellerByTripId(tripDetails.id);
       navigation.navigate("invite", {
         id: tripDetails.id,
         title: tripDetails.title,
@@ -129,6 +133,7 @@ const TravelApp = () => {
         travellers: safeTravellerNames,
         createdBy: tripDetails.createdBy,
       });
+      setTravellerByTripId(null);
     }
   };
   const recentTrips = useMemo(() => {
@@ -155,8 +160,10 @@ const TravelApp = () => {
   const openDrawer = () => {
     navigation.openDrawer();
   };
+  // navigate to recent trip
   const handleRecentNavigation = (id) => {
     const tripDetails = safeTripData.find((item) => item.id === id);
+    setTravellerByTripId(tripDetails.id);
     navigation.navigate("TopTabs", {
       id: tripDetails.id,
       budget: tripDetails.budget,
@@ -166,6 +173,7 @@ const TravelApp = () => {
       safeTravellerNames: safeTravellerNames,
       travellerLoading: travellerLoading,
     });
+    setTravellerByTripId(null);
   };
 
   return (
