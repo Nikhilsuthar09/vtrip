@@ -124,10 +124,8 @@ const TravelApp = () => {
       });
     }
   };
-
   const recentTrips = useMemo(() => {
     if (safeTripData.length === 0) return [];
-
     // Filter for completed trips
     const completedTrips = safeTripData.filter((trip) => {
       const status = getTripStatus(trip.startDate, trip.endDate);

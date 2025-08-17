@@ -1,6 +1,7 @@
-import { View, Text, TouchableOpacity, Image, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import React from "react";
 import { COLOR, FONT_SIZE, FONTS } from "../../constants/Theme";
+import { Image } from "expo-image";
 
 const horizontalList = ({ item }) => {
   return (
