@@ -21,6 +21,8 @@ import { useTravellerNames } from "../utils/firebaseTravellerHandler";
 import { formatDate } from "../utils/calendar/handleCurrentDate";
 import { StatusBar } from "expo-status-bar";
 import Entypo from "@expo/vector-icons/Entypo";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import NotificationIcon from "../components/home/NotificationIconWithBadge";
 
 const TravelApp = () => {
   const [travellerByTripId, setTravellerByTripId] = useState(null);
@@ -189,6 +191,10 @@ const TravelApp = () => {
             <Text style={styles.greeting}>Hi, {firstName} 👋</Text>
             <Text style={styles.subtitle}>Ready for your next adventure?</Text>
           </View>
+          <NotificationIcon
+            badgeCount={5}
+            
+          />
           <TouchableOpacity
             onPress={openDrawer}
             activeOpacity={0.8}
@@ -275,10 +281,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   header: {
-    marginTop: 10,
+    marginTop: 14,
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
+    // alignItems: "center",
     marginBottom: 30,
   },
   greeting: {
