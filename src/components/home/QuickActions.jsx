@@ -3,19 +3,20 @@ import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import Octicons from "@expo/vector-icons/Octicons";
 import React from "react";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { COLOR, FONT_SIZE, FONTS } from "../../constants/Theme";
 
-const QuickActions = ({ onActionPress, onAddPress }) => {
+const QuickActions = ({onInvitePress , onActionPress }) => {
+    
   return (
     <View style={styles.quickActionsSection}>
       <Text style={styles.sectionTitle}>Quick Actions</Text>
       <View style={styles.quickActionsGrid}>
-        <TouchableOpacity onPress={onAddPress} style={styles.actionButton}>
+        <TouchableOpacity onPress={onInvitePress}  style={styles.actionButton}>
           <View style={styles.actionIcon}>
-            <FontAwesome6 name="add" size={24} color={COLOR.primary} />
+             <Ionicons name="person-add" size={22} color={COLOR.primary} />
           </View>
-          <Text style={styles.actionLabel}>Add</Text>
-          <Text style={styles.actionLabel}>New Trip</Text>
+          <Text style={styles.actionLabel}>Invite</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -25,11 +26,10 @@ const QuickActions = ({ onActionPress, onAddPress }) => {
           <View style={styles.actionIcon}>
             <FontAwesome6
               name="calendar-check"
-              size={24}
+              size={22}
               color={COLOR.primary}
             />
           </View>
-          <Text style={styles.actionLabel}>View</Text>
           <Text style={styles.actionLabel}>Itinerary</Text>
         </TouchableOpacity>
 
@@ -38,9 +38,8 @@ const QuickActions = ({ onActionPress, onAddPress }) => {
           style={styles.actionButton}
         >
           <View style={styles.actionIcon}>
-            <FontAwesome name="inr" size={24} color={COLOR.primary} />
+            <FontAwesome name="inr" size={22} color={COLOR.primary} />
           </View>
-          <Text style={styles.actionLabel}>Track</Text>
           <Text style={styles.actionLabel}>Expenses</Text>
         </TouchableOpacity>
 
@@ -49,10 +48,9 @@ const QuickActions = ({ onActionPress, onAddPress }) => {
           style={styles.actionButton}
         >
           <View style={styles.actionIcon}>
-            <Octicons name="checklist" size={24} color={COLOR.primary} />
+            <Octicons name="checklist" size={22} color={COLOR.primary} />
           </View>
           <Text style={styles.actionLabel}>Packing</Text>
-          <Text style={styles.actionLabel}>Checklist</Text>
         </TouchableOpacity>
       </View>
     </View>

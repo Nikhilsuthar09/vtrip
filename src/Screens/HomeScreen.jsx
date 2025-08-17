@@ -17,8 +17,9 @@ import { getTripStatus } from "../utils/calendar/getTripStatus";
 import { useAuth } from "../Context/AuthContext";
 import { useNavigation } from "@react-navigation/native";
 import { useTravellerNames } from "../utils/firebaseTravellerHandler";
+import { formatDate } from "../utils/calendar/handleCurrentDate";
 
-const TravelApp = ({onpress}) => {
+const TravelApp = () => {
   const { firstName, userNameChars } = useAuth();
   const { tripsData, loading, error, tripIds, refetch } = useUserTripsData();
   const navigation = useNavigation();
@@ -107,6 +108,22 @@ const TravelApp = ({onpress}) => {
       });
     }
   };
+  const handleInvitePress = () => {
+    if (primaryTrip) {
+      const tripDetails = safeTripData.find(
+        (item) => item.id === primaryTrip.id
+      );
+      navigation.navigate("invite", {
+        id: tripDetails.id,
+        destination: tripDetails.destination,
+        startDate: formatDate(tripDetails.startDate),
+        endDate: formatDate(tripDetails.endDate),
+        travellers: safeTravellerNames,
+        createdBy: tripDetails.createdBy,
+      });
+    }
+  };
+
   const recentTrips = useMemo(() => {
     if (safeTripData.length === 0) return [];
 
@@ -190,7 +207,10 @@ const TravelApp = ({onpress}) => {
         </View>
 
         {/* Quick Actions */}
-        <QuickActions onAddPress={onpress} onActionPress={handleActionNavigation} />
+        <QuickActions
+          onInvitePress={handleInvitePress}
+          onActionPress={handleActionNavigation}
+        />
 
         {/* Recent Trips */}
         {recentTrips.length > 0 && (

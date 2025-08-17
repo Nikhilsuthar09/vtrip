@@ -45,16 +45,14 @@ export default function HomeTabs() {
       >
         <Tab.Screen
           name="Home"
-          // component={HomeScreen}
+          component={HomeScreen}
           options={{
             headerShown: false,
             tabBarIcon: ({ color }) => (
               <Ionicons name="home" size={20} color={color} />
             ),
           }}
-          >
-          {(props) => <HomeScreen {...props} onpress={openModal} />}
-        </Tab.Screen>
+        />
         <Tab.Screen
           name="Center"
           component={EmptyComponent}

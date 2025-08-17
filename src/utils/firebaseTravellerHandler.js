@@ -15,7 +15,7 @@ export const useTravellerNames = (tripId) => {
   const [travellerNames, setTravellerNames] = useState([]);
   const [travellerLoading, setLoading] = useState(true);
   const [travellerError, setError] = useState(null);
-  const { email, name, uid, isLoading:authLoading} = useAuth()
+  const { email, name, uid, isLoading: authLoading } = useAuth();
   useEffect(() => {
     if (!tripId || authLoading) {
       setLoading(authLoading);
@@ -75,6 +75,6 @@ export const useTravellerNames = (tripId) => {
       }
     };
     fetchTravellerNames();
-  }, [tripId, email, name, uid,authLoading]);
+  }, [tripId, email, name, uid, authLoading]);
   return { travellerNames, travellerLoading, travellerError };
 };

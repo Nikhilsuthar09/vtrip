@@ -29,7 +29,8 @@ const COLOR = {
   danger: "#B3261E",
   placeholder: "#999",
   actionButton: "#FFD8E4",
-  actionText: "#633B48"
+  actionText: "#633B48",
+  success:"#4CAF50",
 };
 
 export { FONTS, FONT_SIZE, COLOR };

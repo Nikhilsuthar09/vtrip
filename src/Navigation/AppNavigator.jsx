@@ -13,6 +13,7 @@ import { COLOR, FONT_SIZE, FONTS } from "../constants/Theme";
 import { Text, View } from "react-native";
 import { formatDate } from "../utils/calendar/handleCurrentDate";
 import CustomDrawerContent from "../components/CustomDrawerContent";
+import InviteCollaborators from "../Screens/InviteCollaborators";
 
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -114,6 +115,21 @@ export function MainStackNavigator() {
           },
         }}
       />
+      <Stack.Screen
+        name="invite"
+        component={InviteCollaborators}
+        options={{
+          title: "Invite",
+          headerTintColor: "#fff",
+          headerTitleStyle: {
+            fontFamily: FONTS.semiBold,
+            fontSize: FONT_SIZE.H6,
+          },
+          headerStyle: {
+            backgroundColor: COLOR.primary,
+          },
+        }}
+      />
     </Stack.Navigator>
   );
 }
@@ -123,11 +139,11 @@ function MainAppNavigator() {
       drawerContent={(props) => <CustomDrawerContent {...props} />}
       screenOptions={{
         headerShown: false,
-        drawerType: 'front',
+        drawerType: "front",
         drawerStyle: {
           width: "80%",
         },
-        swipeEnabled: true, 
+        swipeEnabled: false,
       }}
     >
       <Drawer.Screen name="MainApp" component={MainStackNavigator} />
