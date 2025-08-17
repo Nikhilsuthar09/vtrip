@@ -3,9 +3,9 @@ import React from "react";
 import { COLOR, FONT_SIZE, FONTS } from "../../constants/Theme";
 import { Image } from "expo-image";
 
-const horizontalList = ({ item }) => {
+const HorizontalList = ({ item, onPress }) => {
   return (
-    <TouchableOpacity activeOpacity={0.8} style={styles.recentTripCard}>
+    <TouchableOpacity onPress={() => onPress(item.id)} activeOpacity={0.8} style={styles.recentTripCard}>
       <Image
         source={item.imageUrl || require("../../../assets/default.jpg")}
         style={styles.recentTripImage}
@@ -19,7 +19,7 @@ const horizontalList = ({ item }) => {
 };
 const styles = StyleSheet.create({
   recentTripCard: {
-    marginBottom:10,
+    marginBottom: 10,
     width: 160,
     borderRadius: 15,
     overflow: "hidden",
@@ -52,4 +52,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default horizontalList;
+export default HorizontalList;

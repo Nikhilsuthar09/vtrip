@@ -6,10 +6,11 @@ import {
   TouchableOpacity,
   StyleSheet,
   FlatList,
+  Pressable,
 } from "react-native";
 import { Image } from "expo-image";
 import { COLOR, FONT_SIZE, FONTS } from "../constants/Theme";
-import horizontalList from "../components/home/horizontalList";
+import HorizontalList from "../components/home/horizontalList";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useUserTripsData } from "../utils/firebaseUserHandlers";
 import QuickActions from "../components/home/QuickActions";
@@ -18,6 +19,8 @@ import { useAuth } from "../Context/AuthContext";
 import { useNavigation } from "@react-navigation/native";
 import { useTravellerNames } from "../utils/firebaseTravellerHandler";
 import { formatDate } from "../utils/calendar/handleCurrentDate";
+import { StatusBar } from "expo-status-bar";
+import Entypo from "@expo/vector-icons/Entypo";
 
 const TravelApp = () => {
   const { firstName, userNameChars } = useAuth();
@@ -75,12 +78,16 @@ const TravelApp = () => {
     if (trip.status === "ongoing") {
       const diffTime = endDate - today;
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      return diffDays > 0 ? `${diffDays} days remaining` : "Trip ending today";
+      return diffDays > 0
+        ? `${diffDays} ${diffDays === 1 ? "day" : "days"} remaining`
+        : "Trip ending today";
     } else {
       // upcoming
       const diffTime = startDate - today;
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      return diffDays > 0 ? `${diffDays} days left` : "Trip starts today";
+      return diffDays > 0
+        ? `${diffDays} ${diffDays === 1 ? "day" : "days"} left`
+        : "Trip starts today";
     }
   };
 
@@ -115,7 +122,7 @@ const TravelApp = () => {
       );
       navigation.navigate("invite", {
         id: tripDetails.id,
-        title:tripDetails.title,
+        title: tripDetails.title,
         destination: tripDetails.destination,
         startDate: formatDate(tripDetails.startDate),
         endDate: formatDate(tripDetails.endDate),
@@ -148,12 +155,25 @@ const TravelApp = () => {
   const openDrawer = () => {
     navigation.openDrawer();
   };
+  const handleRecentNavigation = (id) => {
+    const tripDetails = safeTripData.find((item) => item.id === id);
+    navigation.navigate("TopTabs", {
+      id: tripDetails.id,
+      budget: tripDetails.budget,
+      destination: tripDetails.destination,
+      startDate: tripDetails.startDate,
+      endDate: tripDetails.endDate,
+      safeTravellerNames: safeTravellerNames,
+      travellerLoading: travellerLoading,
+    });
+  };
 
   return (
     <SafeAreaView
       style={{ flex: 1, backgroundColor: "#fff" }}
       edges={["top", "left", "right"]}
     >
+      <StatusBar style="dark" />
       <ScrollView style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
@@ -171,7 +191,10 @@ const TravelApp = () => {
         </View>
 
         {/* Upcoming Trip Card */}
-        <View style={styles.tripCard}>
+        <Pressable
+          onPress={() => handleActionNavigation("Itinerary")}
+          style={styles.tripCard}
+        >
           <Image
             source={
               primaryTrip?.imageUrl || require("../../assets/default.jpg")
@@ -203,7 +226,7 @@ const TravelApp = () => {
               )}
             </View>
           </View>
-        </View>
+        </Pressable>
 
         {/* Quick Actions */}
         <QuickActions
@@ -217,13 +240,15 @@ const TravelApp = () => {
             <View style={styles.recentTripsHeader}>
               <Text style={styles.sectionTitle}>Recent Trips</Text>
               <TouchableOpacity>
-                <Text style={styles.seeAllText}>›</Text>
+                <Entypo name="chevron-small-right" size={24} color="black" />
               </TouchableOpacity>
             </View>
 
             <FlatList
               data={recentTrips}
-              renderItem={horizontalList}
+              renderItem={({ item }) => (
+                <HorizontalList item={item} onPress={handleRecentNavigation} />
+              )}
               keyExtractor={(item) => item.id}
               horizontal={true}
               showsHorizontalScrollIndicator={false}
@@ -343,12 +368,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 12,
   },
-  seeAllText: {
-    fontSize: 24,
-    color: "#666",
-    fontWeight: "300",
-  },
-
   flatListStyle: {
     flexGrow: 0,
   },
