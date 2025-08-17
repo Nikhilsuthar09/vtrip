@@ -115,6 +115,7 @@ const TravelApp = () => {
       );
       navigation.navigate("invite", {
         id: tripDetails.id,
+        title:tripDetails.title,
         destination: tripDetails.destination,
         startDate: formatDate(tripDetails.startDate),
         endDate: formatDate(tripDetails.endDate),

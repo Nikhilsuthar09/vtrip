@@ -5,10 +5,10 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+  Share,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Image } from "expo-image";
-import AntDesign from "@expo/vector-icons/AntDesign";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import Entypo from "@expo/vector-icons/Entypo";
@@ -16,8 +16,23 @@ import { COLOR, FONT_SIZE, FONTS } from "../constants/Theme";
 import { StatusBar } from "expo-status-bar";
 
 const InviteCollaborators = ({ route }) => {
-  const { id, travellers, destination, startDate, endDate, createdBy } =
+  const { id,title, travellers, destination, startDate, endDate, createdBy } =
     route.params;
+  const shareTripId = async () => {
+    try {
+      const result = await Share.share({
+        title: "Trip Invitation",
+        message: `🎉 You're invited to join "${title}"!
+        📍Destination: ${destination}
+        📅 ${startDate} - ${endDate}
+        🆔 Trip ID: ${id}
+        📱 Download VTrip app and use this ID to join!
+        See you there! ✈️`,
+      });
+    } catch (e) {
+      console.log(e);
+    }
+  };
   return (
     <SafeAreaView edges={["bottom", "left", "right"]} style={styles.container}>
       <StatusBar style="light" />
@@ -55,7 +70,7 @@ const InviteCollaborators = ({ route }) => {
               <View style={styles.sectionHeaderText}>
                 <Text style={styles.sectionTitle}>Share Trip Code</Text>
                 <Text style={styles.sectionSubtitle}>
-                  Share link or code with friends
+                  Share code with friends or family
                 </Text>
               </View>
             </View>
@@ -68,7 +83,10 @@ const InviteCollaborators = ({ route }) => {
             </View>
 
             <View style={styles.shareButtons}>
-              <TouchableOpacity style={styles.shareLinkButton}>
+              <TouchableOpacity
+                onPress={shareTripId}
+                style={styles.shareLinkButton}
+              >
                 <Entypo name="export" size={18} color="white" />
                 <Text style={styles.shareLinkText}>Share Code</Text>
               </TouchableOpacity>
@@ -98,11 +116,6 @@ const InviteCollaborators = ({ route }) => {
             </View>
           ))}
         </View>
-        {/* Continue to Trip Button */}
-        <TouchableOpacity style={styles.continueButton}>
-          <Text style={styles.continueButtonText}>Continue to Trip</Text>
-          <AntDesign name="arrowright" size={18} color="white" />
-        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
@@ -265,22 +278,6 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZE.caption,
     fontFamily: FONTS.regular,
     color: "#666",
-  },
-  continueButton: {
-    backgroundColor: "#8B7CF6",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    marginHorizontal: 20,
-    marginVertical: 24,
-    paddingVertical: 16,
-    borderRadius: 12,
-  },
-  continueButtonText: {
-    color: "white",
-    fontSize: FONT_SIZE.H6,
-    fontFamily: FONTS.semiBold,
-    marginRight: 8,
   },
 });
 

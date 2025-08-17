@@ -21,7 +21,7 @@ const TripMenuModal = ({
   position,
   onDelete,
   onEdit,
-  isShareVisible = false,
+  onInvite
 }) => {
   if (!visible) return null;
 
@@ -49,33 +49,40 @@ const TripMenuModal = ({
   };
   const modalPosition = getModalPosition();
   const handleDelete = () => {
-    if(onDelete && selectedId){
-      onDelete(selectedId)
+    if (onDelete && selectedId) {
+      onDelete(selectedId);
     }
-    closeModal()
-  }
+    closeModal();
+  };
   const handleEdit = () => {
-    if(onEdit && selectedId){
-      onEdit(selectedId)
+    if (onEdit && selectedId) {
+      onEdit(selectedId);
     }
-    closeModal()
-  }
+    closeModal();
+  };
+  const handleInvite = () => {
+    if (onInvite && selectedId) {
+      onInvite(selectedId);
+    }
+    closeModal();
+  };
   return (
     <>
       {/* Backdrop */}
       <Pressable style={styles.backdrop} onPress={closeModal} />
       <View style={[styles.container, modalPosition]}>
+        <TouchableOpacity onPress={handleInvite} style={styles.iconTextContainer}>
+          <Entypo name="share" size={18} color={COLOR.primary} />
+          <Text style={styles.text}>Invite</Text>
+        </TouchableOpacity>
         <TouchableOpacity onPress={handleEdit} style={styles.iconTextContainer}>
           <Feather name="edit" size={18} color={COLOR.primary} />
           <Text style={styles.text}>Edit</Text>
         </TouchableOpacity>
-        {isShareVisible && (
-          <View style={styles.iconTextContainer}>
-            <Entypo name="share" size={18} color={COLOR.primary} />
-            <Text style={styles.text}>Share</Text>
-          </View>
-        )}
-        <TouchableOpacity onPress={handleDelete} style={styles.iconTextContainer}>
+        <TouchableOpacity
+          onPress={handleDelete}
+          style={styles.iconTextContainer}
+        >
           <AntDesign name="delete" size={18} color={COLOR.primary} />
           <Text style={styles.text}>Delete</Text>
         </TouchableOpacity>
@@ -109,7 +116,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "flex-start",
-    gap: 6,
+    gap: 10,
   },
   text: {
     fontFamily: FONTS.semiBold,

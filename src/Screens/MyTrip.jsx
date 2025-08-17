@@ -14,6 +14,8 @@ import { deleteTrip } from "../utils/tripData/deleteTripData";
 import { useUserTripsData } from "../utils/firebaseUserHandlers";
 import ErrorScreen from "../components/ErrorScreen";
 import { useNavigation } from "@react-navigation/native";
+import { useTravellerNames } from "../utils/firebaseTravellerHandler";
+import { formatDate } from "../utils/calendar/handleCurrentDate";
 
 const MyTrip = () => {
   const [modalData, setModalData] = useState(null);
@@ -23,9 +25,10 @@ const MyTrip = () => {
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const { tripsData, loading, error, tripIds, refetch } = useUserTripsData();
-  const navigation = useNavigation()
+  const navigation = useNavigation();
+  const { travellerNames } = useTravellerNames(modalData?.selectedItemId);
   const safeTripData = tripsData || [];
-
+  const safeTravellerNames = travellerNames || [];
   // Organize and filter trips
   const organizedTrips = useMemo(() => {
     let filteredTrips = safeTripData;
@@ -164,6 +167,18 @@ const MyTrip = () => {
       closeMenu();
     }
   };
+  const handleInvitePress = (id) => {
+    const tripDetails = safeTripData.find((trip) => trip.id === id);
+    navigation.navigate("invite", {
+      id: tripDetails.id,
+      title: tripDetails.title,
+      destination: tripDetails.destination,
+      startDate: formatDate(tripDetails.startDate),
+      endDate: formatDate(tripDetails.endDate),
+      travellers: safeTravellerNames,
+      createdBy: tripDetails.createdBy,
+    });
+  };
 
   const closeEditModal = () => {
     setIsEditModalVisible(false);
@@ -227,7 +242,11 @@ const MyTrip = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <HeaderWithSearch openDrawer= {openDrawer} searchText={searchText} setSearchText={setSearchText} />
+      <HeaderWithSearch
+        openDrawer={openDrawer}
+        searchText={searchText}
+        setSearchText={setSearchText}
+      />
 
       {showPlaceholder ? (
         <EmptyTripsPlaceholder
@@ -253,9 +272,9 @@ const MyTrip = () => {
         closeModal={closeMenu}
         position={modalData?.position}
         selectedId={modalData?.selectedItemId}
-        isShareVisible={true}
         onDelete={handleDeleteButton}
         onEdit={handleEditTrip}
+        onInvite={handleInvitePress}
       />
 
       <AddTripModal
