@@ -191,10 +191,7 @@ const TravelApp = () => {
             <Text style={styles.greeting}>Hi, {firstName} 👋</Text>
             <Text style={styles.subtitle}>Ready for your next adventure?</Text>
           </View>
-          <NotificationIcon
-            badgeCount={5}
-            
-          />
+          <NotificationIcon badgeCount={5} />
           <TouchableOpacity
             onPress={openDrawer}
             activeOpacity={0.8}
@@ -253,7 +250,7 @@ const TravelApp = () => {
           <View style={styles.recentTripsSection}>
             <View style={styles.recentTripsHeader}>
               <Text style={styles.sectionTitle}>Recent Trips</Text>
-              <TouchableOpacity>
+              <TouchableOpacity onPress={() => navigation.navigate("My Trips")}>
                 <Entypo name="chevron-small-right" size={24} color="black" />
               </TouchableOpacity>
             </View>
