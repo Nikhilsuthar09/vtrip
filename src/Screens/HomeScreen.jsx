@@ -9,6 +9,7 @@ import {
   Pressable,
 } from "react-native";
 import { Image } from "expo-image";
+import { LinearGradient } from "expo-linear-gradient";
 import { COLOR, FONT_SIZE, FONTS } from "../constants/Theme";
 import HorizontalList from "../components/home/horizontalList";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -22,6 +23,8 @@ import { formatDate } from "../utils/calendar/handleCurrentDate";
 import { StatusBar } from "expo-status-bar";
 import Entypo from "@expo/vector-icons/Entypo";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import Foundation from "@expo/vector-icons/Foundation";
 import NotificationIcon from "../components/home/NotificationIconWithBadge";
 
 const TravelApp = () => {
@@ -93,12 +96,6 @@ const TravelApp = () => {
     }
   };
 
-  // Get trip status indicator
-  const getTripStatusIndicator = (trip) => {
-    if (!trip) return "";
-    return trip.status === "ongoing" ? "🌟 Ongoing" : "📅 Upcoming";
-  };
-
   // get quick actions data
   const handleActionNavigation = (screen) => {
     if (primaryTrip) {
@@ -119,6 +116,7 @@ const TravelApp = () => {
       setTravellerByTripId(null);
     }
   };
+
   // navigate to invite screen
   const handleInvitePress = () => {
     if (primaryTrip) {
@@ -138,6 +136,7 @@ const TravelApp = () => {
       setTravellerByTripId(null);
     }
   };
+
   const recentTrips = useMemo(() => {
     if (safeTripData.length === 0) return [];
     // Filter for completed trips
@@ -159,9 +158,11 @@ const TravelApp = () => {
         imageUrl: trip?.imageUrl,
       }));
   }, [safeTripData]);
+
   const openDrawer = () => {
     navigation.openDrawer();
   };
+
   // navigate to recent trip
   const handleRecentNavigation = (id) => {
     const tripDetails = safeTripData.find((item) => item.id === id);
@@ -178,19 +179,50 @@ const TravelApp = () => {
     setTravellerByTripId(null);
   };
 
+  const EmptyTripCard = () => (
+    <View style={styles.emptyTripCard}>
+      <LinearGradient
+        colors={["#667eea", "#764ba2"]}
+        style={styles.emptyTripGradient}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      >
+        <View style={styles.emptyTripContent}>
+          <Foundation
+            name="mountains"
+            size={48}
+            color="#fff"
+            style={styles.emptyIcon}
+          />
+          <Text style={styles.emptyTripTitle}>Ready for Adventure?</Text>
+          <Text style={styles.emptyTripSubtitle}>
+            Create your first trip or join existing with room id
+          </Text>
+          <TouchableOpacity style={styles.createTripButton}>
+            <Text style={styles.createTripButtonText}>Plan New Trip</Text>
+            <Ionicons
+              name="arrow-forward"
+              size={16}
+              color="#667eea"
+              style={styles.buttonIcon}
+            />
+          </TouchableOpacity>
+        </View>
+      </LinearGradient>
+    </View>
+  );
+
   return (
-    <SafeAreaView
-      style={{ flex: 1, backgroundColor: "#fff" }}
-      edges={["top", "left", "right"]}
-    >
+    <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
       <StatusBar style="dark" />
-      <ScrollView style={styles.container}>
-        {/* Header */}
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.greeting}>Hi, {firstName} 👋</Text>
-            <Text style={styles.subtitle}>Ready for your next adventure?</Text>
-          </View>
+
+      {/*  Header with Gradient Background */}
+      <View style={styles.header}>
+        <View style={styles.headerLeft}>
+          <Text style={styles.greeting}>Hi, {firstName} 👋</Text>
+          <Text style={styles.subtitle}>Ready for your next adventure?</Text>
+        </View>
+        <View style={styles.headerRight}>
           <NotificationIcon badgeCount={5} />
           <TouchableOpacity
             onPress={openDrawer}
@@ -200,58 +232,107 @@ const TravelApp = () => {
             <Text style={styles.profileText}>{userNameChars}</Text>
           </TouchableOpacity>
         </View>
+      </View>
 
-        {/* Upcoming Trip Card */}
-        <Pressable
-          onPress={() => handleActionNavigation("Itinerary")}
-          style={styles.tripCard}
-        >
-          <Image
-            source={
-              primaryTrip?.imageUrl || require("../../assets/default.jpg")
-            }
-            style={styles.tripImage}
-          />
-          <View style={styles.tripOverlay}>
-            {/* Status indicator */}
-            {primaryTrip && (
-              <Text style={styles.tripStatus}>
-                {getTripStatusIndicator(primaryTrip)}
-              </Text>
-            )}
+      <ScrollView
+        style={styles.container}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        {/* Enhanced Trip Card */}
+        {primaryTrip ? (
+          <>
+            <Pressable
+              onPress={() => handleActionNavigation("Itinerary")}
+              style={styles.tripCard}
+            >
+              <Image
+                source={
+                  primaryTrip?.imageUrl || require("../../assets/default.jpg")
+                }
+                style={styles.tripImage}
+              />
+              <LinearGradient
+                colors={["rgba(0,0,0,0.2)", "rgba(0,0,0,0.7)"]}
+                style={styles.tripOverlay}
+              >
+                {/*  Status Badge */}
+                <View style={styles.statusBadge}>
+                  <View
+                    style={[
+                      styles.statusDot,
+                      {
+                        backgroundColor:
+                          primaryTrip.status === "ongoing"
+                            ? "#4ade80"
+                            : "#f59e0b",
+                      },
+                    ]}
+                  />
+                  <Text style={styles.tripStatus}>
+                    {primaryTrip.status === "ongoing" ? "Ongoing" : "Upcoming"}
+                  </Text>
+                </View>
 
-            {/* Destination */}
-            <Text style={styles.tripLocation}>
-              {primaryTrip?.destination || "Plan your next trip"}
-            </Text>
-
-            {/* Timing and travelers info */}
-            <View style={styles.tripDetails}>
-              <Text style={styles.tripDuration}>
-                {getTripTimingText(primaryTrip)}
-              </Text>
-              {primaryTrip?.travellers && (
-                <Text style={styles.tripTravelers}>
-                  • {primaryTrip.travellers.length || 1} Travelers
+                {/* Destination with better typography */}
+                <Text style={styles.tripLocation}>
+                  {primaryTrip?.destination || "Plan your next trip"}
                 </Text>
-              )}
+
+                {/*  trip details */}
+                <View style={styles.tripDetailsContainer}>
+                  <View style={styles.tripDetailItem}>
+                    <Ionicons name="time-outline" size={16} color="#fff" />
+                    <Text style={styles.tripDuration}>
+                      {getTripTimingText(primaryTrip)}
+                    </Text>
+                  </View>
+                  {primaryTrip?.travellers && (
+                    <View style={styles.tripDetailItem}>
+                      <Ionicons name="people-outline" size={16} color="#fff" />
+                      <Text style={styles.tripTravelers}>
+                        {primaryTrip.travellers.length || 1} Travelers
+                      </Text>
+                    </View>
+                  )}
+                </View>
+
+                {/* View Details Button */}
+                <TouchableOpacity style={styles.viewDetailsButton}>
+                  <Text style={styles.viewDetailsText}>View Details</Text>
+                  <Ionicons name="arrow-forward" size={16} color="#fff" />
+                </TouchableOpacity>
+              </LinearGradient>
+            </Pressable>
+
+            {/* Enhanced Quick Actions */}
+            <View style={styles.quickActionsContainer}>
+              <Text style={styles.sectionTitle}>Quick Actions</Text>
+              <QuickActions
+                onInvitePress={handleInvitePress}
+                onActionPress={handleActionNavigation}
+              />
             </View>
-          </View>
-        </Pressable>
+          </>
+        ) : (
+          <EmptyTripCard />
+        )}
 
-        {/* Quick Actions */}
-        <QuickActions
-          onInvitePress={handleInvitePress}
-          onActionPress={handleActionNavigation}
-        />
-
-        {/* Recent Trips */}
+        {/*  Recent Trips */}
         {recentTrips.length > 0 && (
           <View style={styles.recentTripsSection}>
             <View style={styles.recentTripsHeader}>
               <Text style={styles.sectionTitle}>Recent Trips</Text>
-              <TouchableOpacity onPress={() => navigation.navigate("My Trips")}>
-                <Entypo name="chevron-small-right" size={24} color="black" />
+              <TouchableOpacity
+                onPress={() => navigation.navigate("My Trips")}
+                style={styles.seeAllButton}
+              >
+                <Text style={styles.seeAllText}>See All</Text>
+                <Entypo
+                  name="chevron-small-right"
+                  size={20}
+                  color={COLOR.primary}
+                />
               </TouchableOpacity>
             </View>
 
@@ -263,26 +344,79 @@ const TravelApp = () => {
               keyExtractor={(item) => item.id}
               horizontal={true}
               showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ gap: 20, paddingRight: 20 }}
+              contentContainerStyle={styles.recentTripsContent}
               style={styles.flatListStyle}
             />
           </View>
         )}
+
+        {/* Travel Stats Card */}
+        <View style={styles.statsCard}>
+          <Text style={styles.statsTitle}>Your Travel Journey</Text>
+          <View style={styles.statsContainer}>
+            <View style={styles.statItem}>
+              <View style={styles.statIconContainer}>
+                <Foundation name="mountains" size={20} color={COLOR.primary} />
+              </View>
+              <Text style={styles.statNumber}>{safeTripData.length}</Text>
+              <Text style={styles.statLabel}>Total Trips</Text>
+            </View>
+
+            <View style={styles.statItem}>
+              <View style={styles.statIconContainer}>
+                <Ionicons name="location" size={20} color={COLOR.primary} />
+              </View>
+              <Text style={styles.statNumber}>
+                {new Set(safeTripData.map((trip) => trip.destination)).size}
+              </Text>
+              <Text style={styles.statLabel}>Destinations</Text>
+            </View>
+          </View>
+        </View>
       </ScrollView>
+
+      {/* Enhanced Floating Action Button */}
+      <TouchableOpacity style={styles.roomIconButton}>
+        <LinearGradient
+          colors={[COLOR.primary, "#667eea"]}
+          style={styles.fabGradient}
+        >
+          <MaterialIcons name="groups" color="#fff" size={24} />
+        </LinearGradient>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#f8faff",
+  },
+  headerGradient: {
+    paddingBottom: 10,
+  },
   container: {
+    flex: 1,
+  },
+  scrollContent: {
     paddingHorizontal: 20,
+    paddingBottom: 100,
   },
   header: {
     marginTop: 14,
     flexDirection: "row",
     justifyContent: "space-between",
-    // alignItems: "center",
-    marginBottom: 30,
+    alignItems: "flex-start",
+    paddingHorizontal: 20,
+  },
+  headerLeft: {
+    flex: 1,
+  },
+  headerRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
   },
   greeting: {
     fontSize: FONT_SIZE.H3,
@@ -292,56 +426,51 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
-    color: "#666",
+    color: "#64748b",
+    fontFamily: FONTS.regular,
   },
   profileContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 50,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: COLOR.primary,
     alignItems: "center",
     justifyContent: "center",
+    shadowColor: COLOR.primary,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 5,
   },
   profileText: {
     color: "#fff",
-    fontFamily: FONTS.medium,
+    fontFamily: FONTS.semiBold,
     fontSize: FONT_SIZE.body,
   },
   sectionTitle: {
-    fontSize: FONT_SIZE.H6,
+    fontSize: FONT_SIZE.H5,
     fontFamily: FONTS.semiBold,
     color: COLOR.textPrimary,
-    marginBottom: 15,
-  },
-  tripStatus: {
-    fontSize: FONT_SIZE.caption,
-    fontFamily: FONTS.medium,
-    color: "#fff",
-    backgroundColor: "rgba(255,255,255,0.2)",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    alignSelf: "flex-start",
-    marginBottom: 8,
-  },
-  tripDetails: {
-    flexDirection: "row",
-    alignItems: "center",
-    flexWrap: "wrap",
-  },
-  tripTravelers: {
-    fontSize: FONT_SIZE.body,
-    fontFamily: FONTS.medium,
-    color: "#fff",
-    opacity: 0.9,
-    marginLeft: 4,
+    marginBottom: 16,
+    marginTop: 8,
   },
   tripCard: {
-    height: 150,
-    borderRadius: 20,
+    height: 200,
+    borderRadius: 24,
     overflow: "hidden",
-    marginBottom: 20,
-    position: "relative",
+    marginBottom: 24,
+    marginTop: 20,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 8,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 10,
   },
   tripImage: {
     width: "100%",
@@ -353,34 +482,235 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: "rgba(0,0,0,0.4)",
-    paddingTop: 25,
-    paddingLeft: 20,
+    padding: 24,
+    justifyContent: "space-between",
+  },
+  statusBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.2)",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    alignSelf: "flex-start",
+    backdropFilter: "blur(10px)",
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 6,
+  },
+  tripStatus: {
+    fontSize: FONT_SIZE.caption,
+    fontFamily: FONTS.medium,
+    color: "#fff",
   },
   tripLocation: {
-    fontSize: FONT_SIZE.H3,
-    fontWeight: "bold",
+    fontSize: FONT_SIZE.H5,
+    fontFamily: FONTS.bold,
     color: "white",
-    marginBottom: 3,
+  },
+  tripDetailsContainer: {
+    gap: 2,
+  },
+  tripDetailItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
   },
   tripDuration: {
-    fontSize: FONT_SIZE.bodyLarge,
-    fontFamily: FONTS.semiBold,
+    fontSize: FONT_SIZE.body,
+    fontFamily: FONTS.medium,
     color: "#fff",
+    opacity: 0.95,
+  },
+  tripTravelers: {
+    fontSize: FONT_SIZE.body,
+    fontFamily: FONTS.medium,
+    color: "#fff",
+    opacity: 0.95,
+  },
+  viewDetailsButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.2)",
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    alignSelf: "flex-start",
+    gap: 6,
+    backdropFilter: "blur(10px)",
+  },
+  viewDetailsText: {
+    color: "#fff",
+    fontFamily: FONTS.medium,
+    fontSize: FONT_SIZE.body,
+  },
+  emptyTripCard: {
+    height: 200,
+    borderRadius: 24,
+    overflow: "hidden",
+    marginBottom: 24,
+    marginTop: 20,
+    shadowColor: "#667eea",
+    shadowOffset: {
+      width: 0,
+      height: 8,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
+    elevation: 10,
+  },
+  emptyTripGradient: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  emptyTripContent: {
+    alignItems: "center",
+  },
+  emptyIcon: {
+    marginBottom: 16,
     opacity: 0.9,
   },
-
+  emptyTripTitle: {
+    fontSize: FONT_SIZE.H6,
+    fontFamily: FONTS.bold,
+    color: "#fff",
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  emptyTripSubtitle: {
+    fontSize: FONT_SIZE.caption,
+    fontFamily: FONTS.medium,
+    color: "#fff",
+    opacity: 0.9,
+    textAlign: "center",
+    marginBottom: 20,
+  },
+  createTripButton: {
+    backgroundColor: "#fff",
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    borderRadius: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  createTripButtonText: {
+    color: COLOR.secondary,
+    fontFamily: FONTS.semiBold,
+    fontSize: FONT_SIZE.caption,
+  },
+  buttonIcon: {
+    marginLeft: 2,
+  },
+  quickActionsContainer: {
+    marginBottom: 24,
+  },
   recentTripsSection: {
-    marginBottom: 10,
+    marginBottom: 24,
   },
   recentTripsHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 12,
+    marginBottom: 16,
+  },
+  seeAllButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    backgroundColor: "#f1f5f9",
+  },
+  seeAllText: {
+    fontSize: FONT_SIZE.caption,
+    fontFamily: FONTS.medium,
+    color: COLOR.primary,
+  },
+  recentTripsContent: {
+    gap: 16,
+    paddingRight: 20,
   },
   flatListStyle: {
     flexGrow: 0,
+  },
+  statsCard: {
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    padding: 24,
+    marginBottom: 20,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 5,
+  },
+  statsTitle: {
+    fontSize: FONT_SIZE.H6,
+    fontFamily: FONTS.semiBold,
+    color: COLOR.textPrimary,
+    marginBottom: 20,
+    textAlign: "center",
+  },
+  statsContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+  },
+  statItem: {
+    alignItems: "center",
+    flex: 1,
+  },
+  statIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#f1f5f9",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 8,
+  },
+  statNumber: {
+    fontSize: FONT_SIZE.H4,
+    fontFamily: FONTS.bold,
+    color: COLOR.primary,
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: FONT_SIZE.caption,
+    fontFamily: FONTS.regular,
+    color: "#64748b",
+    textAlign: "center",
+  },
+  roomIconButton: {
+    position: "absolute",
+    bottom: 30,
+    right: 20,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    shadowColor: COLOR.primary,
+    shadowOffset: {
+      width: 0,
+      height: 6,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  fabGradient: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
 

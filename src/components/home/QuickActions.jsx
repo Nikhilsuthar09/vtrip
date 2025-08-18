@@ -10,7 +10,6 @@ const QuickActions = ({onInvitePress , onActionPress }) => {
     
   return (
     <View style={styles.quickActionsSection}>
-      <Text style={styles.sectionTitle}>Quick Actions</Text>
       <View style={styles.quickActionsGrid}>
         <TouchableOpacity onPress={onInvitePress}  style={styles.actionButton}>
           <View style={styles.actionIcon}>
@@ -59,12 +58,6 @@ const QuickActions = ({onInvitePress , onActionPress }) => {
 const styles = StyleSheet.create({
   quickActionsSection: {
     marginBottom: 20,
-  },
-  sectionTitle: {
-    fontSize: FONT_SIZE.H6,
-    fontFamily: FONTS.semiBold,
-    color: COLOR.textPrimary,
-    marginBottom: 15,
   },
   quickActionsGrid: {
     flexDirection: "row",
