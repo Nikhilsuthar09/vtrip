@@ -26,9 +26,13 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import Foundation from "@expo/vector-icons/Foundation";
 import NotificationIcon from "../components/home/NotificationIconWithBadge";
+import PlanAdventureModal from "../components/home/RoomIdModal";
+import { EmptyTripCard } from "../components/home/EmptyTripCard";
+import { getTripTimingText } from "../utils/home/getTripTimingText";
 
-const TravelApp = () => {
+const TravelApp = ({ onPress }) => {
   const [travellerByTripId, setTravellerByTripId] = useState(null);
+  const [isRoomModalVisible, setIsRoomModalVisible] = useState(false);
   const { firstName, userNameChars } = useAuth();
   const { tripsData, loading, error, tripIds, refetch } = useUserTripsData();
   const navigation = useNavigation();
@@ -72,29 +76,7 @@ const TravelApp = () => {
     return null;
   }, [safeTripData]);
 
-  // Calculate trip timing text based on status
-  const getTripTimingText = (trip) => {
-    if (!trip) return "No active trips";
-
-    const today = new Date();
-    const startDate = new Date(trip.startDate);
-    const endDate = new Date(trip.endDate);
-
-    if (trip.status === "ongoing") {
-      const diffTime = endDate - today;
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      return diffDays > 0
-        ? `${diffDays} ${diffDays === 1 ? "day" : "days"} remaining`
-        : "Trip ending today";
-    } else {
-      // upcoming
-      const diffTime = startDate - today;
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      return diffDays > 0
-        ? `${diffDays} ${diffDays === 1 ? "day" : "days"} left`
-        : "Trip starts today";
-    }
-  };
+ 
 
   // get quick actions data
   const handleActionNavigation = (screen) => {
@@ -179,38 +161,12 @@ const TravelApp = () => {
     setTravellerByTripId(null);
   };
 
-  const EmptyTripCard = () => (
-    <View style={styles.emptyTripCard}>
-      <LinearGradient
-        colors={["#667eea", "#764ba2"]}
-        style={styles.emptyTripGradient}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      >
-        <View style={styles.emptyTripContent}>
-          <Foundation
-            name="mountains"
-            size={48}
-            color="#fff"
-            style={styles.emptyIcon}
-          />
-          <Text style={styles.emptyTripTitle}>Ready for Adventure?</Text>
-          <Text style={styles.emptyTripSubtitle}>
-            Create your first trip or join existing with room id
-          </Text>
-          <TouchableOpacity style={styles.createTripButton}>
-            <Text style={styles.createTripButtonText}>Plan New Trip</Text>
-            <Ionicons
-              name="arrow-forward"
-              size={16}
-              color="#667eea"
-              style={styles.buttonIcon}
-            />
-          </TouchableOpacity>
-        </View>
-      </LinearGradient>
-    </View>
-  );
+  const onRoomModalPress = () => {
+    setIsRoomModalVisible(true);
+  };
+  const closeRoomModal = () => {
+    setIsRoomModalVisible(false);
+  };
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
@@ -315,7 +271,7 @@ const TravelApp = () => {
             </View>
           </>
         ) : (
-          <EmptyTripCard />
+          <EmptyTripCard onPress={onPress} />
         )}
 
         {/*  Recent Trips */}
@@ -376,7 +332,10 @@ const TravelApp = () => {
       </ScrollView>
 
       {/* Enhanced Floating Action Button */}
-      <TouchableOpacity style={styles.roomIconButton}>
+      <TouchableOpacity
+        onPress={onRoomModalPress}
+        style={styles.roomIconButton}
+      >
         <LinearGradient
           colors={[COLOR.primary, "#667eea"]}
           style={styles.fabGradient}
@@ -384,6 +343,12 @@ const TravelApp = () => {
           <MaterialIcons name="groups" color="#fff" size={24} />
         </LinearGradient>
       </TouchableOpacity>
+
+      {/* Modal to enter room id */}
+      <PlanAdventureModal
+        visible={isRoomModalVisible}
+        onClose={closeRoomModal}
+      />
     </SafeAreaView>
   );
 };
@@ -546,66 +511,6 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontFamily: FONTS.medium,
     fontSize: FONT_SIZE.body,
-  },
-  emptyTripCard: {
-    height: 200,
-    borderRadius: 24,
-    overflow: "hidden",
-    marginBottom: 24,
-    marginTop: 20,
-    shadowColor: "#667eea",
-    shadowOffset: {
-      width: 0,
-      height: 8,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 16,
-    elevation: 10,
-  },
-  emptyTripGradient: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
-  },
-  emptyTripContent: {
-    alignItems: "center",
-  },
-  emptyIcon: {
-    marginBottom: 16,
-    opacity: 0.9,
-  },
-  emptyTripTitle: {
-    fontSize: FONT_SIZE.H6,
-    fontFamily: FONTS.bold,
-    color: "#fff",
-    marginBottom: 8,
-    textAlign: "center",
-  },
-  emptyTripSubtitle: {
-    fontSize: FONT_SIZE.caption,
-    fontFamily: FONTS.medium,
-    color: "#fff",
-    opacity: 0.9,
-    textAlign: "center",
-    marginBottom: 20,
-  },
-  createTripButton: {
-    backgroundColor: "#fff",
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-    borderRadius: 20,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-  },
-  createTripButtonText: {
-    color: COLOR.secondary,
-    fontFamily: FONTS.semiBold,
-    fontSize: FONT_SIZE.caption,
-  },
-  buttonIcon: {
-    marginLeft: 2,
   },
   quickActionsContainer: {
     marginBottom: 24,

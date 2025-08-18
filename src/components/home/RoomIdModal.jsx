@@ -1,0 +1,198 @@
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  Modal,
+  TouchableOpacity,
+  TextInput,
+  StyleSheet,
+  SafeAreaView,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { COLOR, FONT_SIZE, FONTS } from "../../constants/Theme";
+const PlanAdventureModal = ({ visible, onClose, onJoinTrip, onCreateTrip }) => {
+  const [roomId, setRoomId] = useState("");
+
+  const handleJoinTrip = () => {
+    if (roomId.trim()) {
+      onJoinTrip?.(roomId.trim());
+      setRoomId("");
+      onClose();
+    }
+  };
+
+  const handleCreateTrip = () => {
+    onCreateTrip?.();
+    onClose();
+  };
+
+  return (
+    <Modal
+      visible={visible}
+      animationType="slide"
+      presentationStyle="pageSheet"
+      onRequestClose={onClose}
+    >
+      <SafeAreaView style={styles.container}>
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+            <Ionicons name="close" size={24} color={COLOR.textPrimary} />
+          </TouchableOpacity>
+        </View>
+
+        {/* Content */}
+        <View style={styles.content}>
+          {/* Icon */}
+          <View style={styles.iconContainer}>
+            <View style={styles.iconCircle}>
+              <Ionicons name="airplane" size={24} color={COLOR.actionText} />
+            </View>
+          </View>
+
+          {/* Title and Subtitle */}
+          <Text style={styles.title}>Plan Your Adventure</Text>
+          <Text style={styles.subtitle}>
+            Join an existing trip or create a new one
+          </Text>
+
+          {/* Join Trip Content */}
+          <View style={styles.joinContainer}>
+            <View style={styles.joinHeader}>
+              <Ionicons name="people" size={20} color={COLOR.secondary} />
+              <Text style={styles.joinTitle}>Join Existing Trip</Text>
+            </View>
+
+            <Text style={styles.roomIdLabel}>Room ID</Text>
+
+            <TextInput
+              style={styles.textInput}
+              placeholder="Enter room ID (e.g. ABC123)"
+              placeholderTextColor={COLOR.placeholder}
+              value={roomId}
+              onChangeText={setRoomId}
+            />
+
+            <TouchableOpacity
+              style={[
+                styles.joinButton,
+                !roomId.trim() && styles.disabledButton,
+              ]}
+              onPress={handleJoinTrip}
+              disabled={!roomId.trim()}
+            >
+              <Ionicons name="log-in" size={20} color="white" />
+              <Text style={styles.joinButtonText}>Join Trip</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </SafeAreaView>
+    </Modal>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "white",
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    paddingHorizontal: 20,
+    paddingTop: 10,
+  },
+  closeButton: {
+    padding: 8,
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 20,
+    alignItems: "center",
+  },
+  iconContainer: {
+    marginTop: 20,
+    marginBottom: 30,
+  },
+  iconCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: COLOR.actionButton,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  title: {
+    fontSize: FONT_SIZE.H4,
+    fontFamily: FONTS.bold,
+    color: COLOR.textPrimary,
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  subtitle: {
+    fontSize: FONT_SIZE.body,
+    fontFamily: FONTS.regular,
+    color: COLOR.grey,
+    textAlign: "center",
+    marginBottom: 40,
+  },
+  tabButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 6,
+    alignItems: "center",
+  },
+  joinContainer: {
+    width: "100%",
+    backgroundColor: "#F8F9FE",
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 30,
+  },
+  joinHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  joinTitle: {
+    fontSize: FONT_SIZE.bodyLarge,
+    fontFamily: FONTS.semiBold,
+    color: COLOR.textPrimary,
+    marginLeft: 8,
+  },
+  roomIdLabel: {
+    fontSize: FONT_SIZE.body,
+    fontFamily: FONTS.medium,
+    color: COLOR.textSecondary,
+    marginBottom: 8,
+  },
+  textInput: {
+    backgroundColor: "white",
+    borderRadius: 8,
+    padding: 16,
+    fontSize: FONT_SIZE.body,
+    fontFamily: FONTS.regular,
+    borderWidth: 1,
+    borderColor: COLOR.stroke,
+    marginBottom: 20,
+  },
+  joinButton: {
+    backgroundColor: COLOR.secondary,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 12,
+    borderRadius: 8,
+    gap: 8,
+  },
+  disabledButton: {
+    backgroundColor: COLOR.stroke,
+  },
+  joinButtonText: {
+    color: "white",
+    fontSize: FONT_SIZE.bodyLarge,
+    fontFamily: FONTS.semiBold,
+  },
+});
+
+export default PlanAdventureModal;
