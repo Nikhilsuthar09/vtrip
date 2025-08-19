@@ -7,12 +7,11 @@ import {
   Modal,
   ScrollView,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { COLOR, FONT_SIZE, FONTS } from "../../constants/Theme";
 import { Ionicons } from "@expo/vector-icons";
-import { doc, serverTimestamp, updateDoc } from "firebase/firestore";
-import { db } from "../../Configs/firebaseConfig";
 import {
   addExpense,
   updateExpense,
@@ -27,6 +26,7 @@ const PlanInAdvanceModal = ({
 }) => {
   const [expenseType, setExpenseType] = useState("");
   const [amount, setAmount] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const resetAndClose = () => {
     setExpenseType("");
@@ -61,11 +61,13 @@ const PlanInAdvanceModal = ({
       Alert.alert("Error", "Please enter a valid amount");
       return;
     }
+    setIsLoading(true)
     if (itemToUpdate) {
       await updateItem();
     } else {
       await addItem();
     }
+    setIsLoading(false)
     resetAndClose();
   };
   const updateItem = async () => {
@@ -127,7 +129,11 @@ const PlanInAdvanceModal = ({
               />
 
               {/* Add Button */}
-              <TouchableOpacity
+              {isLoading ? (
+                <ActivityIndicator size={"large"}/>
+              ) : (
+
+                <TouchableOpacity
                 style={[
                   styles.addButton,
                   (!expenseType.trim() || !amount.trim()) &&
@@ -135,11 +141,12 @@ const PlanInAdvanceModal = ({
                 ]}
                 onPress={handleSubmitExpense}
                 disabled={!expenseType.trim() || !amount.trim()}
-              >
+                >
                 <Text style={styles.addButtonText}>
-                  {itemToUpdate ? "Update" : "Add Expense"}
+                {itemToUpdate ? "Update" : "Add Expense"}
                 </Text>
-              </TouchableOpacity>
+                </TouchableOpacity>
+              )}
 
               {/* Cancel Button */}
               <TouchableOpacity

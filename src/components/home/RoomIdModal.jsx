@@ -7,85 +7,117 @@ import {
   TextInput,
   StyleSheet,
   SafeAreaView,
+  Alert,
+  TouchableWithoutFeedback,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { COLOR, FONT_SIZE, FONTS } from "../../constants/Theme";
-const PlanAdventureModal = ({ visible, onClose, onJoinTrip, onCreateTrip }) => {
+import { useAuth } from "../../Context/AuthContext";
+import { addTravellerToRoom } from "../../utils/tripData/room/addTravellerToRoom";
+const PlanAdventureModal = ({ visible, onClose }) => {
   const [roomId, setRoomId] = useState("");
+  const { uid } = useAuth();
 
-  const handleJoinTrip = () => {
-    if (roomId.trim()) {
-      onJoinTrip?.(roomId.trim());
+  const handleJoinTrip = async () => {
+    if (!roomId.trim() || roomId.length !== 5) {
+      Alert.alert("Wrong code", "Please enter a valid code");
+      return;
+    }
+    const response = await addTravellerToRoom(roomId.trim(), uid || "");
+    if (response) {
+      Alert.alert(response.status, response.message);
       setRoomId("");
       onClose();
     }
-  };
-
-  const handleCreateTrip = () => {
-    onCreateTrip?.();
-    onClose();
   };
 
   return (
     <Modal
       visible={visible}
       animationType="slide"
-      presentationStyle="pageSheet"
+      presentationStyle="overFullScreen"
       onRequestClose={onClose}
     >
       <SafeAreaView style={styles.container}>
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <Ionicons name="close" size={24} color={COLOR.textPrimary} />
-          </TouchableOpacity>
-        </View>
+        <ScrollView>
+          <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            keyboardVerticalOffset={50}
+            behavior={Platform.OS === "ios" ? "padding" : undefined}
+          >
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+              <View style={{ flex: 1 }}>
+                {/* Header */}
+                <View style={styles.header}>
+                  <TouchableOpacity
+                    onPress={onClose}
+                    style={styles.closeButton}
+                  >
+                    <Ionicons
+                      name="close"
+                      size={24}
+                      color={COLOR.textPrimary}
+                    />
+                  </TouchableOpacity>
+                </View>
 
-        {/* Content */}
-        <View style={styles.content}>
-          {/* Icon */}
-          <View style={styles.iconContainer}>
-            <View style={styles.iconCircle}>
-              <Ionicons name="airplane" size={24} color={COLOR.actionText} />
-            </View>
-          </View>
+                {/* Content */}
+                <View style={styles.content}>
+                  {/* Icon */}
+                  <View style={styles.iconContainer}>
+                    <View style={styles.iconCircle}>
+                      <Ionicons
+                        name="airplane"
+                        size={24}
+                        color={COLOR.actionText}
+                      />
+                    </View>
+                  </View>
 
-          {/* Title and Subtitle */}
-          <Text style={styles.title}>Plan Your Adventure</Text>
-          <Text style={styles.subtitle}>
-            Join an existing trip or create a new one
-          </Text>
+                  {/* Title and Subtitle */}
+                  <Text style={styles.title}>Join Your Friends</Text>
+                  <Text style={styles.subtitle}>
+                    Got a trip code? Enter it below to join the adventure
+                  </Text>
 
-          {/* Join Trip Content */}
-          <View style={styles.joinContainer}>
-            <View style={styles.joinHeader}>
-              <Ionicons name="people" size={20} color={COLOR.secondary} />
-              <Text style={styles.joinTitle}>Join Existing Trip</Text>
-            </View>
+                  {/* Join Trip Content */}
+                  <View style={styles.joinContainer}>
+                    <View style={styles.joinHeader}>
+                      <Ionicons name="people" size={20} color={COLOR.primary} />
+                      <Text style={styles.joinTitle}>Join Existing Trip</Text>
+                    </View>
 
-            <Text style={styles.roomIdLabel}>Room ID</Text>
+                    <Text style={styles.roomIdLabel}>Room ID</Text>
 
-            <TextInput
-              style={styles.textInput}
-              placeholder="Enter room ID (e.g. ABC123)"
-              placeholderTextColor={COLOR.placeholder}
-              value={roomId}
-              onChangeText={setRoomId}
-            />
+                    <TextInput
+                      style={styles.textInput}
+                      placeholder="Enter room ID (e.g. ABC123)"
+                      placeholderTextColor={COLOR.placeholder}
+                      value={roomId}
+                      onChangeText={setRoomId}
+                    />
 
-            <TouchableOpacity
-              style={[
-                styles.joinButton,
-                !roomId.trim() && styles.disabledButton,
-              ]}
-              onPress={handleJoinTrip}
-              disabled={!roomId.trim()}
-            >
-              <Ionicons name="log-in" size={20} color="white" />
-              <Text style={styles.joinButtonText}>Join Trip</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+                    <TouchableOpacity
+                      style={[
+                        styles.joinButton,
+                        !roomId.trim() && styles.disabledButton,
+                      ]}
+                      onPress={handleJoinTrip}
+                      disabled={!roomId.trim()}
+                    >
+                      <Ionicons name="log-in" size={20} color="white" />
+                      <Text style={styles.joinButtonText}>Join Trip</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
+            </TouchableWithoutFeedback>
+          </KeyboardAvoidingView>
+        </ScrollView>
       </SafeAreaView>
     </Modal>
   );
@@ -177,7 +209,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   joinButton: {
-    backgroundColor: COLOR.secondary,
+    backgroundColor: COLOR.primary,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",

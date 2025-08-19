@@ -5,6 +5,8 @@ import {
   TextInput,
   Pressable,
   StyleSheet,
+  TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
 import React from "react";
 import { Picker } from "@react-native-picker/picker";
@@ -19,6 +21,7 @@ const TrackOnTripModal = ({
   expenseDataOnTrip,
   onSubmit,
   traveller,
+  isLoading
 }) => {
   return (
     <Modal
@@ -50,7 +53,7 @@ const TrackOnTripModal = ({
               selectedValue={expenseDataOnTrip.uid}
               onValueChange={(uid) => {
                 const selectedTraveller = traveller.find((t) => t.uid === uid);
-                handleDataChange("name", selectedTraveller.name);
+                handleDataChange("name", selectedTraveller?.name);
                 handleDataChange("uid", uid);
               }}
               style={styles.picker}
@@ -58,7 +61,6 @@ const TrackOnTripModal = ({
               <Picker.Item
                 label="Select"
                 style={{ color: COLOR.placeholder }}
-                value=""
               />
               {traveller.map((item) => {
                 return (
@@ -95,11 +97,15 @@ const TrackOnTripModal = ({
           />
 
           {/* Submit Button */}
-          <Pressable style={styles.addButton} onPress={onSubmit}>
+          {isLoading ? (
+            <ActivityIndicator size={"large"}/>
+          ) : (
+            <TouchableOpacity activeOpacity={0.8} style={styles.addButton} onPress={onSubmit}>
             <Text style={styles.addButtonText}>
-              {itemIdToUpdate ? "Update" : "Add"}
+            {itemIdToUpdate ? "Update" : "Add"}
             </Text>
-          </Pressable>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
     </Modal>

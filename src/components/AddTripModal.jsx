@@ -14,7 +14,6 @@ import Modal from "react-native-modal";
 import { StatusBar } from "expo-status-bar";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Calendar } from "react-native-calendars";
 import { SafeAreaView } from "react-native-safe-area-context";
 // local file imports
@@ -26,15 +25,8 @@ import {
   getCurrentDate,
 } from "../utils/calendar/handleCurrentDate";
 import { addTripToDb } from "../utils/tripData/handleStoreTripData";
-import {
-  arrayUnion,
-  doc,
-  getDoc,
-  serverTimestamp,
-  updateDoc,
-} from "firebase/firestore";
+import { doc, serverTimestamp, updateDoc } from "firebase/firestore";
 import { db } from "../Configs/firebaseConfig";
-import { useAuth } from "../Context/AuthContext";
 import ImagePickerComponent from "./ImagePickerComponent";
 import { uploadImageToCloudinary } from "../utils/tripData/uploadImage";
 
@@ -46,7 +38,6 @@ const AddTripModal = ({
   isEditMode = false,
   refetch,
 }) => {
-  const [roomId, setRoomId] = useState("");
   const [activeInput, setActiveInput] = useState(null);
   const [tripData, setTripData] = useState({
     title: "",
@@ -70,7 +61,6 @@ const AddTripModal = ({
       });
     }
   }, [isEditMode, editTripData]);
-  const { uid } = useAuth();
 
   const resetTripData = () => {
     setTripData({
@@ -81,7 +71,6 @@ const AddTripModal = ({
       start: "",
       end: "",
     });
-    setRoomId("");
   };
 
   const resetDates = () => {
@@ -128,38 +117,10 @@ const AddTripModal = ({
           return;
         }
       } else {
-        if (roomId.trim()) {
-          try {
-            const idToRetrieve = roomId.trim();
-            const docRef = doc(db, "trip", idToRetrieve);
-            const docSnap = await getDoc(docRef);
-            if (docSnap.exists()) {
-              try {
-                const userDocRef = doc(db, "user", uid);
-                await updateDoc(userDocRef, {
-                  tripIds: arrayUnion(idToRetrieve),
-                });
-                const tripDocRef = doc(db, "trip", idToRetrieve);
-                await updateDoc(tripDocRef, {
-                  travellers: arrayUnion(uid),
-                });
-                console.log("user's Trip array updated");
-                resetTripData();
-              } catch (e) {
-                console.log(e);
-              }
-            } else {
-              console.log("No trips found");
-            }
-          } catch (e) {
-            console.log("Something went wrong");
-          }
-        } else {
-          const success = await addTripToDb(updatedTripData);
-          if (success) {
-            resetTripData();
-            onClose();
-          }
+        const success = await addTripToDb(updatedTripData);
+        if (success) {
+          resetTripData();
+          onClose();
         }
       }
     } catch (e) {
@@ -237,37 +198,6 @@ const AddTripModal = ({
               </Pressable>
             </View>
             <View style={{ flex: 1 }}>
-              {!isEditMode && (
-                <>
-                  <MaterialIcons
-                    name="groups"
-                    style={styles.icon}
-                    size={18}
-                    color={
-                      activeInput === "roomId" ? COLOR.primary : COLOR.grey
-                    }
-                  />
-                  <TextInput
-                    onChangeText={(value) => setRoomId(value)}
-                    value={roomId}
-                    onFocus={() => setActiveInput("roomId")}
-                    onBlur={() => setActiveInput(null)}
-                    placeholder="Room id"
-                    placeholderTextColor={COLOR.placeholder}
-                    style={[
-                      styles.input,
-                      activeInput === "roomId"
-                        ? styles.activeColor
-                        : styles.inactiveColor,
-                    ]}
-                  />
-                  <View style={styles.separater}>
-                    <View style={styles.separaterLine}></View>
-                    <Text style={styles.orText}>Or</Text>
-                    <View style={styles.separaterLine}></View>
-                  </View>
-                </>
-              )}
               <View style={styles.inputContainer}>
                 <AntDesign
                   name="tags"

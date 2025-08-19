@@ -17,14 +17,18 @@ import {
 } from "../../utils/firebaseTripHandler";
 import Spinner from "../../components/Spinner";
 import { PieChart, BarChart } from "react-native-chart-kit";
+import { useTravellerNames } from "../../utils/firebaseTravellerHandler";
 
 const { width: screenWidth } = Dimensions.get("window");
 const chartWidth = screenWidth - 60;
 
 const Expenses = ({ route }) => {
-  const { id, budget, safeTravellerNames, travellerLoading } = route.params;
+  const { id, budget } = route.params;
   const [refreshing, setRefreshing] = useState(false);
+  const { travellerNames, travellerLoading, travellerError } =
+    useTravellerNames(id);
   const navigation = useNavigation();
+  const safeTravellerNames = travellerNames || []
 
   // Fetch data for both planned and on-trip expenses
   const {

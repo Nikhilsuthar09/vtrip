@@ -31,14 +31,10 @@ import { EmptyTripCard } from "../components/home/EmptyTripCard";
 import { getTripTimingText } from "../utils/home/getTripTimingText";
 
 const TravelApp = ({ onPress }) => {
-  const [travellerByTripId, setTravellerByTripId] = useState(null);
   const [isRoomModalVisible, setIsRoomModalVisible] = useState(false);
   const { firstName, userNameChars } = useAuth();
   const { tripsData, loading, error, tripIds, refetch } = useUserTripsData();
   const navigation = useNavigation();
-  const { travellerNames, travellerLoading, travellerError } =
-    useTravellerNames(travellerByTripId);
-  const safeTravellerNames = travellerNames || [];
   const safeTripData = tripsData || [];
 
   // Get the primary trip to display (ongoing takes priority over upcoming)
@@ -76,7 +72,9 @@ const TravelApp = ({ onPress }) => {
     return null;
   }, [safeTripData]);
 
- 
+  const { travellerNames, travellerLoading, travellerError } =
+    useTravellerNames(primaryTrip?.id);
+  const safeTravellerNames = travellerNames || [];
 
   // get quick actions data
   const handleActionNavigation = (screen) => {
@@ -84,18 +82,14 @@ const TravelApp = ({ onPress }) => {
       const tripDetails = safeTripData.find(
         (item) => item.id === primaryTrip.id
       );
-      setTravellerByTripId(tripDetails.id);
       navigation.navigate("TopTabs", {
         id: tripDetails.id,
         budget: tripDetails.budget,
         destination: tripDetails.destination,
         startDate: tripDetails.startDate,
         endDate: tripDetails.endDate,
-        safeTravellerNames: safeTravellerNames,
-        travellerLoading: travellerLoading,
         screen: screen,
       });
-      setTravellerByTripId(null);
     }
   };
 
@@ -105,7 +99,6 @@ const TravelApp = ({ onPress }) => {
       const tripDetails = safeTripData.find(
         (item) => item.id === primaryTrip.id
       );
-      setTravellerByTripId(tripDetails.id);
       navigation.navigate("invite", {
         id: tripDetails.id,
         title: tripDetails.title,
@@ -115,7 +108,6 @@ const TravelApp = ({ onPress }) => {
         travellers: safeTravellerNames,
         createdBy: tripDetails.createdBy,
       });
-      setTravellerByTripId(null);
     }
   };
 
@@ -148,17 +140,13 @@ const TravelApp = ({ onPress }) => {
   // navigate to recent trip
   const handleRecentNavigation = (id) => {
     const tripDetails = safeTripData.find((item) => item.id === id);
-    setTravellerByTripId(tripDetails.id);
     navigation.navigate("TopTabs", {
       id: tripDetails.id,
       budget: tripDetails.budget,
       destination: tripDetails.destination,
       startDate: tripDetails.startDate,
       endDate: tripDetails.endDate,
-      safeTravellerNames: safeTravellerNames,
-      travellerLoading: travellerLoading,
     });
-    setTravellerByTripId(null);
   };
 
   const onRoomModalPress = () => {
@@ -230,7 +218,7 @@ const TravelApp = ({ onPress }) => {
                   </Text>
                 </View>
 
-                {/* Destination with better typography */}
+                {/* Destination  */}
                 <Text style={styles.tripLocation}>
                   {primaryTrip?.destination || "Plan your next trip"}
                 </Text>
@@ -252,12 +240,6 @@ const TravelApp = ({ onPress }) => {
                     </View>
                   )}
                 </View>
-
-                {/* View Details Button */}
-                <TouchableOpacity style={styles.viewDetailsButton}>
-                  <Text style={styles.viewDetailsText}>View Details</Text>
-                  <Ionicons name="arrow-forward" size={16} color="#fff" />
-                </TouchableOpacity>
               </LinearGradient>
             </Pressable>
 
@@ -331,7 +313,7 @@ const TravelApp = ({ onPress }) => {
         </View>
       </ScrollView>
 
-      {/* Enhanced Floating Action Button */}
+      {/*  Floating Action Button */}
       <TouchableOpacity
         onPress={onRoomModalPress}
         style={styles.roomIconButton}
@@ -495,22 +477,6 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.medium,
     color: "#fff",
     opacity: 0.95,
-  },
-  viewDetailsButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "rgba(255,255,255,0.2)",
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
-    alignSelf: "flex-start",
-    gap: 6,
-    backdropFilter: "blur(10px)",
-  },
-  viewDetailsText: {
-    color: "#fff",
-    fontFamily: FONTS.medium,
-    fontSize: FONT_SIZE.body,
   },
   quickActionsContainer: {
     marginBottom: 24,
