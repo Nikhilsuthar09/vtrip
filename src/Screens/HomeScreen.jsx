@@ -167,7 +167,10 @@ const TravelApp = ({ onPress }) => {
           <Text style={styles.subtitle}>Ready for your next adventure?</Text>
         </View>
         <View style={styles.headerRight}>
-          <NotificationIcon badgeCount={5} />
+          <NotificationIcon
+            onPress={() => navigation.navigate("notification")}
+            badgeCount={5}
+          />
           <TouchableOpacity
             onPress={openDrawer}
             activeOpacity={0.8}
@@ -235,7 +238,10 @@ const TravelApp = ({ onPress }) => {
                     <View style={styles.tripDetailItem}>
                       <Ionicons name="people-outline" size={16} color="#fff" />
                       <Text style={styles.tripTravelers}>
-                        {primaryTrip.travellers.length || 1} Travelers
+                        {primaryTrip.travellers.length || 1}{" "}
+                        {primaryTrip?.travellers?.length === 1
+                          ? "traveller"
+                          : "travellers"}
                       </Text>
                     </View>
                   )}

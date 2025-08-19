@@ -14,6 +14,7 @@ import { Text, View } from "react-native";
 import { formatDate } from "../utils/calendar/handleCurrentDate";
 import CustomDrawerContent from "../components/CustomDrawerContent";
 import InviteCollaborators from "../Screens/InviteCollaborators";
+import NotificationsScreen from "../Screens/Notification";
 
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -80,6 +81,7 @@ export function MainStackNavigator() {
             fontFamily: FONTS.semiBold,
             fontSize: FONT_SIZE.H6,
           },
+          headerTitleAlign:"center",
           headerStyle: {
             backgroundColor: COLOR.primary,
           },
@@ -95,6 +97,7 @@ export function MainStackNavigator() {
             fontFamily: FONTS.semiBold,
             fontSize: FONT_SIZE.H6,
           },
+          headerTitleAlign:"center",
           headerStyle: {
             backgroundColor: COLOR.primary,
           },
@@ -110,6 +113,7 @@ export function MainStackNavigator() {
             fontFamily: FONTS.semiBold,
             fontSize: FONT_SIZE.H6,
           },
+          headerTitleAlign:"center",
           headerStyle: {
             backgroundColor: COLOR.primary,
           },
@@ -125,6 +129,23 @@ export function MainStackNavigator() {
             fontFamily: FONTS.semiBold,
             fontSize: FONT_SIZE.H6,
           },
+          headerTitleAlign:"center",
+          headerStyle: {
+            backgroundColor: COLOR.primary,
+          },
+        }}
+      />
+      <Stack.Screen
+        name="notification"
+        component={NotificationsScreen}
+        options={{
+          title: "Notifications",
+          headerTintColor: "#fff",
+          headerTitleStyle: {
+            fontFamily: FONTS.semiBold,
+            fontSize: FONT_SIZE.H6,
+          },
+          headerTitleAlign:"center",
           headerStyle: {
             backgroundColor: COLOR.primary,
           },
