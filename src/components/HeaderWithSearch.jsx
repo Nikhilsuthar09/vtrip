@@ -78,11 +78,12 @@ const styles = StyleSheet.create({
   },
   userButton: {
     backgroundColor: COLOR.primary,
-    width: 40,
-    height: 40,
-    borderRadius: 50,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: "center",
     justifyContent: "center",
+    elevation: 5,
   },
 });
 export default HeaderWithSearch;

@@ -48,7 +48,9 @@ const generateJourneyDays = (tripData) => {
     const formattedDate = formatDate(currentDate);
 
     let dayTitle;
-    if (i === totalDays - 1) {
+    if (totalDays === 1) {
+      dayTitle = `One Day Trip to ${tripData.destination}`;
+    } else if (i === totalDays - 1) {
       dayTitle = `Good Bye ${tripData.destination}`;
     } else {
       const getOrdinal = (n) => {

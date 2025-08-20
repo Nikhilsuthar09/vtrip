@@ -38,12 +38,12 @@ const TrackOnTrip = ({ route }) => {
     amount: "",
   });
   const [itemIdToUpdate, setItemIdToUpdate] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   if (loading) return <Spinner />;
   if (error) {
     return <ErrorScreen />;
   }
-
   const safeTripData = onTripExpenseData || [];
   const expenseList = selectedName
     ? safeTripData.filter((item) => item.uid === selectedName)
@@ -101,11 +101,13 @@ const TrackOnTrip = ({ route }) => {
       Alert.alert("Invalid amount", "Please enter a valid amount");
       return;
     }
+    setIsLoading(true);
     if (itemIdToUpdate) {
       await updateItem();
     } else {
       await handleAddExpense();
     }
+    setIsLoading(false);
     resetData();
     setModalVisible(false);
   };
@@ -381,6 +383,7 @@ const TrackOnTrip = ({ route }) => {
         expenseDataOnTrip={expenseDataOnTrip}
         onSubmit={onSubmit}
         traveller={safeTravellerNames}
+        isLoading={isLoading}
       />
     </SafeAreaView>
   );

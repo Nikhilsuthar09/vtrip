@@ -118,8 +118,6 @@ const ShowTripsCard = ({
                   destination,
                   startDate,
                   endDate,
-                  safeTravellerNames,
-                  travellerLoading,
                 })
               }
             >

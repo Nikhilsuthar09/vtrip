@@ -8,6 +8,7 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { StyleSheet, Text, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
+import { useTravellerNames } from "../utils/firebaseTravellerHandler";
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -18,10 +19,9 @@ export default function TopTabs({ route }) {
     destination,
     startDate,
     endDate,
-    safeTravellerNames,
-    travellerLoading,
     screen
   } = route.params;
+
   return (
     <>
       <StatusBar style="light" />
@@ -122,7 +122,7 @@ export default function TopTabs({ route }) {
         />
         <Tab.Screen
           name="Expenses"
-          initialParams={{ id, budget, safeTravellerNames, travellerLoading }}
+          initialParams={{ id, budget }}
           component={Expenses}
           options={{
             tabBarLabel: ({ focused }) => (

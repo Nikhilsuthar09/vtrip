@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -6,10 +6,12 @@ import {
   TouchableOpacity,
   StyleSheet,
   FlatList,
+  Pressable,
 } from "react-native";
 import { Image } from "expo-image";
+import { LinearGradient } from "expo-linear-gradient";
 import { COLOR, FONT_SIZE, FONTS } from "../constants/Theme";
-import horizontalList from "../components/home/horizontalList";
+import HorizontalList from "../components/home/horizontalList";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useUserTripsData } from "../utils/firebaseUserHandlers";
 import QuickActions from "../components/home/QuickActions";
@@ -17,8 +19,19 @@ import { getTripStatus } from "../utils/calendar/getTripStatus";
 import { useAuth } from "../Context/AuthContext";
 import { useNavigation } from "@react-navigation/native";
 import { useTravellerNames } from "../utils/firebaseTravellerHandler";
+import { formatDate } from "../utils/calendar/handleCurrentDate";
+import { StatusBar } from "expo-status-bar";
+import Entypo from "@expo/vector-icons/Entypo";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import Foundation from "@expo/vector-icons/Foundation";
+import NotificationIcon from "../components/home/NotificationIconWithBadge";
+import PlanAdventureModal from "../components/home/RoomIdModal";
+import { EmptyTripCard } from "../components/home/EmptyTripCard";
+import { getTripTimingText } from "../utils/home/getTripTimingText";
 
-const TravelApp = ({onpress}) => {
+const TravelApp = ({ onPress }) => {
+  const [isRoomModalVisible, setIsRoomModalVisible] = useState(false);
   const { firstName, userNameChars } = useAuth();
   const { tripsData, loading, error, tripIds, refetch } = useUserTripsData();
   const navigation = useNavigation();
@@ -63,32 +76,6 @@ const TravelApp = ({onpress}) => {
     useTravellerNames(primaryTrip?.id);
   const safeTravellerNames = travellerNames || [];
 
-  // Calculate trip timing text based on status
-  const getTripTimingText = (trip) => {
-    if (!trip) return "No active trips";
-
-    const today = new Date();
-    const startDate = new Date(trip.startDate);
-    const endDate = new Date(trip.endDate);
-
-    if (trip.status === "ongoing") {
-      const diffTime = endDate - today;
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      return diffDays > 0 ? `${diffDays} days remaining` : "Trip ending today";
-    } else {
-      // upcoming
-      const diffTime = startDate - today;
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      return diffDays > 0 ? `${diffDays} days left` : "Trip starts today";
-    }
-  };
-
-  // Get trip status indicator
-  const getTripStatusIndicator = (trip) => {
-    if (!trip) return "";
-    return trip.status === "ongoing" ? "🌟 Ongoing" : "📅 Upcoming";
-  };
-
   // get quick actions data
   const handleActionNavigation = (screen) => {
     if (primaryTrip) {
@@ -101,15 +88,31 @@ const TravelApp = ({onpress}) => {
         destination: tripDetails.destination,
         startDate: tripDetails.startDate,
         endDate: tripDetails.endDate,
-        safeTravellerNames: safeTravellerNames,
-        travellerLoading: travellerLoading,
         screen: screen,
       });
     }
   };
+
+  // navigate to invite screen
+  const handleInvitePress = () => {
+    if (primaryTrip) {
+      const tripDetails = safeTripData.find(
+        (item) => item.id === primaryTrip.id
+      );
+      navigation.navigate("invite", {
+        id: tripDetails.id,
+        title: tripDetails.title,
+        destination: tripDetails.destination,
+        startDate: formatDate(tripDetails.startDate),
+        endDate: formatDate(tripDetails.endDate),
+        travellers: safeTravellerNames,
+        createdBy: tripDetails.createdBy,
+      });
+    }
+  };
+
   const recentTrips = useMemo(() => {
     if (safeTripData.length === 0) return [];
-
     // Filter for completed trips
     const completedTrips = safeTripData.filter((trip) => {
       const status = getTripStatus(trip.startDate, trip.endDate);
@@ -129,22 +132,45 @@ const TravelApp = ({onpress}) => {
         imageUrl: trip?.imageUrl,
       }));
   }, [safeTripData]);
+
   const openDrawer = () => {
     navigation.openDrawer();
   };
 
+  // navigate to recent trip
+  const handleRecentNavigation = (id) => {
+    const tripDetails = safeTripData.find((item) => item.id === id);
+    navigation.navigate("TopTabs", {
+      id: tripDetails.id,
+      budget: tripDetails.budget,
+      destination: tripDetails.destination,
+      startDate: tripDetails.startDate,
+      endDate: tripDetails.endDate,
+    });
+  };
+
+  const onRoomModalPress = () => {
+    setIsRoomModalVisible(true);
+  };
+  const closeRoomModal = () => {
+    setIsRoomModalVisible(false);
+  };
+
   return (
-    <SafeAreaView
-      style={{ flex: 1, backgroundColor: "#fff" }}
-      edges={["top", "left", "right"]}
-    >
-      <ScrollView style={styles.container}>
-        {/* Header */}
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.greeting}>Hi, {firstName} 👋</Text>
-            <Text style={styles.subtitle}>Ready for your next adventure?</Text>
-          </View>
+    <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
+      <StatusBar style="dark" />
+
+      {/*  Header with Gradient Background */}
+      <View style={styles.header}>
+        <View style={styles.headerLeft}>
+          <Text style={styles.greeting}>Hi, {firstName} 👋</Text>
+          <Text style={styles.subtitle}>Ready for your next adventure?</Text>
+        </View>
+        <View style={styles.headerRight}>
+          <NotificationIcon
+            onPress={() => navigation.navigate("notification")}
+            badgeCount={5}
+          />
           <TouchableOpacity
             onPress={openDrawer}
             activeOpacity={0.8}
@@ -153,81 +179,197 @@ const TravelApp = ({onpress}) => {
             <Text style={styles.profileText}>{userNameChars}</Text>
           </TouchableOpacity>
         </View>
+      </View>
 
-        {/* Upcoming Trip Card */}
-        <View style={styles.tripCard}>
-          <Image
-            source={
-              primaryTrip?.imageUrl || require("../../assets/default.jpg")
-            }
-            style={styles.tripImage}
-          />
-          <View style={styles.tripOverlay}>
-            {/* Status indicator */}
-            {primaryTrip && (
-              <Text style={styles.tripStatus}>
-                {getTripStatusIndicator(primaryTrip)}
-              </Text>
-            )}
+      <ScrollView
+        style={styles.container}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        {/* Enhanced Trip Card */}
+        {primaryTrip ? (
+          <>
+            <Pressable
+              onPress={() => handleActionNavigation("Itinerary")}
+              style={styles.tripCard}
+            >
+              <Image
+                source={
+                  primaryTrip?.imageUrl || require("../../assets/default.jpg")
+                }
+                style={styles.tripImage}
+              />
+              <LinearGradient
+                colors={["rgba(0,0,0,0.2)", "rgba(0,0,0,0.7)"]}
+                style={styles.tripOverlay}
+              >
+                {/*  Status Badge */}
+                <View style={styles.statusBadge}>
+                  <View
+                    style={[
+                      styles.statusDot,
+                      {
+                        backgroundColor:
+                          primaryTrip.status === "ongoing"
+                            ? "#4ade80"
+                            : "#f59e0b",
+                      },
+                    ]}
+                  />
+                  <Text style={styles.tripStatus}>
+                    {primaryTrip.status === "ongoing" ? "Ongoing" : "Upcoming"}
+                  </Text>
+                </View>
 
-            {/* Destination */}
-            <Text style={styles.tripLocation}>
-              {primaryTrip?.destination || "Plan your next trip"}
-            </Text>
-
-            {/* Timing and travelers info */}
-            <View style={styles.tripDetails}>
-              <Text style={styles.tripDuration}>
-                {getTripTimingText(primaryTrip)}
-              </Text>
-              {primaryTrip?.travellers && (
-                <Text style={styles.tripTravelers}>
-                  • {primaryTrip.travellers.length || 1} Travelers
+                {/* Destination  */}
+                <Text style={styles.tripLocation}>
+                  {primaryTrip?.destination || "Plan your next trip"}
                 </Text>
-              )}
+
+                {/*  trip details */}
+                <View style={styles.tripDetailsContainer}>
+                  <View style={styles.tripDetailItem}>
+                    <Ionicons name="time-outline" size={16} color="#fff" />
+                    <Text style={styles.tripDuration}>
+                      {getTripTimingText(primaryTrip)}
+                    </Text>
+                  </View>
+                  {primaryTrip?.travellers && (
+                    <View style={styles.tripDetailItem}>
+                      <Ionicons name="people-outline" size={16} color="#fff" />
+                      <Text style={styles.tripTravelers}>
+                        {primaryTrip.travellers.length || 1}{" "}
+                        {primaryTrip?.travellers?.length === 1
+                          ? "traveller"
+                          : "travellers"}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              </LinearGradient>
+            </Pressable>
+
+            {/* Enhanced Quick Actions */}
+            <View style={styles.quickActionsContainer}>
+              <Text style={styles.sectionTitle}>Quick Actions</Text>
+              <QuickActions
+                onInvitePress={handleInvitePress}
+                onActionPress={handleActionNavigation}
+              />
             </View>
-          </View>
-        </View>
+          </>
+        ) : (
+          <EmptyTripCard onPress={onPress} />
+        )}
 
-        {/* Quick Actions */}
-        <QuickActions onAddPress={onpress} onActionPress={handleActionNavigation} />
-
-        {/* Recent Trips */}
+        {/*  Recent Trips */}
         {recentTrips.length > 0 && (
           <View style={styles.recentTripsSection}>
             <View style={styles.recentTripsHeader}>
               <Text style={styles.sectionTitle}>Recent Trips</Text>
-              <TouchableOpacity>
-                <Text style={styles.seeAllText}>›</Text>
+              <TouchableOpacity
+                onPress={() => navigation.navigate("My Trips")}
+                style={styles.seeAllButton}
+              >
+                <Text style={styles.seeAllText}>See All</Text>
+                <Entypo
+                  name="chevron-small-right"
+                  size={20}
+                  color={COLOR.primary}
+                />
               </TouchableOpacity>
             </View>
 
             <FlatList
               data={recentTrips}
-              renderItem={horizontalList}
+              renderItem={({ item }) => (
+                <HorizontalList item={item} onPress={handleRecentNavigation} />
+              )}
               keyExtractor={(item) => item.id}
               horizontal={true}
               showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ gap: 20, paddingRight: 20 }}
+              contentContainerStyle={styles.recentTripsContent}
               style={styles.flatListStyle}
             />
           </View>
         )}
+
+        {/* Travel Stats Card */}
+        <View style={styles.statsCard}>
+          <Text style={styles.statsTitle}>Your Travel Journey</Text>
+          <View style={styles.statsContainer}>
+            <View style={styles.statItem}>
+              <View style={styles.statIconContainer}>
+                <Foundation name="mountains" size={20} color={COLOR.primary} />
+              </View>
+              <Text style={styles.statNumber}>{safeTripData.length}</Text>
+              <Text style={styles.statLabel}>Total Trips</Text>
+            </View>
+
+            <View style={styles.statItem}>
+              <View style={styles.statIconContainer}>
+                <Ionicons name="location" size={20} color={COLOR.primary} />
+              </View>
+              <Text style={styles.statNumber}>
+                {new Set(safeTripData.map((trip) => trip.destination)).size}
+              </Text>
+              <Text style={styles.statLabel}>Destinations</Text>
+            </View>
+          </View>
+        </View>
       </ScrollView>
+
+      {/*  Floating Action Button */}
+      <TouchableOpacity
+        onPress={onRoomModalPress}
+        style={styles.roomIconButton}
+      >
+        <LinearGradient
+          colors={[COLOR.primary, "#667eea"]}
+          style={styles.fabGradient}
+        >
+          <MaterialIcons name="groups" color="#fff" size={24} />
+        </LinearGradient>
+      </TouchableOpacity>
+
+      {/* Modal to enter room id */}
+      <PlanAdventureModal
+        visible={isRoomModalVisible}
+        onClose={closeRoomModal}
+      />
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#f8faff",
+  },
+  headerGradient: {
+    paddingBottom: 10,
+  },
   container: {
+    flex: 1,
+  },
+  scrollContent: {
     paddingHorizontal: 20,
+    paddingBottom: 100,
   },
   header: {
-    marginTop: 10,
+    marginTop: 14,
     flexDirection: "row",
     justifyContent: "space-between",
+    alignItems: "flex-start",
+    paddingHorizontal: 20,
+  },
+  headerLeft: {
+    flex: 1,
+  },
+  headerRight: {
+    flexDirection: "row",
     alignItems: "center",
-    marginBottom: 30,
+    gap: 12,
   },
   greeting: {
     fontSize: FONT_SIZE.H3,
@@ -237,56 +379,51 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
-    color: "#666",
+    color: "#64748b",
+    fontFamily: FONTS.regular,
   },
   profileContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 50,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: COLOR.primary,
     alignItems: "center",
     justifyContent: "center",
+    shadowColor: COLOR.primary,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 5,
   },
   profileText: {
     color: "#fff",
-    fontFamily: FONTS.medium,
+    fontFamily: FONTS.semiBold,
     fontSize: FONT_SIZE.body,
   },
   sectionTitle: {
-    fontSize: FONT_SIZE.H6,
+    fontSize: FONT_SIZE.H5,
     fontFamily: FONTS.semiBold,
     color: COLOR.textPrimary,
-    marginBottom: 15,
-  },
-  tripStatus: {
-    fontSize: FONT_SIZE.caption,
-    fontFamily: FONTS.medium,
-    color: "#fff",
-    backgroundColor: "rgba(255,255,255,0.2)",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    alignSelf: "flex-start",
-    marginBottom: 8,
-  },
-  tripDetails: {
-    flexDirection: "row",
-    alignItems: "center",
-    flexWrap: "wrap",
-  },
-  tripTravelers: {
-    fontSize: FONT_SIZE.body,
-    fontFamily: FONTS.medium,
-    color: "#fff",
-    opacity: 0.9,
-    marginLeft: 4,
+    marginBottom: 16,
+    marginTop: 8,
   },
   tripCard: {
-    height: 150,
-    borderRadius: 20,
+    height: 200,
+    borderRadius: 24,
     overflow: "hidden",
-    marginBottom: 20,
-    position: "relative",
+    marginBottom: 24,
+    marginTop: 20,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 8,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 10,
   },
   tripImage: {
     width: "100%",
@@ -298,40 +435,159 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: "rgba(0,0,0,0.4)",
-    paddingTop: 25,
-    paddingLeft: 20,
+    padding: 24,
+    justifyContent: "space-between",
+  },
+  statusBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.2)",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    alignSelf: "flex-start",
+    backdropFilter: "blur(10px)",
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 6,
+  },
+  tripStatus: {
+    fontSize: FONT_SIZE.caption,
+    fontFamily: FONTS.medium,
+    color: "#fff",
   },
   tripLocation: {
-    fontSize: FONT_SIZE.H3,
-    fontWeight: "bold",
+    fontSize: FONT_SIZE.H5,
+    fontFamily: FONTS.bold,
     color: "white",
-    marginBottom: 3,
+  },
+  tripDetailsContainer: {
+    gap: 2,
+  },
+  tripDetailItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
   },
   tripDuration: {
-    fontSize: FONT_SIZE.bodyLarge,
-    fontFamily: FONTS.semiBold,
+    fontSize: FONT_SIZE.body,
+    fontFamily: FONTS.medium,
     color: "#fff",
-    opacity: 0.9,
+    opacity: 0.95,
   },
-
+  tripTravelers: {
+    fontSize: FONT_SIZE.body,
+    fontFamily: FONTS.medium,
+    color: "#fff",
+    opacity: 0.95,
+  },
+  quickActionsContainer: {
+    marginBottom: 24,
+  },
   recentTripsSection: {
-    marginBottom: 10,
+    marginBottom: 24,
   },
   recentTripsHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 12,
+    marginBottom: 16,
+  },
+  seeAllButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    backgroundColor: "#f1f5f9",
   },
   seeAllText: {
-    fontSize: 24,
-    color: "#666",
-    fontWeight: "300",
+    fontSize: FONT_SIZE.caption,
+    fontFamily: FONTS.medium,
+    color: COLOR.primary,
   },
-
+  recentTripsContent: {
+    gap: 16,
+    paddingRight: 20,
+  },
   flatListStyle: {
     flexGrow: 0,
+  },
+  statsCard: {
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    padding: 24,
+    marginBottom: 20,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 5,
+  },
+  statsTitle: {
+    fontSize: FONT_SIZE.H6,
+    fontFamily: FONTS.semiBold,
+    color: COLOR.textPrimary,
+    marginBottom: 20,
+    textAlign: "center",
+  },
+  statsContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+  },
+  statItem: {
+    alignItems: "center",
+    flex: 1,
+  },
+  statIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#f1f5f9",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 8,
+  },
+  statNumber: {
+    fontSize: FONT_SIZE.H4,
+    fontFamily: FONTS.bold,
+    color: COLOR.primary,
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: FONT_SIZE.caption,
+    fontFamily: FONTS.regular,
+    color: "#64748b",
+    textAlign: "center",
+  },
+  roomIconButton: {
+    position: "absolute",
+    bottom: 30,
+    right: 20,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    shadowColor: COLOR.primary,
+    shadowOffset: {
+      width: 0,
+      height: 6,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  fabGradient: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
 
