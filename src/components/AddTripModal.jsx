@@ -333,7 +333,7 @@ const AddTripModal = ({
                 />
               </View>
               {loading ? (
-                <ActivityIndicator size={"small"} color={COLOR.primary} />
+                <ActivityIndicator size={"large"} color={COLOR.primary} />
               ) : (
                 <TouchableOpacity
                   style={styles.createButton}

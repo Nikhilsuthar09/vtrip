@@ -7,14 +7,16 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Modal,
+  ActivityIndicator,
 } from "react-native";
-import Modal from "react-native-modal";
 import { COLOR, FONT_SIZE, FONTS } from "../../constants/Theme";
 import { useEffect, useState } from "react";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import CreateNewCategory from "./CreateNewCategory";
 import { handleAddPackingItem, handleUpdateItem } from "../../utils/firebase_crud/packing/packingCrud";
+
 const AddPackingModal = ({
   isVisible,
   onClose,
@@ -26,6 +28,7 @@ const AddPackingModal = ({
   const [packingListData, setPackingListData] = useState({});
   const [isNewCategoryModalVisible, setIsNewCategoryModalVisible] =
     useState(false);
+  const [loading, setLoading] = useState(false)
   const [category, setCategory] = useState([
     { id: 1, name: "Essentials" },
     { id: 2, name: "Travelling" },
@@ -34,6 +37,7 @@ const AddPackingModal = ({
     { id: 5, name: "Electronics" },
   ]);
   const [newCategoryInput, setNewCategoryInput] = useState("");
+  
   useEffect(() => {
     if (!isVisible) return;
     if (editingItem) {
@@ -114,7 +118,8 @@ const AddPackingModal = ({
   const toggleCategoryModal = () => {
     setIsNewCategoryModalVisible(!isNewCategoryModalVisible);
   };
-  const handleSubmitItem = () => {
+  
+  const handleSubmitItem = async() => {
     if (!packingListData.category.trim()) {
       Alert.alert("Hold on!", "Choose a category to organize your item.");
       return;
@@ -130,11 +135,13 @@ const AddPackingModal = ({
       Alert.alert("Error!", "Please enter a valid quantity");
       return;
     }
+    setLoading(true)
     if (editingItem) {
-      updateItem();
+      await updateItem();
     } else {
-      addItem();
+      await addItem();
     }
+    setLoading(false)
   };
 
   const addItem = async () => {
@@ -144,6 +151,7 @@ const AddPackingModal = ({
       onClose();
     }
   };
+  
   const updateItem = async () => {
     const success = await handleUpdateItem(
       tripId,
@@ -158,12 +166,10 @@ const AddPackingModal = ({
 
   return (
     <Modal
-      style={{ margin: 0 }}
-      isVisible={isVisible}
-      onBackButtonPress={onClose}
-      animationIn="fadeIn"
-      animationOut="fadeOut"
-      avoidKeyboard={true}
+      visible={isVisible}
+      onRequestClose={onClose}
+      animationType="slide"
+      presentationStyle="fullScreen"
     >
       <View style={styles.modalContainer}>
         <ScrollView
@@ -273,18 +279,23 @@ const AddPackingModal = ({
             />
           </View>
         </ScrollView>
-        <TouchableOpacity
+        {loading ? (
+          <ActivityIndicator size={"large"} color={COLOR.primary}/>
+        ) : (
+          <TouchableOpacity
           onPress={handleSubmitItem}
           style={styles.addButtonContainer}
-        >
+          >
           <Text style={styles.addButtonText}>
-            {editingItem ? "Update Item" : "Add Item"}
+          {editingItem ? "Update Item" : "Add Item"}
           </Text>
-        </TouchableOpacity>
+          </TouchableOpacity>
+        )}
       </View>
     </Modal>
   );
 };
+
 const styles = StyleSheet.create({
   modalContainer: {
     margin: 0,
@@ -310,7 +321,7 @@ const styles = StyleSheet.create({
     gap: 5,
   },
   categoryButton: {
-    borderWidth: 1,
+    borderWidth: 0.5,
     borderColor: COLOR.grey,
     margin: 2,
     paddingVertical: 6,
@@ -326,7 +337,7 @@ const styles = StyleSheet.create({
   },
   selectedColor: {
     backgroundColor: COLOR.primaryLight,
-    borderColor: COLOR.primaryLight,
+    borderColor: COLOR.primary,
   },
   selectedTextColor: {
     color: COLOR.primary,
@@ -412,4 +423,5 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
 });
+
 export default AddPackingModal;
