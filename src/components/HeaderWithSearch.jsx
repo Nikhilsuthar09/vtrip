@@ -3,7 +3,7 @@ import {
   StyleSheet,
   TextInput,
   Text,
-  TouchableOpacity,
+  TouchableOpacity
 } from "react-native";
 import { COLOR, FONT_SIZE, FONTS } from "../constants/Theme";
 import { FontAwesome } from "@expo/vector-icons";
