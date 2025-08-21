@@ -335,15 +335,15 @@ const AddTripModal = ({
               {loading ? (
                 <ActivityIndicator size={"small"} color={COLOR.primary} />
               ) : (
-              <TouchableOpacity
-                style={styles.createButton}
-                onPress={handleStoreTripData}
-              >
+                <TouchableOpacity
+                  style={styles.createButton}
+                  onPress={handleStoreTripData}
+                >
                   <Text style={styles.createButtonText}>
                     {isEditMode ? "Update trip" : "Add Trip"}
                   </Text>
-              </TouchableOpacity>
-                )}
+                </TouchableOpacity>
+              )}
             </View>
           </View>
         </ScrollView>
