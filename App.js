@@ -6,7 +6,7 @@ import {
   Inter_400Regular,
   Inter_600SemiBold,
 } from "@expo-google-fonts/inter";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import RootStack from "./src/Navigation/AppNavigator";
 import { SafeAreaProvider } from "react-native-safe-area-context";
