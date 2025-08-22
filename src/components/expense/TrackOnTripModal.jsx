@@ -55,11 +55,12 @@ const TrackOnTripModal = ({
                 handleDataChange("name", selectedTraveller?.name);
                 handleDataChange("uid", uid);
               }}
+
               style={styles.picker}
             >
               <Picker.Item
                 label="Select"
-                style={{ color: COLOR.placeholder }}
+                style={{ color: COLOR.placeholder, backgroundColor:"#fff" }}
               />
               {traveller.map((item) => {
                 return (
@@ -67,7 +68,7 @@ const TrackOnTripModal = ({
                     key={item.uid}
                     label={item.name}
                     value={item.uid}
-                    style={{ color: COLOR.textPrimary }}
+                    style={{ color: COLOR.textPrimary, backgroundColor:"#fff" }}
                   />
                 );
               })}
