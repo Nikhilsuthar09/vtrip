@@ -81,7 +81,7 @@ export function MainStackNavigator() {
             fontFamily: FONTS.semiBold,
             fontSize: FONT_SIZE.H6,
           },
-          headerTitleAlign:"center",
+          headerTitleAlign: "center",
           headerStyle: {
             backgroundColor: COLOR.primary,
           },
@@ -97,7 +97,7 @@ export function MainStackNavigator() {
             fontFamily: FONTS.semiBold,
             fontSize: FONT_SIZE.H6,
           },
-          headerTitleAlign:"center",
+          headerTitleAlign: "center",
           headerStyle: {
             backgroundColor: COLOR.primary,
           },
@@ -113,7 +113,7 @@ export function MainStackNavigator() {
             fontFamily: FONTS.semiBold,
             fontSize: FONT_SIZE.H6,
           },
-          headerTitleAlign:"center",
+          headerTitleAlign: "center",
           headerStyle: {
             backgroundColor: COLOR.primary,
           },
@@ -129,7 +129,7 @@ export function MainStackNavigator() {
             fontFamily: FONTS.semiBold,
             fontSize: FONT_SIZE.H6,
           },
-          headerTitleAlign:"center",
+          headerTitleAlign: "center",
           headerStyle: {
             backgroundColor: COLOR.primary,
           },
@@ -145,7 +145,7 @@ export function MainStackNavigator() {
             fontFamily: FONTS.semiBold,
             fontSize: FONT_SIZE.H6,
           },
-          headerTitleAlign:"center",
+          headerTitleAlign: "center",
           headerStyle: {
             backgroundColor: COLOR.primary,
           },

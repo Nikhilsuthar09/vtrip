@@ -21,10 +21,7 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": [
-      "expo-font",
-      "expo-router"
-    ],
+    "plugins": ["expo-notifications", "expo-font", "expo-router"],
     "extra": {
       "router": {},
       "eas": {
