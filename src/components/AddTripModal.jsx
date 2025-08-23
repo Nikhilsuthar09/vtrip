@@ -8,9 +8,9 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
+  Modal,
 } from "react-native";
 import React, { useEffect, useState } from "react";
-import Modal from "react-native-modal";
 import { StatusBar } from "expo-status-bar";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
@@ -177,13 +177,19 @@ const AddTripModal = ({
     }
   };
 
+  const handleModalClose = () => {
+    if (onBackButtonPressed) {
+      onBackButtonPressed();
+    }
+    onClose();
+  };
+
   return (
     <Modal
-      isVisible={isModalVisible}
-      onBackButtonPress={onBackButtonPressed}
-      animationIn="slideInUp"
-      animationOut="slideOutDown"
-      style={styles.modal}
+      visible={isModalVisible}
+      animationType="slide"
+      presentationStyle="pageSheet"
+      onRequestClose={handleModalClose}
     >
       <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
         <ScrollView nestedScrollEnabled={true}>
@@ -353,9 +359,6 @@ const AddTripModal = ({
 };
 
 const styles = StyleSheet.create({
-  modal: {
-    margin: 0,
-  },
   modalContainer: {
     flex: 1,
     gap: 30,

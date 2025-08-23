@@ -29,14 +29,15 @@ import NotificationIcon from "../components/home/NotificationIconWithBadge";
 import PlanAdventureModal from "../components/home/RoomIdModal";
 import { EmptyTripCard } from "../components/home/EmptyTripCard";
 import { getTripTimingText } from "../utils/home/getTripTimingText";
+import { usePushNotification } from "../utils/notification/useNotifications";
 
 const TravelApp = ({ onPress }) => {
   const [isRoomModalVisible, setIsRoomModalVisible] = useState(false);
+  const { expoPushToken, notification } = usePushNotification();
   const { firstName, userNameChars } = useAuth();
   const { tripsData, loading, error, tripIds, refetch } = useUserTripsData();
   const navigation = useNavigation();
   const safeTripData = tripsData || [];
-
   // Get the primary trip to display (ongoing takes priority over upcoming)
   const primaryTrip = useMemo(() => {
     if (safeTripData.length === 0) return null;
