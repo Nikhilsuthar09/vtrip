@@ -17,7 +17,12 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { COLOR, FONT_SIZE, FONTS } from "../../constants/Theme";
 import { useAuth } from "../../Context/AuthContext";
-import { addTravellerToRoom } from "../../utils/tripData/room/addTravellerToRoom";
+import {
+  addTravellerToRoom,
+  searchRoomIdInDb,
+} from "../../utils/tripData/room/addTravellerToRoom";
+import { sendPushNotification } from "../../utils/notification/sendNotification";
+import {  tripJoinBody } from "../../constants/notification";
 const PlanAdventureModal = ({ visible, onClose }) => {
   const [roomId, setRoomId] = useState("");
   const { uid } = useAuth();
@@ -27,12 +32,20 @@ const PlanAdventureModal = ({ visible, onClose }) => {
       Alert.alert("Wrong code", "Please enter a valid code");
       return;
     }
-    const response = await addTravellerToRoom(roomId.trim(), uid || "");
-    if (response) {
-      Alert.alert(response.status, response.message);
-      setRoomId("");
-      onClose();
+    const ownerData = await searchRoomIdInDb(roomId.trim());
+    if (ownerData) {
+      const message = tripJoinBody(ownerData?.name, ownerData?.title, ownerData?.destination)
+      await sendPushNotification(ownerData?.token,message);
+    } else {
+      Alert.alert("Wrong code", "Please enter a valid code");
     }
+
+    // const response = await addTravellerToRoom(roomId.trim(), uid || "");
+    // if (response) {
+    //   Alert.alert(response.status, response.message);
+    //   setRoomId("");
+    //   onClose();
+    // }
   };
 
   return (

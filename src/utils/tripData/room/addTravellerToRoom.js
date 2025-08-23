@@ -15,8 +15,6 @@ export const addTravellerToRoom = async (roomId, uid) => {
         travellers: arrayUnion(uid),
       });
       return { status: "Success", message: "Trip added Successfully" };
-    } else {
-      return { status: "No trips found", message: "Please enter a valid code" };
     }
   } catch (e) {
     console.log(e);
@@ -24,5 +22,27 @@ export const addTravellerToRoom = async (roomId, uid) => {
       status: "Error",
       message: "Something went wrong please try again",
     };
+  }
+};
+
+export const searchRoomIdInDb = async (roomId) => {
+  try {
+    const docRef = doc(db, "trip", roomId);
+    const tripDocSnap = await getDoc(docRef);
+    if (!tripDocSnap.exists()) {
+      return null;
+    }
+    const ownerId = tripDocSnap.data().createdBy;
+    const userDocSnap = await getDoc(doc(db, "user", ownerId));
+    const ownerData = {
+      token: userDocSnap.data()?.pushToken,
+      name: userDocSnap.data()?.name,
+      title: tripDocSnap.data()?.title,
+      destination: tripDocSnap.data()?.destination,
+    };
+    console.log(ownerData)
+    return ownerData;
+  } catch (e) {
+    console.log(e);
   }
 };

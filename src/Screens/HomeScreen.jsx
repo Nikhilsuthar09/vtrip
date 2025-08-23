@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -33,7 +33,7 @@ import { usePushNotification } from "../utils/notification/useNotifications";
 
 const TravelApp = ({ onPress }) => {
   const [isRoomModalVisible, setIsRoomModalVisible] = useState(false);
-  const { expoPushToken, notification } = usePushNotification();
+  const { notification } = usePushNotification();
   const { firstName, userNameChars } = useAuth();
   const { tripsData, loading, error, tripIds, refetch } = useUserTripsData();
   const navigation = useNavigation();
@@ -76,6 +76,7 @@ const TravelApp = ({ onPress }) => {
   const { travellerNames, travellerLoading, travellerError } =
     useTravellerNames(primaryTrip?.id);
   const safeTravellerNames = travellerNames || [];
+  console.log(notification?.request?.content?.data)
 
   // get quick actions data
   const handleActionNavigation = (screen) => {

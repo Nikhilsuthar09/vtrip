@@ -10,23 +10,23 @@ import { db } from "../../Configs/firebaseConfig";
 export const usePushNotification = () => {
   const [expoPushToken, setExpoPushToken] = useState("");
   const [notification, setNotification] = useState(null);
-  const [isRegistering, setIsRegistering] = useState(false)
-  const lastStored = useRef("")
+  const [isRegistering, setIsRegistering] = useState(false);
+  const lastStored = useRef("");
   const { uid } = useAuth();
 
   const storePushTokenInFirestore = async (expoPushToken, uid) => {
-    if(lastStored.current === expoPushToken) return 
-    try{
-      const userDocRef = doc(db, "user", uid)
+    if (lastStored.current === expoPushToken) return;
+    try {
+      const userDocRef = doc(db, "user", uid);
       await updateDoc(userDocRef, {
-        pushToken: expoPushToken
-      })
+        pushToken: expoPushToken,
+      });
       console.log("token stored in firestore");
-      lastStored.current = expoPushToken
-    }catch(e){
-      console.log(e)
+      lastStored.current = expoPushToken;
+    } catch (e) {
+      console.log(e);
     }
-  }
+  };
   const registerForPushNotifications = async () => {
     if (isRegistering) return; // Prevent multiple concurrent registrations
 
@@ -101,7 +101,7 @@ export const usePushNotification = () => {
     // Listen for notifications received while app is foregrounded
     const notificationListener = Notifications.addNotificationReceivedListener(
       (notification) => {
-        console.log("Notification received:", notification);
+        console.log("Notification received:", JSON.stringify(notification));
         setNotification(notification);
       }
     );
