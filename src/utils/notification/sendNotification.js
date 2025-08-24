@@ -2,8 +2,8 @@ export const sendPushNotification = async (expoPushToken, data) => {
   const message = {
     to: expoPushToken,
     sound: "default",
-    title: data?.TITLE_JOIN,
-    body: data?.BODY_JOIN,
+    title: data.TITLE_JOIN,
+    body: data.BODY_JOIN,
     data: { someData: "goes here" },
   };
 

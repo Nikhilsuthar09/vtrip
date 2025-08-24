@@ -76,7 +76,6 @@ const TravelApp = ({ onPress }) => {
   const { travellerNames, travellerLoading, travellerError } =
     useTravellerNames(primaryTrip?.id);
   const safeTravellerNames = travellerNames || [];
-  console.log(notification?.request?.content?.data)
 
   // get quick actions data
   const handleActionNavigation = (screen) => {

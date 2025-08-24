@@ -1,4 +1,13 @@
-import { arrayUnion, doc, getDoc, updateDoc } from "firebase/firestore";
+import {
+  addDoc,
+  arrayUnion,
+  collection,
+  doc,
+  getDoc,
+  serverTimestamp,
+  setDoc,
+  updateDoc,
+} from "firebase/firestore";
 import { db } from "../../../Configs/firebaseConfig";
 
 export const addTravellerToRoom = async (roomId, uid) => {
@@ -32,17 +41,40 @@ export const searchRoomIdInDb = async (roomId) => {
     if (!tripDocSnap.exists()) {
       return null;
     }
-    const ownerId = tripDocSnap.data().createdBy;
+    const tripData = tripDocSnap.data()
+    const ownerId = tripData.createdBy;
     const userDocSnap = await getDoc(doc(db, "user", ownerId));
+    const userData = userDocSnap.data()
     const ownerData = {
-      token: userDocSnap.data()?.pushToken,
-      name: userDocSnap.data()?.name,
-      title: tripDocSnap.data()?.title,
-      destination: tripDocSnap.data()?.destination,
+      token: userData?.pushToken,
+      uid:ownerId,
+      name: userData?.name,
+      title: tripData?.title,
+      destination:tripData?.destination,
     };
-    console.log(ownerData)
+    console.log("ownerData", ownerData);
     return ownerData;
   } catch (e) {
     console.log(e);
+  }
+};
+
+export const addNotificationToDb = async (ownerUid,requesterUid,tripId, type, status, message) => {
+  try {
+    const notificationDocId = `${tripId}_${requesterUid}`
+    const userNotificationDoc = doc(db, "user", ownerUid, "notification",notificationDocId);
+    const notificationDoc = {
+      type,
+      title:message.TITLE_JOIN,
+      body: message.BODY_JOIN,
+      requesterUid,
+      tripId,
+      status,
+      createdAt: serverTimestamp(),
+    };
+    await setDoc(userNotificationDoc, notificationDoc,{merge:true});
+    console.log("notification added successfully")
+  } catch (e) {
+    console.log(e)
   }
 };

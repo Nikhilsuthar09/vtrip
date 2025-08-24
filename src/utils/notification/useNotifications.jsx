@@ -101,7 +101,7 @@ export const usePushNotification = () => {
     // Listen for notifications received while app is foregrounded
     const notificationListener = Notifications.addNotificationReceivedListener(
       (notification) => {
-        console.log("Notification received:", JSON.stringify(notification));
+        // console.log("Notification received:", JSON.stringify(notification));
         setNotification(notification);
       }
     );

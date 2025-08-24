@@ -18,14 +18,19 @@ import { Ionicons } from "@expo/vector-icons";
 import { COLOR, FONT_SIZE, FONTS } from "../../constants/Theme";
 import { useAuth } from "../../Context/AuthContext";
 import {
+  addNotificationToDb,
   addTravellerToRoom,
   searchRoomIdInDb,
 } from "../../utils/tripData/room/addTravellerToRoom";
 import { sendPushNotification } from "../../utils/notification/sendNotification";
-import {  tripJoinBody } from "../../constants/notification";
+import {
+  notificationType,
+  status,
+  tripJoinReqBody,
+} from "../../constants/notification";
 const PlanAdventureModal = ({ visible, onClose }) => {
   const [roomId, setRoomId] = useState("");
-  const { uid } = useAuth();
+  const { uid, name } = useAuth();
 
   const handleJoinTrip = async () => {
     if (!roomId.trim() || roomId.length !== 5) {
@@ -34,8 +39,20 @@ const PlanAdventureModal = ({ visible, onClose }) => {
     }
     const ownerData = await searchRoomIdInDb(roomId.trim());
     if (ownerData) {
-      const message = tripJoinBody(ownerData?.name, ownerData?.title, ownerData?.destination)
-      await sendPushNotification(ownerData?.token,message);
+      const message = tripJoinReqBody(
+        name,
+        ownerData?.title,
+        ownerData?.destination
+      );
+      await sendPushNotification(ownerData?.token, message);
+      await addNotificationToDb(
+        (ownerUid = ownerData?.uid),
+        (requesterUid = uid),
+        (tripId = roomId.trim()),
+        notificationType.JOIN_REQUEST,
+        status.PENDING,
+        message
+      );
     } else {
       Alert.alert("Wrong code", "Please enter a valid code");
     }

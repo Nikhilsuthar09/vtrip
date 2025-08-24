@@ -6,6 +6,7 @@ import { DrawerContentScrollView } from "@react-navigation/drawer";
 import Ionicons from '@expo/vector-icons/Ionicons';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { COLOR, FONT_SIZE, FONTS } from "../constants/Theme";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function CustomDrawerContent(props) {
   const { name, userNameChars,email } = useAuth();
@@ -37,7 +38,7 @@ export default function CustomDrawerContent(props) {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <DrawerContentScrollView {...props} contentContainerStyle={styles.scrollContainer}>
         {/* Profile Section */}
         <View style={styles.profileSection}>
@@ -75,7 +76,7 @@ export default function CustomDrawerContent(props) {
           <Text style={styles.logoutText}>Logout</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -92,7 +93,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
     alignItems: 'center',
-    paddingTop: 40,
   },
   profileContainer: {
     width: 60,

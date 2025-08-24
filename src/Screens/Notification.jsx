@@ -7,53 +7,34 @@ import {
   SafeAreaView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useFetchNotification } from "../utils/notification/useFetchNotifications";
+import { formatTime } from "../utils/timestamp/formatAndGetTime";
 
 const NotificationsScreen = () => {
-  const notifications = [
-    {
-      id: 1,
-      type: "flight",
-      icon: "airplane",
-      iconColor: "#8B5CF6",
-      backgroundColor: "#EDE9FE",
-      title: "Flight Update",
-      description: "Your flight to Paris has been delayed by 30 minutes. ",
-      time: "2m ago",
-    },
-  ];
+  const { notifications, loading, refetch } = useFetchNotification();
 
   const renderNotificationCard = (notification) => (
     <View
-      key={notification.id}
-      style={[
-        styles.notificationCard,
-        { backgroundColor: notification.backgroundColor },
-      ]}
+      key={notification?.id}
+      style={[styles.notificationCard, { backgroundColor: "#EDE9FE" }]}
     >
       <View style={styles.notificationHeader}>
-        <View
-          style={[
-            styles.iconContainer,
-            { backgroundColor: notification.iconColor },
-          ]}
-        >
-          <Ionicons name={notification.icon} size={20} color="white" />
+        <View style={[styles.iconContainer, { backgroundColor: "#8B5CF6" }]}>
+          <Ionicons name="airplane" size={20} color="white" />
         </View>
         <View style={styles.headerContent}>
-          <Text style={styles.notificationTitle}>{notification.title}</Text>
-          <Text style={styles.notificationTime}>{notification.time}</Text>
+          <Text style={styles.notificationTitle}>{notification?.title}</Text>
+          <Text style={styles.notificationTime}>
+            {formatTime(notification?.createdAt)}
+          </Text>
         </View>
       </View>
 
-      <Text style={styles.notificationDescription}>
-        {notification.description}
-      </Text>
+      <Text style={styles.notificationDescription}>{notification?.body}</Text>
 
       <View style={styles.actionsContainer}>
-        <TouchableOpacity style={[styles.actionButton, styles.secondaryAction]}>
-          <Text style={[styles.actionText, styles.secondaryActionText]}>
-            Dismiss
-          </Text>
+        <TouchableOpacity style={styles.actionButton}>
+          <Text style={styles.actionText}>Dismiss</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -61,7 +42,7 @@ const NotificationsScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Notifications List */}
+      {/* notificationsData List */}
       <ScrollView
         style={styles.notificationsList}
         showsVerticalScrollIndicator={false}
