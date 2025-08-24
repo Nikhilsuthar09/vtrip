@@ -5,13 +5,52 @@ import {
   TouchableOpacity,
   StyleSheet,
   SafeAreaView,
+  RefreshControl,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useFetchNotification } from "../utils/notification/useFetchNotifications";
 import { formatTime } from "../utils/timestamp/formatAndGetTime";
+import { useState } from "react";
+import { COLOR, FONT_SIZE, FONTS } from "../constants/Theme";
+import Spinner from "../components/Spinner";
+import NotificationPlaceholder from "../components/notification/placeholder";
+import { reqAcceptedBody, status } from "../constants/notification";
+import { changeStatusInDb } from "../utils/tripData/room/addTravellerToRoom";
+import { useAuth } from "../Context/AuthContext";
+import { sendPushNotification } from "../utils/notification/sendNotification";
+import { getPushToken } from "../utils/notification/getToken";
 
 const NotificationsScreen = () => {
+  const [refreshing, setRefreshing] = useState(false);
   const { notifications, loading, refetch } = useFetchNotification();
+  const { uid, name } = useAuth();
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  };
+  console.log(notifications)
+
+  const onRejectPress = async (notiId) => {
+    const message = await changeStatusInDb(uid, notiId, status.REJECTED);
+    if (message?.status === "Error") {
+      Alert.alert(message.status, message.message);
+      return;
+    }
+    await onRefresh();
+  };
+  const onAcceptPress = async (notiId, requesterUid) => {
+    const message = await changeStatusInDb(uid, notiId, status.ACCEPTED);
+    if (message?.status === "Error") {
+      Alert.alert(message.status, message.message);
+      return;
+    }
+    const requesterToken = await getPushToken(requesterUid);
+    const notifiData = reqAcceptedBody(name)
+    await sendPushNotification(requesterToken, notifiData);
+    await onRefresh();
+  };
 
   const renderNotificationCard = (notification) => (
     <View
@@ -31,12 +70,36 @@ const NotificationsScreen = () => {
       </View>
 
       <Text style={styles.notificationDescription}>{notification?.body}</Text>
-
-      <View style={styles.actionsContainer}>
-        <TouchableOpacity style={styles.actionButton}>
-          <Text style={styles.actionText}>Dismiss</Text>
-        </TouchableOpacity>
-      </View>
+      {notification?.type === "join_request" &&
+        (notification?.status === status.PENDING ? (
+          <View style={styles.actionsContainer}>
+            <TouchableOpacity
+              style={[styles.actionButton, { borderColor: COLOR.danger }]}
+              onPress={() => onRejectPress(notification?.id)}
+            >
+              <Text style={[styles.actionText, { color: COLOR.danger }]}>
+                Reject
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() =>
+                onAcceptPress(notification?.id, notification?.requesterUid)
+              }
+              style={[
+                styles.actionButton,
+                { borderColor: COLOR.success, backgroundColor: COLOR.success },
+              ]}
+            >
+              <Text style={[styles.actionText, { color: "#fff" }]}>Accept</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <Text
+            style={{ fontFamily: FONTS.regular, fontSize: FONT_SIZE.caption }}
+          >
+            Request {notification.status}
+          </Text>
+        ))}
     </View>
   );
 
@@ -46,8 +109,17 @@ const NotificationsScreen = () => {
       <ScrollView
         style={styles.notificationsList}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
       >
-        {notifications.map(renderNotificationCard)}
+        {notifications.length === 0 ? (
+          <NotificationPlaceholder />
+        ) : loading ? (
+          <Spinner />
+        ) : (
+          notifications.map(renderNotificationCard)
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -57,31 +129,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F8FAFC",
-  },
-  tabContainer: {
-    flexDirection: "row",
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 16,
-    backgroundColor: "white",
-  },
-  tab: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    marginRight: 24,
-  },
-  activeTab: {
-    borderBottomWidth: 2,
-    borderBottomColor: "#3B82F6",
-  },
-  tabText: {
-    fontSize: 16,
-    fontWeight: "500",
-    color: "#64748B",
-  },
-  activeTabText: {
-    color: "#1E293B",
-    fontWeight: "600",
   },
   notificationsList: {
     flex: 1,
@@ -119,19 +166,19 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   notificationTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#1E293B",
+    fontSize: FONT_SIZE.bodyLarge,
+    fontFamily: FONTS.semiBold,
+    color: COLOR.textPrimary,
     marginBottom: 2,
   },
   notificationTime: {
-    fontSize: 14,
-    color: "#64748B",
-    fontWeight: "500",
+    fontSize: FONT_SIZE.caption,
+    color: COLOR.grey,
+    fontFamily: FONTS.semiBold,
   },
   notificationDescription: {
-    fontSize: 14,
-    color: "#475569",
+    fontSize: FONT_SIZE.body,
+    color: COLOR.grey,
     lineHeight: 20,
     marginBottom: 16,
   },
@@ -144,13 +191,10 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 8,
     borderWidth: 1,
-    backgroundColor: "transparent",
-    borderColor: "#D1D5DB",
   },
   actionText: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: "#6B7280",
+    fontSize: FONT_SIZE.body,
+    fontFamily: FONTS.medium,
   },
 });
 

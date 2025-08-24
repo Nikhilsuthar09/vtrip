@@ -22,7 +22,7 @@ const COLOR = {
   primary: "#6750A4",
   primaryLight: "#E8DEF8",
   secondary: "#4D81E7",
-  textPrimary: "#111827",
+  textPrimary: "#1E293B",
   textSecondary: "#1A1C1E",
   stroke: "#CAC4D0",
   grey: "#6C7278",

@@ -21,7 +21,6 @@ export const usePushNotification = () => {
       await updateDoc(userDocRef, {
         pushToken: expoPushToken,
       });
-      console.log("token stored in firestore");
       lastStored.current = expoPushToken;
     } catch (e) {
       console.log(e);
@@ -71,7 +70,6 @@ export const usePushNotification = () => {
         await Notifications.getExpoPushTokenAsync({ projectId })
       ).data;
 
-      console.log("Push token generated:", pushTokenString);
       setExpoPushToken(pushTokenString);
 
       // Store token if user is authenticated
@@ -101,7 +99,6 @@ export const usePushNotification = () => {
     // Listen for notifications received while app is foregrounded
     const notificationListener = Notifications.addNotificationReceivedListener(
       (notification) => {
-        // console.log("Notification received:", JSON.stringify(notification));
         setNotification(notification);
       }
     );
@@ -109,7 +106,6 @@ export const usePushNotification = () => {
     // Listen for user interactions with notifications
     const responseListener =
       Notifications.addNotificationResponseReceivedListener((response) => {
-        console.log("Notification response:", JSON.stringify(response));
         // You can handle navigation or other actions here based on the notification data
       });
 

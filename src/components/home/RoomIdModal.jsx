@@ -32,30 +32,36 @@ const PlanAdventureModal = ({ visible, onClose }) => {
   const [roomId, setRoomId] = useState("");
   const { uid, name } = useAuth();
 
+  // function to handle joining room
   const handleJoinTrip = async () => {
     if (!roomId.trim() || roomId.length !== 5) {
       Alert.alert("Wrong code", "Please enter a valid code");
       return;
     }
-    const ownerData = await searchRoomIdInDb(roomId.trim());
-    if (ownerData) {
-      const message = tripJoinReqBody(
-        name,
-        ownerData?.title,
-        ownerData?.destination
-      );
-      await sendPushNotification(ownerData?.token, message);
-      await addNotificationToDb(
-        (ownerUid = ownerData?.uid),
-        (requesterUid = uid),
-        (tripId = roomId.trim()),
-        notificationType.JOIN_REQUEST,
-        status.PENDING,
-        message
-      );
-    } else {
-      Alert.alert("Wrong code", "Please enter a valid code");
+    const ownerData = await searchRoomIdInDb(roomId.trim(), uid);
+    if (ownerData?.status === "Error") {
+      Alert.alert(ownerData.status, ownerData.message);
+      return;
     }
+
+    const message = tripJoinReqBody(
+      name,
+      ownerData?.title,
+      ownerData?.destination
+    );
+    const result = await addNotificationToDb(
+      (ownerUid = ownerData?.uid),
+      (requesterUid = uid),
+      (tripId = roomId.trim()),
+      notificationType.JOIN_REQUEST,
+      status.PENDING,
+      message
+    );
+    if (result?.status === "Error") {
+      Alert.alert(result.status, result.message);
+      return;
+    }
+    await sendPushNotification(ownerData?.token, message);
 
     // const response = await addTravellerToRoom(roomId.trim(), uid || "");
     // if (response) {
