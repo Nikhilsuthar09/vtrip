@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   StyleSheet,
   FlatList,
   Pressable,
+  RefreshControl,
 } from "react-native";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
@@ -33,7 +34,7 @@ import { usePushNotification } from "../utils/notification/useNotifications";
 
 const TravelApp = ({ onPress }) => {
   const [isRoomModalVisible, setIsRoomModalVisible] = useState(false);
-  const { notification } = usePushNotification();
+  const [refreshing, setRefreshing] = useState(false);
   const { firstName, userNameChars } = useAuth();
   const { tripsData, loading, error, tripIds, refetch } = useUserTripsData();
   const navigation = useNavigation();
@@ -137,6 +138,11 @@ const TravelApp = ({ onPress }) => {
   const openDrawer = () => {
     navigation.openDrawer();
   };
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  };
 
   // navigate to recent trip
   const handleRecentNavigation = (id) => {
@@ -186,6 +192,9 @@ const TravelApp = ({ onPress }) => {
         style={styles.container}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
       >
         {/* Enhanced Trip Card */}
         {primaryTrip ? (

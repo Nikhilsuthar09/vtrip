@@ -6,6 +6,7 @@ import {
   StyleSheet,
   SafeAreaView,
   RefreshControl,
+  Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useFetchNotification } from "../utils/notification/useFetchNotifications";
@@ -13,9 +14,12 @@ import { formatTime } from "../utils/timestamp/formatAndGetTime";
 import { useState } from "react";
 import { COLOR, FONT_SIZE, FONTS } from "../constants/Theme";
 import Spinner from "../components/Spinner";
-import NotificationPlaceholder from "../components/notification/placeholder";
+import NotificationPlaceholder from "../components/notification/Placeholder";
 import { reqAcceptedBody, status } from "../constants/notification";
-import { changeStatusInDb } from "../utils/tripData/room/addTravellerToRoom";
+import {
+  addTravellerToRoom,
+  changeStatusInDb,
+} from "../utils/tripData/room/addTravellerToRoom";
 import { useAuth } from "../Context/AuthContext";
 import { sendPushNotification } from "../utils/notification/sendNotification";
 import { getPushToken } from "../utils/notification/getToken";
@@ -30,8 +34,7 @@ const NotificationsScreen = () => {
     await refetch();
     setRefreshing(false);
   };
-  console.log(notifications)
-
+  // function to reject joining request
   const onRejectPress = async (notiId) => {
     const message = await changeStatusInDb(uid, notiId, status.REJECTED);
     if (message?.status === "Error") {
@@ -40,15 +43,24 @@ const NotificationsScreen = () => {
     }
     await onRefresh();
   };
-  const onAcceptPress = async (notiId, requesterUid) => {
+  // function to accept joining request
+  const onAcceptPress = async (notiId, requesterUid, tripId) => {
+    // change status from pending to accepted in firestore
     const message = await changeStatusInDb(uid, notiId, status.ACCEPTED);
     if (message?.status === "Error") {
       Alert.alert(message.status, message.message);
       return;
     }
-    const requesterToken = await getPushToken(requesterUid);
-    const notifiData = reqAcceptedBody(name)
-    await sendPushNotification(requesterToken, notifiData);
+    // finally add traveller to the room
+    const response = await addTravellerToRoom(tripId, requesterUid);
+    if (response?.status === "Success") {
+      // send notification to the requester after successfully adding to room
+      const requesterToken = await getPushToken(requesterUid);
+      const notifiData = reqAcceptedBody(name);
+      await sendPushNotification(requesterToken, notifiData);
+    } else {
+      Alert.alert(response.status, response.message);
+    }
     await onRefresh();
   };
 
@@ -83,7 +95,11 @@ const NotificationsScreen = () => {
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() =>
-                onAcceptPress(notification?.id, notification?.requesterUid)
+                onAcceptPress(
+                  notification?.id,
+                  notification?.requesterUid,
+                  notification?.tripId
+                )
               }
               style={[
                 styles.actionButton,

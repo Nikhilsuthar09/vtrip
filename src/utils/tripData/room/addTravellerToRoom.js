@@ -23,6 +23,9 @@ export const addTravellerToRoom = async (roomId, uid) => {
       });
       return { status: "Success", message: "Trip added Successfully" };
     }
+    else{
+      return {status: "Error", message: "Trip doesn't exist"}
+    }
   } catch (e) {
     console.log(e);
     return {

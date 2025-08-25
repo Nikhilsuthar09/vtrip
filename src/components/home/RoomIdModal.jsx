@@ -34,7 +34,11 @@ const PlanAdventureModal = ({ visible, onClose }) => {
 
   // function to handle joining room
   const handleJoinTrip = async () => {
-    if (!roomId.trim() || roomId.length !== 5) {
+    if (
+      !roomId.trim() ||
+      roomId.length !== 5 ||
+      !/^[a-zA-Z0-9]+$/.test(roomId)
+    ) {
       Alert.alert("Wrong code", "Please enter a valid code");
       return;
     }
@@ -62,13 +66,6 @@ const PlanAdventureModal = ({ visible, onClose }) => {
       return;
     }
     await sendPushNotification(ownerData?.token, message);
-
-    // const response = await addTravellerToRoom(roomId.trim(), uid || "");
-    // if (response) {
-    //   Alert.alert(response.status, response.message);
-    //   setRoomId("");
-    //   onClose();
-    // }
   };
 
   return (
