@@ -13,13 +13,14 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  ToastAndroid,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { COLOR, FONT_SIZE, FONTS } from "../../constants/Theme";
 import { useAuth } from "../../Context/AuthContext";
 import {
   addNotificationToDb,
-  addTravellerToRoom,
   searchRoomIdInDb,
 } from "../../utils/tripData/room/addTravellerToRoom";
 import { sendPushNotification } from "../../utils/notification/sendNotification";
@@ -29,6 +30,7 @@ import {
   tripJoinReqBody,
 } from "../../constants/notification";
 const PlanAdventureModal = ({ visible, onClose }) => {
+  const [isLoading, setIsloading] = useState(false);
   const [roomId, setRoomId] = useState("");
   const { uid, name } = useAuth();
 
@@ -42,30 +44,43 @@ const PlanAdventureModal = ({ visible, onClose }) => {
       Alert.alert("Wrong code", "Please enter a valid code");
       return;
     }
-    const ownerData = await searchRoomIdInDb(roomId.trim(), uid);
-    if (ownerData?.status === "Error") {
-      Alert.alert(ownerData.status, ownerData.message);
-      return;
-    }
+    try {
+      setIsloading(true);
+      const ownerData = await searchRoomIdInDb(roomId.trim(), uid);
+      if (ownerData?.status === "Error") {
+        Alert.alert(ownerData.status, ownerData.message);
+        setIsloading(false);
+        return;
+      }
 
-    const message = tripJoinReqBody(
-      name,
-      ownerData?.title,
-      ownerData?.destination
-    );
-    const result = await addNotificationToDb(
-      (ownerUid = ownerData?.uid),
-      (requesterUid = uid),
-      (tripId = roomId.trim()),
-      notificationType.JOIN_REQUEST,
-      status.PENDING,
-      message
-    );
-    if (result?.status === "Error") {
-      Alert.alert(result.status, result.message);
-      return;
+      const message = tripJoinReqBody(
+        name,
+        ownerData?.title,
+        ownerData?.destination
+      );
+      const result = await addNotificationToDb(
+        ownerData?.uid,
+        uid,
+        roomId.trim(),
+        notificationType.JOIN_REQUEST,
+        status.PENDING,
+        message
+      );
+      if (result?.status === "Error") {
+        Alert.alert(result.status, result.message);
+        setIsloading(false);
+        return;
+      }
+      ToastAndroid.show("Request sent", ToastAndroid.SHORT);
+      await sendPushNotification(ownerData?.token, message);
+    } catch (e) {
+      Alert.alert("Error", "Something went wrong, Please try later");
+      console.log(e);
+    } finally {
+      setIsloading(false);
+      onClose();
+      setRoomId("");
     }
-    await sendPushNotification(ownerData?.token, message);
   };
 
   return (
@@ -133,18 +148,21 @@ const PlanAdventureModal = ({ visible, onClose }) => {
                       value={roomId}
                       onChangeText={setRoomId}
                     />
-
-                    <TouchableOpacity
-                      style={[
-                        styles.joinButton,
-                        !roomId.trim() && styles.disabledButton,
-                      ]}
-                      onPress={handleJoinTrip}
-                      disabled={!roomId.trim()}
-                    >
-                      <Ionicons name="log-in" size={20} color="white" />
-                      <Text style={styles.joinButtonText}>Join Trip</Text>
-                    </TouchableOpacity>
+                    {isLoading ? (
+                      <ActivityIndicator size={"large"} color={COLOR.primary} />
+                    ) : (
+                      <TouchableOpacity
+                        style={[
+                          styles.joinButton,
+                          !roomId.trim() && styles.disabledButton,
+                        ]}
+                        onPress={handleJoinTrip}
+                        disabled={!roomId.trim()}
+                      >
+                        <Ionicons name="log-in" size={20} color="white" />
+                        <Text style={styles.joinButtonText}>Join Trip</Text>
+                      </TouchableOpacity>
+                    )}
                   </View>
                 </View>
               </View>

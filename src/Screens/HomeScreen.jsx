@@ -30,11 +30,12 @@ import NotificationIcon from "../components/home/NotificationIconWithBadge";
 import PlanAdventureModal from "../components/home/RoomIdModal";
 import { EmptyTripCard } from "../components/home/EmptyTripCard";
 import { getTripTimingText } from "../utils/home/getTripTimingText";
-import { usePushNotification } from "../utils/notification/useNotifications";
+import { useFetchNotification } from "../utils/notification/useFetchNotifications";
 
 const TravelApp = ({ onPress }) => {
   const [isRoomModalVisible, setIsRoomModalVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const {notifications} = useFetchNotification()
   const { firstName, userNameChars } = useAuth();
   const { tripsData, loading, error, tripIds, refetch } = useUserTripsData();
   const navigation = useNavigation();
@@ -176,7 +177,7 @@ const TravelApp = ({ onPress }) => {
         <View style={styles.headerRight}>
           <NotificationIcon
             onPress={() => navigation.navigate("notification")}
-            badgeCount={5}
+            badgeCount={notifications?.length}
           />
           <TouchableOpacity
             onPress={openDrawer}

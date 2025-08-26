@@ -22,9 +22,8 @@ export const addTravellerToRoom = async (roomId, uid) => {
         travellers: arrayUnion(uid),
       });
       return { status: "Success", message: "Trip added Successfully" };
-    }
-    else{
-      return {status: "Error", message: "Trip doesn't exist"}
+    } else {
+      return { status: "Error", message: "Trip doesn't exist" };
     }
   } catch (e) {
     console.log(e);
@@ -37,19 +36,23 @@ export const addTravellerToRoom = async (roomId, uid) => {
 
 export const searchRoomIdInDb = async (roomId, uid) => {
   try {
+    // check if roomId exist
     const docRef = doc(db, "trip", roomId);
     const tripDocSnap = await getDoc(docRef);
     if (!tripDocSnap.exists()) {
       return { status: "Error", message: "Trip not found" };
     }
     const tripData = tripDocSnap.data();
-    const ownerId = tripData.createdBy;
-    if (ownerId === uid) {
+    // check if room id already exists in user's tripIds array
+    const loggedInUserDocSnap = await getDoc(doc(db, "user", uid));
+    const loggedInUserData = loggedInUserDocSnap.data();
+    if (loggedInUserData?.tripIds?.includes(roomId)) {
       return {
         status: "Error",
-        message: "You cannot join your own trip. Please enter a valid Trip ID.",
+        message: "You are already a member of this trip.",
       };
     }
+    const ownerId = tripData.createdBy;
     const userDocSnap = await getDoc(doc(db, "user", ownerId));
     const userData = userDocSnap.data();
     const ownerData = {
@@ -92,7 +95,6 @@ export const addNotificationToDb = async (
       status,
       createdAt: serverTimestamp(),
     };
-    console.log(notificationDoc)
     await setDoc(userNotificationDoc, notificationDoc, { merge: true });
     console.log("notification added successfully");
     return { status: "Success", message: "notification add successfully" };

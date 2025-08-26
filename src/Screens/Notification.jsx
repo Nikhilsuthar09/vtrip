@@ -1,12 +1,13 @@
 import {
   View,
   Text,
-  ScrollView,
   TouchableOpacity,
   StyleSheet,
   SafeAreaView,
   RefreshControl,
   Alert,
+  ActivityIndicator,
+  FlatList,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useFetchNotification } from "../utils/notification/useFetchNotifications";
@@ -26,6 +27,8 @@ import { getPushToken } from "../utils/notification/getToken";
 
 const NotificationsScreen = () => {
   const [refreshing, setRefreshing] = useState(false);
+  const [isRejectLoading, setIsRejectLoading] = useState("");
+  const [isAcceptLoading, setIsAcceptLoading] = useState("");
   const { notifications, loading, refetch } = useFetchNotification();
   const { uid, name } = useAuth();
 
@@ -36,35 +39,46 @@ const NotificationsScreen = () => {
   };
   // function to reject joining request
   const onRejectPress = async (notiId) => {
+    setIsRejectLoading(notiId);
     const message = await changeStatusInDb(uid, notiId, status.REJECTED);
     if (message?.status === "Error") {
       Alert.alert(message.status, message.message);
+      setIsRejectLoading("");
       return;
     }
+    setIsRejectLoading("");
     await onRefresh();
   };
   // function to accept joining request
   const onAcceptPress = async (notiId, requesterUid, tripId) => {
-    // change status from pending to accepted in firestore
-    const message = await changeStatusInDb(uid, notiId, status.ACCEPTED);
-    if (message?.status === "Error") {
-      Alert.alert(message.status, message.message);
-      return;
-    }
-    // finally add traveller to the room
-    const response = await addTravellerToRoom(tripId, requesterUid);
-    if (response?.status === "Success") {
-      // send notification to the requester after successfully adding to room
-      const requesterToken = await getPushToken(requesterUid);
-      const notifiData = reqAcceptedBody(name);
-      await sendPushNotification(requesterToken, notifiData);
-    } else {
-      Alert.alert(response.status, response.message);
+    try {
+      setIsAcceptLoading(notiId);
+      // change status from pending to accepted in firestore
+      const message = await changeStatusInDb(uid, notiId, status.ACCEPTED);
+      if (message?.status === "Error") {
+        Alert.alert(message.status, message.message);
+        setIsAcceptLoading("");
+        return;
+      }
+      // finally add traveller to the room
+      const response = await addTravellerToRoom(tripId, requesterUid);
+      if (response?.status === "Success") {
+        // send notification to the requester after successfully adding to room
+        const requesterToken = await getPushToken(requesterUid);
+        const notifiData = reqAcceptedBody(name);
+        await sendPushNotification(requesterToken, notifiData);
+      } else {
+        Alert.alert(response.status, response.message);
+      }
+    } catch (e) {
+      console.log(e);
+    } finally {
+      setIsAcceptLoading("");
     }
     await onRefresh();
   };
 
-  const renderNotificationCard = (notification) => (
+  const renderNotificationCard = ({ item: notification }) => (
     <View
       key={notification?.id}
       style={[styles.notificationCard, { backgroundColor: "#EDE9FE" }]}
@@ -85,29 +99,41 @@ const NotificationsScreen = () => {
       {notification?.type === "join_request" &&
         (notification?.status === status.PENDING ? (
           <View style={styles.actionsContainer}>
-            <TouchableOpacity
-              style={[styles.actionButton, { borderColor: COLOR.danger }]}
-              onPress={() => onRejectPress(notification?.id)}
-            >
-              <Text style={[styles.actionText, { color: COLOR.danger }]}>
-                Reject
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() =>
-                onAcceptPress(
-                  notification?.id,
-                  notification?.requesterUid,
-                  notification?.tripId
-                )
-              }
-              style={[
-                styles.actionButton,
-                { borderColor: COLOR.success, backgroundColor: COLOR.success },
-              ]}
-            >
-              <Text style={[styles.actionText, { color: "#fff" }]}>Accept</Text>
-            </TouchableOpacity>
+            {isAcceptLoading === notification?.id ||
+            isRejectLoading === notification?.id ? (
+              <ActivityIndicator size={"small"} color={COLOR.grey} />
+            ) : (
+              <>
+                <TouchableOpacity
+                  style={[styles.actionButton, { borderColor: COLOR.danger }]}
+                  onPress={() => onRejectPress(notification?.id)}
+                >
+                  <Text style={[styles.actionText, { color: COLOR.danger }]}>
+                    Reject
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() =>
+                    onAcceptPress(
+                      notification?.id,
+                      notification?.requesterUid,
+                      notification?.tripId
+                    )
+                  }
+                  style={[
+                    styles.actionButton,
+                    {
+                      borderColor: COLOR.success,
+                      backgroundColor: COLOR.success,
+                    },
+                  ]}
+                >
+                  <Text style={[styles.actionText, { color: "#fff" }]}>
+                    Accept
+                  </Text>
+                </TouchableOpacity>
+              </>
+            )}
           </View>
         ) : (
           <Text
@@ -122,21 +148,21 @@ const NotificationsScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       {/* notificationsData List */}
-      <ScrollView
-        style={styles.notificationsList}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-      >
-        {notifications.length === 0 ? (
-          <NotificationPlaceholder />
-        ) : loading ? (
-          <Spinner />
-        ) : (
-          notifications.map(renderNotificationCard)
-        )}
-      </ScrollView>
+      {loading ? (
+        <Spinner />
+      ) : (
+        <FlatList
+          data={notifications}
+          keyExtractor={(item) => item.id}
+          renderItem={renderNotificationCard}
+          ListEmptyComponent={<NotificationPlaceholder />}
+          contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 16 }}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+          showsVerticalScrollIndicator={false}
+        />
+      )}
     </SafeAreaView>
   );
 };
@@ -145,11 +171,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F8FAFC",
-  },
-  notificationsList: {
-    flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 16,
   },
   notificationCard: {
     borderRadius: 16,
