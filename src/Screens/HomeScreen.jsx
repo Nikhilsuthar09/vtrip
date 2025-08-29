@@ -37,7 +37,7 @@ const TravelApp = ({ onPress }) => {
   const [refreshing, setRefreshing] = useState(false);
   const {notifications} = useFetchNotification()
   const { firstName, userNameChars } = useAuth();
-  const { tripsData, loading, error, tripIds, refetch } = useUserTripsData();
+  const { tripsData, refetch } = useUserTripsData();
   const navigation = useNavigation();
   const safeTripData = tripsData || [];
   // Get the primary trip to display (ongoing takes priority over upcoming)

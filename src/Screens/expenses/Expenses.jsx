@@ -18,6 +18,7 @@ import {
 import Spinner from "../../components/Spinner";
 import { PieChart, BarChart } from "react-native-chart-kit";
 import { useTravellerNames } from "../../utils/firebaseTravellerHandler";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const { width: screenWidth } = Dimensions.get("window");
 const chartWidth = screenWidth - 60;
@@ -382,6 +383,7 @@ const Expenses = ({ route }) => {
   );
 
   return (
+    <SafeAreaView edges={["bottom", "left", "right"]} style={{flex:1}}>
     <ScrollView
       style={styles.container}
       showsVerticalScrollIndicator={false}
@@ -452,6 +454,7 @@ const Expenses = ({ route }) => {
         )}
       </View>
     </ScrollView>
+    </SafeAreaView>
   );
 };
 
