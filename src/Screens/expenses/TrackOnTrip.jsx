@@ -169,6 +169,7 @@ const TrackOnTrip = ({ route }) => {
     toggleModal();
   };
 
+
   return (
     <SafeAreaView edges={["bottom", "left", "right"]} style={styles.container}>
       <ScrollView

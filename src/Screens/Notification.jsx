@@ -20,10 +20,12 @@ import { reqAcceptedBody, status } from "../constants/notification";
 import {
   addTravellerToRoom,
   changeStatusInDb,
+  deletePendingRequest,
 } from "../utils/tripData/room/addTravellerToRoom";
 import { useAuth } from "../Context/AuthContext";
 import { sendPushNotification } from "../utils/notification/sendNotification";
 import { getPushToken } from "../utils/notification/getToken";
+import { StatusBar } from "expo-status-bar";
 
 const NotificationsScreen = () => {
   const [refreshing, setRefreshing] = useState(false);
@@ -38,7 +40,7 @@ const NotificationsScreen = () => {
     setRefreshing(false);
   };
   // function to reject joining request
-  const onRejectPress = async (notiId) => {
+  const onRejectPress = async (notiId, requesterUid, tripId) => {
     setIsRejectLoading(notiId);
     const message = await changeStatusInDb(uid, notiId, status.REJECTED);
     if (message?.status === "Error") {
@@ -46,6 +48,7 @@ const NotificationsScreen = () => {
       setIsRejectLoading("");
       return;
     }
+    await deletePendingRequest(requesterUid, tripId);
     setIsRejectLoading("");
     await onRefresh();
   };
@@ -66,7 +69,8 @@ const NotificationsScreen = () => {
         // send notification to the requester after successfully adding to room
         const requesterToken = await getPushToken(requesterUid);
         const notifiData = reqAcceptedBody(name);
-        await sendPushNotification(requesterToken, notifiData);
+        await sendPushNotification(requesterToken, notifiData, "notification");
+        await deletePendingRequest(requesterUid, tripId);
       } else {
         Alert.alert(response.status, response.message);
       }
@@ -106,7 +110,13 @@ const NotificationsScreen = () => {
               <>
                 <TouchableOpacity
                   style={[styles.actionButton, { borderColor: COLOR.danger }]}
-                  onPress={() => onRejectPress(notification?.id)}
+                  onPress={() =>
+                    onRejectPress(
+                      notification?.id,
+                      notification?.requesterUid,
+                      notification?.tripId
+                    )
+                  }
                 >
                   <Text style={[styles.actionText, { color: COLOR.danger }]}>
                     Reject
@@ -147,6 +157,7 @@ const NotificationsScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <StatusBar style="light" />
       {/* notificationsData List */}
       {loading ? (
         <Spinner />

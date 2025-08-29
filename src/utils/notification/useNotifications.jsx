@@ -6,6 +6,7 @@ import Constants from "expo-constants";
 import { Platform } from "react-native";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "../../Configs/firebaseConfig";
+import { useNavigation } from "@react-navigation/native";
 
 export const usePushNotification = () => {
   const [expoPushToken, setExpoPushToken] = useState("");
@@ -13,6 +14,7 @@ export const usePushNotification = () => {
   const [isRegistering, setIsRegistering] = useState(false);
   const lastStored = useRef("");
   const { uid } = useAuth();
+  const navigation = useNavigation();
 
   const storePushTokenInFirestore = async (expoPushToken, uid) => {
     if (lastStored.current === expoPushToken) return;
@@ -107,6 +109,8 @@ export const usePushNotification = () => {
     const responseListener =
       Notifications.addNotificationResponseReceivedListener((response) => {
         // You can handle navigation or other actions here based on the notification data
+        const screen = response?.notification?.request?.content?.data?.screen;
+        navigation.navigate(screen);
       });
 
     return () => {

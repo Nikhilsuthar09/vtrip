@@ -46,5 +46,25 @@ const formatTime = (date) => {
     hour12: true,
   });
 };
+// function to get last edited timestamp
+const getLastEditedForCreated = (items) => {
+  if (!items || items.length === 0) return null;
 
-export { formatLastEdited, getLastEditedTimestamp, formatTime };
+  const timestamps = items
+    .map((item) => {
+      const createdAt = item.createdAt?.toDate?.() || item.createdAt;
+      return createdAt ? new Date(createdAt) : null;
+    })
+    .filter(Boolean);
+
+  if (timestamps.length === 0) return null;
+
+  return new Date(Math.max(...timestamps.map((t) => t.getTime())));
+};
+
+export {
+  formatLastEdited,
+  getLastEditedTimestamp,
+  formatTime,
+  getLastEditedForCreated,
+};

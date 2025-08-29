@@ -1,5 +1,6 @@
 import {
   arrayUnion,
+  deleteDoc,
   doc,
   getDoc,
   serverTimestamp,
@@ -96,6 +97,12 @@ export const addNotificationToDb = async (
       createdAt: serverTimestamp(),
     };
     await setDoc(userNotificationDoc, notificationDoc, { merge: true });
+    const userDoc = doc(db, "user", requesterUid, "requestedIds", tripId);
+    const requestedIdDoc = {
+      createdAt: serverTimestamp(),
+      status: "pending",
+    };
+    await setDoc(userDoc, requestedIdDoc, { merge: true });
     console.log("notification added successfully");
     return { status: "Success", message: "notification add successfully" };
   } catch (e) {
@@ -120,3 +127,11 @@ export const changeStatusInDb = async (uid, notiId, status) => {
     };
   }
 };
+export const deletePendingRequest = async(uid, tripId) => {
+  try {
+    const docRef = doc(db, "user", uid, "requestedIds", tripId)
+    await deleteDoc(docRef)
+  } catch (e) {
+    console.log(e)
+  }
+}

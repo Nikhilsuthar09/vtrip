@@ -4,6 +4,7 @@ const FONTS = {
   light: "Inter_300Light",
   medium: "Inter_500Medium",
   regular: "Inter_400Regular",
+  ibmBold: "IBMPlexSans_700Bold",
 };
 
 const FONT_SIZE = {
@@ -30,7 +31,7 @@ const COLOR = {
   placeholder: "#999",
   actionButton: "#FFD8E4",
   actionText: "#633B48",
-  success:"#4CAF50",
+  success: "#4CAF50",
 };
 
 export { FONTS, FONT_SIZE, COLOR };

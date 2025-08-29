@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
   Modal,
   StyleSheet,
@@ -33,6 +34,7 @@ const AddItemModal = ({
   const [time, setTime] = useState(new Date());
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
+  const [loading, setLoading] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
   useEffect(() => {
     if (!visible) return;
@@ -65,6 +67,7 @@ const AddItemModal = ({
   };
   const handleAddItem = async () => {
     try {
+      setLoading(true);
       const itineraryToStore = {
         time,
         title,
@@ -84,13 +87,16 @@ const AddItemModal = ({
         dayIds: arrayUnion(listData?.item?.id),
       });
       handleClose();
-      console.log("Success itinerary stored ");
     } catch (e) {
       console.log(e);
+      Alert.alert("Error", "Something went wrong please try again later");
+    } finally {
+      setLoading(false);
     }
   };
   const handleUpdateItem = async () => {
     try {
+      setLoading(true);
       const itemId = editItem.id;
       const itineraryToUpdate = {
         time,
@@ -110,6 +116,8 @@ const AddItemModal = ({
       console.log("Itinerary Updated successfully");
     } catch (e) {
       console.log(e);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -208,14 +216,18 @@ const AddItemModal = ({
             >
               <Text style={styles.cancelButtonText}>Cancel</Text>
             </TouchableOpacity>
-            <TouchableOpacity
-              onPress={handleSubmit}
-              style={[styles.modalButton, styles.addButton]}
-            >
-              <Text style={styles.addButtonText}>
-                {editItem ? "Update Item" : "Add Item"}
-              </Text>
-            </TouchableOpacity>
+            {loading ? (
+              <ActivityIndicator size={"large"} color={COLOR.primary} />
+            ) : (
+              <TouchableOpacity
+                onPress={handleSubmit}
+                style={[styles.modalButton, styles.addButton]}
+              >
+                <Text style={styles.addButtonText}>
+                  {editItem ? "Update Item" : "Add Item"}
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
         </View>
       </View>

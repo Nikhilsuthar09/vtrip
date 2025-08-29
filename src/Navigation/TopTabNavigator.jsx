@@ -8,19 +8,13 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { StyleSheet, Text, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
-import { useTravellerNames } from "../utils/firebaseTravellerHandler";
+import useTripDeletionListener from "../utils/tripData/useTripDeletionListener";
 
 const Tab = createMaterialTopTabNavigator();
 
 export default function TopTabs({ route }) {
-  const {
-    id,
-    budget,
-    destination,
-    startDate,
-    endDate,
-    screen
-  } = route.params;
+  const { id, budget, destination, startDate, endDate, screen } = route.params;
+  useTripDeletionListener(id);
 
   return (
     <>

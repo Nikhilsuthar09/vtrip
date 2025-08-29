@@ -29,10 +29,14 @@ import {
   status,
   tripJoinReqBody,
 } from "../../constants/notification";
+import { useRequesterPendingId } from "../../utils/tripData/room/fetchRequesterPendingIds";
+import { formatLastEdited } from "../../utils/timestamp/formatAndGetTime";
+
 const PlanAdventureModal = ({ visible, onClose }) => {
   const [isLoading, setIsloading] = useState(false);
   const [roomId, setRoomId] = useState("");
   const { uid, name } = useAuth();
+  const { ids, loading, refetch } = useRequesterPendingId();
 
   // function to handle joining room
   const handleJoinTrip = async () => {
@@ -72,7 +76,7 @@ const PlanAdventureModal = ({ visible, onClose }) => {
         return;
       }
       ToastAndroid.show("Request sent", ToastAndroid.SHORT);
-      await sendPushNotification(ownerData?.token, message);
+      await sendPushNotification(ownerData?.token, message, "notification");
     } catch (e) {
       Alert.alert("Error", "Something went wrong, Please try later");
       console.log(e);
@@ -80,6 +84,7 @@ const PlanAdventureModal = ({ visible, onClose }) => {
       setIsloading(false);
       onClose();
       setRoomId("");
+      refetch();
     }
   };
 
@@ -91,7 +96,7 @@ const PlanAdventureModal = ({ visible, onClose }) => {
       onRequestClose={onClose}
     >
       <SafeAreaView style={styles.container}>
-        <ScrollView>
+        <ScrollView showsVerticalScrollIndicator={false}>
           <KeyboardAvoidingView
             style={{ flex: 1 }}
             keyboardVerticalOffset={50}
@@ -168,6 +173,66 @@ const PlanAdventureModal = ({ visible, onClose }) => {
               </View>
             </TouchableWithoutFeedback>
           </KeyboardAvoidingView>
+
+          {/* Enhanced Requests Sent Section */}
+          <View style={styles.requestsSection}>
+            <View style={styles.requestsHeader}>
+              <View style={styles.requestsHeaderLeft}>
+                <Ionicons name="time-outline" size={20} color={COLOR.primary} />
+                <Text style={styles.requestsHeaderTitle}>Pending Requests</Text>
+              </View>
+              {ids.length > 0 && (
+                <View style={styles.requestsCountBadge}>
+                  <Text style={styles.requestsCountText}>{ids.length}</Text>
+                </View>
+              )}
+            </View>
+
+            {ids.length === 0 ? (
+              <View style={styles.emptyRequestsContainer}>
+                <Ionicons
+                  name="hourglass-outline"
+                  size={32}
+                  color={COLOR.grey}
+                />
+                <Text style={styles.emptyRequestsText}>
+                  No pending requests
+                </Text>
+                <Text style={styles.emptyRequestsSubtext}>
+                  Your join requests will appear here
+                </Text>
+              </View>
+            ) : loading ? (
+              <ActivityIndicator size={"small"} color={COLOR.actionButton} />
+            ) : (
+              <View style={styles.requestsList}>
+                {ids.map((item, index) => (
+                  <View key={item?.id || index} style={styles.requestItem}>
+                    <View style={styles.requestItemLeft}>
+                      <View style={styles.requestIconContainer}>
+                        <Ionicons
+                          name="paper-plane-outline"
+                          size={16}
+                          color={COLOR.primary}
+                        />
+                      </View>
+                      <View style={styles.requestItemContent}>
+                        <Text style={styles.requestItemId}>
+                          Room: {item?.id}
+                        </Text>
+                        <Text style={styles.requestItemTime}>
+                          Sent {formatLastEdited(item.createdAt)}
+                        </Text>
+                      </View>
+                    </View>
+                    <View style={styles.requestStatusBadge}>
+                      <Text style={styles.requestStatusText}>Pending</Text>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            )}
+          </View>
         </ScrollView>
       </SafeAreaView>
     </Modal>
@@ -275,6 +340,114 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: FONT_SIZE.bodyLarge,
     fontFamily: FONTS.semiBold,
+  },
+  // Enhanced Requests Section Styles
+  requestsSection: {
+    paddingHorizontal: 20,
+    paddingBottom: 30,
+  },
+  requestsHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: COLOR.stroke,
+  },
+  requestsHeaderLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  requestsHeaderTitle: {
+    fontSize: FONT_SIZE.H6,
+    fontFamily: FONTS.semiBold,
+    color: COLOR.textPrimary,
+    marginLeft: 8,
+  },
+  requestsCountBadge: {
+    backgroundColor: COLOR.primaryLight,
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    minWidth: 24,
+    alignItems: "center",
+  },
+  requestsCountText: {
+    fontSize: FONT_SIZE.caption,
+    fontFamily: FONTS.semiBold,
+    color: COLOR.primary,
+  },
+  emptyRequestsContainer: {
+    alignItems: "center",
+    paddingVertical: 40,
+    paddingHorizontal: 20,
+  },
+  emptyRequestsText: {
+    fontSize: FONT_SIZE.bodyLarge,
+    fontFamily: FONTS.medium,
+    color: COLOR.grey,
+    marginTop: 12,
+    textAlign: "center",
+  },
+  emptyRequestsSubtext: {
+    fontSize: FONT_SIZE.body,
+    fontFamily: FONTS.regular,
+    color: COLOR.placeholder,
+    marginTop: 4,
+    textAlign: "center",
+  },
+  requestsList: {
+    gap: 12,
+  },
+  requestItem: {
+    backgroundColor: "#F8F9FE",
+    borderRadius: 12,
+    padding: 16,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: COLOR.primaryLight,
+  },
+  requestItemLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
+  requestIconContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: COLOR.primaryLight,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
+  requestItemContent: {
+    flex: 1,
+  },
+  requestItemId: {
+    fontSize: FONT_SIZE.bodyLarge,
+    fontFamily: FONTS.semiBold,
+    color: COLOR.textPrimary,
+    marginBottom: 2,
+  },
+  requestItemTime: {
+    fontSize: FONT_SIZE.body,
+    fontFamily: FONTS.regular,
+    color: COLOR.grey,
+  },
+  requestStatusBadge: {
+    backgroundColor: COLOR.secondary,
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  requestStatusText: {
+    fontSize: FONT_SIZE.caption,
+    fontFamily: FONTS.medium,
+    color: "white",
   },
 });
 
