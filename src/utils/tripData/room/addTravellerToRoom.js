@@ -94,6 +94,7 @@ export const addNotificationToDb = async (
       requesterUid,
       tripId,
       status,
+      unread: true,
       createdAt: serverTimestamp(),
     };
     await setDoc(userNotificationDoc, notificationDoc, { merge: true });

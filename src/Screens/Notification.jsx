@@ -10,9 +10,9 @@ import {
   FlatList,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useFetchNotification } from "../utils/notification/useFetchNotifications";
+import { useFetchNotification, useMarkAsRead } from "../utils/notification/useFetchNotifications";
 import { formatTime } from "../utils/timestamp/formatAndGetTime";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { COLOR, FONT_SIZE, FONTS } from "../constants/Theme";
 import Spinner from "../components/Spinner";
 import NotificationPlaceholder from "../components/notification/Placeholder";
@@ -31,8 +31,9 @@ const NotificationsScreen = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [isRejectLoading, setIsRejectLoading] = useState("");
   const [isAcceptLoading, setIsAcceptLoading] = useState("");
-  const { notifications, loading, refetch } = useFetchNotification();
+  const { notifications, unreadDoc, loading, refetch } = useFetchNotification();
   const { uid, name } = useAuth();
+  useMarkAsRead(unreadDoc)
 
   const onRefresh = async () => {
     setRefreshing(true);

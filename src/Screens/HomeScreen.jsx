@@ -35,7 +35,7 @@ import { useFetchNotification } from "../utils/notification/useFetchNotification
 const TravelApp = ({ onPress }) => {
   const [isRoomModalVisible, setIsRoomModalVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const {notifications} = useFetchNotification()
+  const { unreadDoc, refetch: refetchNotification } = useFetchNotification();
   const { firstName, userNameChars } = useAuth();
   const { tripsData, refetch } = useUserTripsData();
   const navigation = useNavigation();
@@ -142,6 +142,7 @@ const TravelApp = ({ onPress }) => {
   const onRefresh = async () => {
     setRefreshing(true);
     await refetch();
+    await refetchNotification();
     setRefreshing(false);
   };
 
@@ -177,7 +178,7 @@ const TravelApp = ({ onPress }) => {
         <View style={styles.headerRight}>
           <NotificationIcon
             onPress={() => navigation.navigate("notification")}
-            badgeCount={notifications?.length}
+            badgeCount={unreadDoc.length}
           />
           <TouchableOpacity
             onPress={openDrawer}
@@ -367,7 +368,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 100,
   },
-   header: {
+  header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
@@ -393,7 +394,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: FONT_SIZE.bodyLarge,
-    color:COLOR.grey,
+    color: COLOR.grey,
     fontFamily: FONTS.regular,
     lineHeight: 22,
   },
