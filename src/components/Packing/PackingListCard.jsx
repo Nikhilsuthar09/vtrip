@@ -62,7 +62,7 @@ const PackingListCard = ({
         },
       ]}
     >
-      {/* Enhanced Category Header */}
+      {/*  Category Header */}
       <View style={styles.categoryContainer}>
         <View style={styles.categoryInfo}>
           <View style={styles.categoryTitleRow}>

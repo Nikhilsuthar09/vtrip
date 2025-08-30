@@ -51,10 +51,6 @@ const handleSignupValidation = (email, password, name) => {
 
   // Validate numbers
   const numbers = /[0-9]/g;
-  if (!password.match(numbers)) {
-    Alert.alert("Password must contain alteast one number");
-    return false;
-  }
   if(name.match(numbers)){
     Alert.alert("Name should not contain numbers")
     return false;
