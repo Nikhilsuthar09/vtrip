@@ -10,7 +10,10 @@ import {
   FlatList,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useFetchNotification, useMarkAsRead } from "../utils/notification/useFetchNotifications";
+import {
+  useFetchNotification,
+  useMarkAsRead,
+} from "../utils/notification/useFetchNotifications";
 import { formatTime } from "../utils/timestamp/formatAndGetTime";
 import { useEffect, useState } from "react";
 import { COLOR, FONT_SIZE, FONTS } from "../constants/Theme";
@@ -33,7 +36,7 @@ const NotificationsScreen = () => {
   const [isAcceptLoading, setIsAcceptLoading] = useState("");
   const { notifications, unreadDoc, loading, refetch } = useFetchNotification();
   const { uid, name } = useAuth();
-  useMarkAsRead(unreadDoc)
+  useMarkAsRead(unreadDoc);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -86,7 +89,11 @@ const NotificationsScreen = () => {
   const renderNotificationCard = ({ item: notification }) => (
     <View
       key={notification?.id}
-      style={[styles.notificationCard, { backgroundColor: "#EDE9FE" }]}
+      style={[
+        styles.notificationCard,
+        { backgroundColor: "#EDE9FE" },
+        unreadDoc.id === notification.id && { borderWidth: 1 },
+      ]}
     >
       <View style={styles.notificationHeader}>
         <View style={[styles.iconContainer, { backgroundColor: "#8B5CF6" }]}>
