@@ -8,6 +8,7 @@ import { COLOR, FONT_SIZE, FONTS } from "../constants/Theme";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Platform } from "react-native";
+import * as Haptics from "expo-haptics";
 
 const Tab = createBottomTabNavigator();
 
@@ -51,6 +52,11 @@ export default function HomeTabs() {
               <Ionicons name="home" size={20} color={color} />
             ),
           }}
+          listeners={{
+            tabPress: () => {
+              Haptics.selectionAsync();
+            },
+          }}
         >
           {(props) => <HomeScreen {...props} onPress={openModal} />}
         </Tab.Screen>
@@ -73,6 +79,11 @@ export default function HomeTabs() {
             tabBarIcon: ({ color }) => (
               <Ionicons name="airplane" size={20} color={color} />
             ),
+          }}
+          listeners={{
+            tabPress: () => {
+              Haptics.selectionAsync();
+            },
           }}
         />
       </Tab.Navigator>

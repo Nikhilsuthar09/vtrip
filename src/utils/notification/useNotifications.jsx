@@ -7,6 +7,7 @@ import { Platform } from "react-native";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "../../Configs/firebaseConfig";
 import { useNavigation } from "@react-navigation/native";
+import * as Haptics from "expo-haptics";
 
 export const usePushNotification = () => {
   const [expoPushToken, setExpoPushToken] = useState("");
@@ -101,6 +102,7 @@ export const usePushNotification = () => {
     // Listen for notifications received while app is foregrounded
     const notificationListener = Notifications.addNotificationReceivedListener(
       (notification) => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
         setNotification(notification);
       }
     );

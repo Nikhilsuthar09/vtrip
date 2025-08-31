@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
   },
   codeText: {
     fontSize: FONT_SIZE.H3,
-    fontFamily: FONTS.bold,
+    fontFamily: FONTS.ibmBold,
     color: COLOR.primary,
     letterSpacing: 2,
   },
