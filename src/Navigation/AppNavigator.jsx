@@ -15,6 +15,7 @@ import { formatDate } from "../utils/calendar/handleCurrentDate";
 import CustomDrawerContent from "../components/CustomDrawerContent";
 import InviteCollaborators from "../Screens/InviteCollaborators";
 import NotificationsScreen from "../Screens/Notification";
+import Profile from "../Screens/Profile";
 
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -140,6 +141,22 @@ export function MainStackNavigator() {
         component={NotificationsScreen}
         options={{
           title: "Notifications",
+          headerTintColor: "#fff",
+          headerTitleStyle: {
+            fontFamily: FONTS.semiBold,
+            fontSize: FONT_SIZE.H6,
+          },
+          headerTitleAlign: "center",
+          headerStyle: {
+            backgroundColor: COLOR.primary,
+          },
+        }}
+      />
+      <Stack.Screen
+        name="profile"
+        component={Profile}
+        options={{
+          title: "Profile",
           headerTintColor: "#fff",
           headerTitleStyle: {
             fontFamily: FONTS.semiBold,

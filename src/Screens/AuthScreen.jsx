@@ -10,12 +10,16 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  TouchableOpacity,
   View,
 } from "react-native";
 import { COLOR, FONT_SIZE, FONTS } from "../constants/Theme";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { auth } from "../Configs/firebaseConfig";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import {
+  sendPasswordResetEmail,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
 import { useNavigation } from "expo-router";
 import {
   handleFirebaseAuthErrors,
@@ -23,7 +27,7 @@ import {
 } from "../utils/AuthHandlers";
 import { Image } from "expo-image";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import Entypo from '@expo/vector-icons/Entypo';
+import Entypo from "@expo/vector-icons/Entypo";
 
 export default function AuthScreen() {
   const email = useRef("");
@@ -58,6 +62,27 @@ export default function AuthScreen() {
   };
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
+  };
+  const handleForgotPassword = async () => {
+    if (!email.current.trim()) {
+      Alert.alert("Please enter your email");
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.current)) {
+      Alert.alert("Please enter a valid email address");
+      return;
+    }
+    try {
+      await sendPasswordResetEmail(auth, email.current);
+      console.log("Success")
+    } catch (e) {
+      Alert.alert(
+        "Error",
+        "Couldn't complete your request please try again later"
+      );
+      console.log(e);
+    }
   };
 
   return (
@@ -152,11 +177,11 @@ export default function AuthScreen() {
                     />
                   </Pressable>
                 </View>
-                <Pressable onPress={() => Alert.alert("TODO")}>
+                <TouchableOpacity onPress={handleForgotPassword}>
                   <Text style={styles.forgotpasswordText}>
                     Forgot Password ?
                   </Text>
-                </Pressable>
+                </TouchableOpacity>
               </View>
             </View>
             <View style={styles.loginbuttons}>

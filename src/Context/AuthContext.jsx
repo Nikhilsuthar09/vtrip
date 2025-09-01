@@ -36,7 +36,7 @@ const processUserData = (user) => {
         ).toUpperCase()
       : "U";
 
-  return { name, uid, email, firstName, userNameChars };
+  return { name, uid, email, firstName, userNameChars, user };
 };
 
 export const AuthProvider = ({ children }) => {
