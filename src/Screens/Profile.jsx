@@ -24,6 +24,8 @@ import * as ImagePicker from "expo-image-picker";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "../Configs/firebaseConfig";
 import ChangePasswordModal from "../components/profile/ChangePasswordModal";
+import { uploadProfileImgToCloudinary } from "../utils/tripData/uploadImage";
+import { updateProfile } from "@firebase/auth";
 
 const Profile = () => {
   const { user, name, email, uid } = useAuth();
@@ -32,9 +34,10 @@ const Profile = () => {
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [imgLoading, setImgLoading] = useState(false);
-  const [imageSelected, setImageSelected] = useState("");
-  console.log(imageSelected);
-  
+  const [imageSelected, setImageSelected] = useState(user?.photoURL || null);
+  const [originalPhotoURL] = useState(user?.photoURL || null);
+  const [isPhotoDeleted, setIsPhotoDeleted] = useState(false);
+
   const pickImage = async () => {
     try {
       setImgLoading(true);
@@ -64,6 +67,7 @@ const Profile = () => {
       if (!result.canceled && result.assets && result.assets.length > 0) {
         const imageUri = result.assets[0].uri;
         setImageSelected(imageUri);
+        setIsPhotoDeleted(false);
       }
     } catch (error) {
       console.error("Error picking image:", error);
@@ -85,17 +89,77 @@ const Profile = () => {
         {
           text: "Delete",
           style: "destructive",
-          onPress: () => setImageSelected(""),
+          onPress: () => {
+            setImageSelected(null), setIsPhotoDeleted(true);
+          },
         },
       ]
     );
   };
-
   const handleSaveChanges = async () => {
     if (!profileUpdateValidation(displayName.trim(), emailInput.trim())) return;
     try {
       setLoading(true);
-      // update name or email if changed
+      let imageUrl = null;
+      let photoUpdated = false;
+      // if (imageSelected !== user?.photoURL) {
+      //   if (imageSelected) {
+      //     imageUrl = await uploadProfileImgToCloudinary(imageSelected, uid);
+      //     if (!imageUrl) {
+      //       Alert.alert(
+      //         "Error",
+      //         "Couldn't complete action please, try again later"
+      //       );
+      //     }
+      //     await updateProfile(user, {
+      //       photoURL: imageUrl,
+      //     });
+      //   }
+      // }
+
+      // check if image was changed, added or removed
+      const hasNewLocalImage =
+        imageSelected && imageSelected.startsWith("file://");
+      const wasPhotoDeleted = isPhotoDeleted && originalPhotoURL;
+      if (hasNewLocalImage) {
+        // Upload new image
+        try {
+          imageUrl = await uploadProfileImgToCloudinary(imageSelected, uid);
+          if (!imageUrl) {
+            throw new Error("Upload failed");
+          }
+          photoUpdated = true;
+        } catch (uploadError) {
+          console.error("Upload error:", uploadError);
+          Alert.alert(
+            "Upload Error",
+            "Failed to upload image. Please try again."
+          );
+          setLoading(false);
+          return;
+        }
+      } else if (wasPhotoDeleted) {
+        // Photo was deleted
+        imageUrl = null;
+        photoUpdated = true;
+      }
+      // Update Firebase Auth profile if photo changed
+      if (photoUpdated) {
+        try {
+          await updateProfile(user, {
+            photoURL: imageUrl,
+          });
+        } catch (profileError) {
+          console.error("Profile update error:", profileError);
+          Alert.alert(
+            "Error",
+            "Failed to update profile photo. Please try again."
+          );
+          setLoading(false);
+          return;
+        }
+      }
+
       const nameUpdated = await updateUsername(user, name, displayName.trim());
       const emailUpdated = await updateUserEmail(
         user,
@@ -103,13 +167,20 @@ const Profile = () => {
         emailInput.trim()
       );
 
-      if (nameUpdated || emailUpdated) {
+      // update name or email if changed
+      if (nameUpdated || emailUpdated || photoUpdated) {
         const userDocRef = doc(db, "user", uid);
         const userDocToUpdate = {
           name: displayName.trim(),
           email: emailInput.trim(),
         };
+        if (photoUpdated) {
+          userDocToUpdate.imgUrl = imageUrl;
+        }
         await updateDoc(userDocRef, userDocToUpdate);
+        if (wasPhotoDeleted) {
+          setIsPhotoDeleted(false);
+        }
         Alert.alert("Success", "Profile updated successfully");
       } else {
         Alert.alert("No Changes", "No changes were made to your profile");
@@ -128,7 +199,6 @@ const Profile = () => {
       setLoading(false);
     }
   };
-
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="light" />
@@ -141,7 +211,9 @@ const Profile = () => {
             style={styles.avatarContainer}
           >
             <View style={styles.avatar}>
-              {imageSelected ? (
+              {imgLoading ? (
+                <ActivityIndicator size={"small"} />
+              ) : imageSelected ? (
                 <Image
                   source={{ uri: imageSelected }}
                   style={styles.avatarImage}
@@ -155,14 +227,20 @@ const Profile = () => {
               <Ionicons name="camera" size={16} color={COLOR.primary} />
             </View>
           </TouchableOpacity>
-          
+
           <View style={styles.avatarActions}>
-            <TouchableOpacity onPress={pickImage} style={styles.changePhotoButton}>
+            <TouchableOpacity
+              onPress={pickImage}
+              style={styles.changePhotoButton}
+            >
               <Text style={styles.changePhotoText}>Change Photo</Text>
             </TouchableOpacity>
-            
+
             {imageSelected && (
-              <TouchableOpacity onPress={deletePhoto} style={styles.deletePhotoButton}>
+              <TouchableOpacity
+                onPress={deletePhoto}
+                style={styles.deletePhotoButton}
+              >
                 <Text style={styles.deletePhotoText}>Remove Photo</Text>
               </TouchableOpacity>
             )}

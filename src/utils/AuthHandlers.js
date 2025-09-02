@@ -121,6 +121,7 @@ const updateUserEmail = async (user, email, updatedEmail) => {
   await updateEmail(user, updatedEmail);
   return true;
 };
+
 // function to validate and update password
 const validateAndUpdateUserPassword = async (
   user,
