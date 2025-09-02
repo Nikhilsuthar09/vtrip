@@ -36,7 +36,7 @@ const TravelApp = ({ onPress }) => {
   const [isRoomModalVisible, setIsRoomModalVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const { unreadDoc, refetch: refetchNotification } = useFetchNotification();
-  const { firstName, userNameChars } = useAuth();
+  const { firstName, userNameChars, user } = useAuth();
   const { tripsData, refetch } = useUserTripsData();
   const navigation = useNavigation();
   const safeTripData = tripsData || [];
@@ -185,7 +185,14 @@ const TravelApp = ({ onPress }) => {
             activeOpacity={0.8}
             style={styles.profileContainer}
           >
-            <Text style={styles.profileText}>{userNameChars}</Text>
+            {user?.photoURL ? (
+              <Image
+                source={{ uri: user.photoURL }}
+                style={styles.avatarImage}
+              />
+            ) : (
+              <Text style={styles.profileText}>{userNameChars}</Text>
+            )}
           </TouchableOpacity>
         </View>
       </View>
@@ -405,6 +412,12 @@ const styles = StyleSheet.create({
     backgroundColor: COLOR.primary,
     alignItems: "center",
     justifyContent: "center",
+    overflow: "hidden",
+  },
+  avatarImage: {
+    width: 42,
+    height: 42,
+    borderRadius: 50,
   },
   profileText: {
     color: "#fff",

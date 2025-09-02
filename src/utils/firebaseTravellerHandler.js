@@ -15,7 +15,7 @@ export const useTravellerNames = (tripId) => {
   const [travellerNames, setTravellerNames] = useState([]);
   const [travellerLoading, setLoading] = useState(true);
   const [travellerError, setError] = useState(null);
-  const { email, name, uid, isLoading: authLoading } = useAuth();
+  const { email, name, uid, user, isLoading: authLoading } = useAuth();
   useEffect(() => {
     if (!tripId || authLoading) {
       setLoading(authLoading);
@@ -42,6 +42,7 @@ export const useTravellerNames = (tripId) => {
             uid: uid || "Unknown User",
             name: name || "Unknown User",
             email: email || null,
+            imageUrl: user?.photoURL,
           });
           setTravellerNames(names);
           setLoading(false);
@@ -63,6 +64,7 @@ export const useTravellerNames = (tripId) => {
               uid: doc.id,
               name: userData.name || "Unknown User",
               email: userData.email || null,
+              imageUrl: userData?.imgUrl || null,
             });
           });
         }

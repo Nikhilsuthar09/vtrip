@@ -3,7 +3,8 @@ import {
   StyleSheet,
   TextInput,
   Text,
-  TouchableOpacity
+  TouchableOpacity,
+  Image,
 } from "react-native";
 import { COLOR, FONT_SIZE, FONTS } from "../constants/Theme";
 import { FontAwesome } from "@expo/vector-icons";
@@ -11,7 +12,7 @@ import SeparationLine from "./SeparationLine";
 import { useAuth } from "../Context/AuthContext";
 
 const HeaderWithSearch = ({ openDrawer, searchText, setSearchText }) => {
-  const { userNameChars } = useAuth();
+  const { userNameChars, user } = useAuth();
   return (
     <>
       <View style={styles.container}>
@@ -28,13 +29,14 @@ const HeaderWithSearch = ({ openDrawer, searchText, setSearchText }) => {
           <FontAwesome name="search" size={18} color={COLOR.grey} />
         </View>
         <TouchableOpacity onPress={openDrawer} style={styles.userButton}>
-          {userNameChars && userNameChars !== "U" ? (
+          {user?.photoURL ? (
+            <Image source={{ uri: user.photoURL }} style={styles.avatarImage} />
+          ) : userNameChars && userNameChars !== "U" ? (
             <Text
               style={{
                 fontFamily: FONTS.medium,
                 color: "#fff",
                 fontSize: FONT_SIZE.body,
-                // paddingVertical: 1,
               }}
             >
               {userNameChars}
@@ -56,6 +58,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 12,
     backgroundColor: "#fff",
+  },
+  avatarImage: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
   },
   searchContainer: {
     flex: 1,
@@ -84,6 +91,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     elevation: 5,
+    overflow: "hidden",
   },
 });
 export default HeaderWithSearch;

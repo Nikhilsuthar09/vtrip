@@ -1,6 +1,13 @@
 import { signOut } from "firebase/auth";
 import { auth } from "../Configs/firebaseConfig";
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  Alert,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { useAuth } from "../Context/AuthContext";
 import { DrawerContentScrollView } from "@react-navigation/drawer";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -10,7 +17,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 
 export default function CustomDrawerContent(props) {
-  const { name, userNameChars, email } = useAuth();
+  const { name, userNameChars, email, user } = useAuth();
   const navigation = useNavigation();
 
   const handleLogout = async () => {
@@ -44,7 +51,14 @@ export default function CustomDrawerContent(props) {
         {/* Profile Section */}
         <View style={styles.profileSection}>
           <View style={styles.profileContainer}>
-            <Text style={styles.profileText}>{userNameChars}</Text>
+            {user?.photoURL ? (
+              <Image
+                source={{ uri: user.photoURL }}
+                style={styles.avatarImage}
+              />
+            ) : (
+              <Text style={styles.profileText}>{userNameChars}</Text>
+            )}
           </View>
           <Text style={styles.userName}>{name}</Text>
           <Text style={styles.userSubtext}>{email}</Text>
@@ -121,6 +135,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 12,
+    overflow: "hidden",
+  },
+  avatarImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
   },
   profileText: {
     color: "#fff",
@@ -165,10 +185,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#ff4757",
+    backgroundColor: COLOR.danger,
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 8,
+    marginBottom: 10,
   },
   logoutText: {
     marginLeft: 8,

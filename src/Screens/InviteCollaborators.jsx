@@ -6,9 +6,9 @@ import {
   StyleSheet,
   ScrollView,
   Share,
+  Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Image } from "expo-image";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import Entypo from "@expo/vector-icons/Entypo";
@@ -16,11 +16,11 @@ import { COLOR, FONT_SIZE, FONTS } from "../constants/Theme";
 import { StatusBar } from "expo-status-bar";
 
 const InviteCollaborators = ({ route }) => {
-  const { id,title, travellers, destination, startDate, endDate, createdBy } =
+  const { id, title, travellers, destination, startDate, endDate, createdBy } =
     route.params;
   const shareTripId = async () => {
     try {
-      const result = await Share.share({
+      await Share.share({
         title: "Trip Invitation",
         message: `🎉 You're invited to join "${title}"!
         📍Destination: ${destination}
@@ -32,6 +32,18 @@ const InviteCollaborators = ({ route }) => {
     } catch (e) {
       console.log(e);
     }
+  };
+  const getUserNameChars = (name) => {
+    const splitted = name?.split(" ") || [];
+    const userNameChars =
+      splitted.length > 0
+        ? splitted.length === 1
+          ? splitted[0][0]
+          : (
+              splitted[0][0] + (splitted[splitted.length - 1][0] || "")
+            ).toUpperCase()
+        : "User";
+    return userNameChars;
   };
   return (
     <SafeAreaView edges={["bottom", "left", "right"]} style={styles.container}>
@@ -101,10 +113,16 @@ const InviteCollaborators = ({ route }) => {
             <View key={item.uid} style={styles.collaboratorItem}>
               <View style={styles.collaboratorInfo}>
                 <View style={styles.avatarContainer}>
-                  <Image
-                    source={require("../../assets/default.jpg")}
-                    style={styles.avatar}
-                  />
+                  {item?.imageUrl ? (
+                    <Image
+                      source={{ uri: item?.imageUrl }}
+                      style={styles.avatar}
+                    />
+                  ) : (
+                    <Text style={styles.avatarText}>
+                      {getUserNameChars(item?.name)}
+                    </Text>
+                  )}
                 </View>
                 <View style={styles.collaboratorDetails}>
                   <Text style={styles.collaboratorName}>{item.name}</Text>
@@ -258,12 +276,24 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   avatarContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     marginRight: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#ddddddff",
   },
   avatar: {
     width: 40,
     height: 40,
     borderRadius: 20,
+  },
+  avatarText: {
+    fontFamily: FONTS.medium,
+    color: "#ddddddff",
+    fontSize: FONT_SIZE.body,
+    color: COLOR.primary,
   },
   collaboratorDetails: {
     flex: 1,

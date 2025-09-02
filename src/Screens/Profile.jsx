@@ -102,20 +102,6 @@ const Profile = () => {
       setLoading(true);
       let imageUrl = null;
       let photoUpdated = false;
-      // if (imageSelected !== user?.photoURL) {
-      //   if (imageSelected) {
-      //     imageUrl = await uploadProfileImgToCloudinary(imageSelected, uid);
-      //     if (!imageUrl) {
-      //       Alert.alert(
-      //         "Error",
-      //         "Couldn't complete action please, try again later"
-      //       );
-      //     }
-      //     await updateProfile(user, {
-      //       photoURL: imageUrl,
-      //     });
-      //   }
-      // }
 
       // check if image was changed, added or removed
       const hasNewLocalImage =
@@ -140,7 +126,7 @@ const Profile = () => {
         }
       } else if (wasPhotoDeleted) {
         // Photo was deleted
-        imageUrl = null;
+        imageUrl = "";
         photoUpdated = true;
       }
       // Update Firebase Auth profile if photo changed
