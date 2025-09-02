@@ -15,8 +15,11 @@ import AntDesign from "@expo/vector-icons/AntDesign";
 import { COLOR, FONT_SIZE, FONTS } from "../constants/Theme";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
+import { useState } from "react";
+import DeleteUserModal from "./profile/DeleteUserModal";
 
 export default function CustomDrawerContent(props) {
+  const [modalVisible, setModalVisible] = useState(false);
   const { name, userNameChars, email, user } = useAuth();
   const navigation = useNavigation();
 
@@ -40,6 +43,26 @@ export default function CustomDrawerContent(props) {
         },
       },
     ]);
+  };
+
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      "Delete accout",
+      "Are you sure you want to delete your account?\n\nThis action cannot be undone and all your data will be permanently lost.",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Confirm delete",
+          style: "destructive",
+          onPress: async () => {
+            setModalVisible(true);
+          },
+        },
+      ]
+    );
   };
 
   return (
@@ -93,7 +116,10 @@ export default function CustomDrawerContent(props) {
             <Text style={styles.drawerItemText}>Help & Support</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.drawerItem}>
+          <TouchableOpacity
+            onPress={handleDeleteAccount}
+            style={styles.drawerItem}
+          >
             <AntDesign name="deleteuser" size={20} color={COLOR.danger} />
             <Text style={[styles.drawerItemText, { color: COLOR.danger }]}>
               Delete account
@@ -109,6 +135,10 @@ export default function CustomDrawerContent(props) {
           <Text style={styles.logoutText}>Logout</Text>
         </TouchableOpacity>
       </View>
+      <DeleteUserModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+      />
     </SafeAreaView>
   );
 }
