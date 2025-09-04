@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
 import { db } from "../Configs/firebaseConfig";
 import {
+  arrayRemove,
   arrayUnion,
   collection,
+  deleteDoc,
   doc,
   documentId,
   getDoc,
@@ -18,16 +20,16 @@ import { useAuth } from "../Context/AuthContext";
 
 // hook to listen to the changes in tripIds array
 export const useUserTrips = () => {
-  const {uid} = useAuth()
+  const { uid } = useAuth();
   const [tripIds, setTripIds] = useState([]);
   const [idsError, setError] = useState(null);
   const [idsLoading, setLoading] = useState(true);
 
   useEffect(() => {
-    if(!uid) {
-      setLoading(false)
-      setTripIds([])
-      return
+    if (!uid) {
+      setLoading(false);
+      setTripIds([]);
+      return;
     }
     const userDocRef = doc(db, "user", uid);
 
@@ -65,7 +67,7 @@ export const useUserTripsData = () => {
 
   const fetchTripsData = useCallback(async () => {
     try {
-      setLoading(true)
+      setLoading(true);
       if (tripIds.length == 0) {
         setTripsData([]);
         setLoading(false);
@@ -126,7 +128,7 @@ export const useUserTripsData = () => {
     } finally {
       setLoading(false);
     }
-  },[tripIds]);
+  }, [tripIds]);
   useEffect(() => {
     if (!idsError && !idsLoading) {
       fetchTripsData();
@@ -137,7 +139,7 @@ export const useUserTripsData = () => {
     loading: idsLoading || loading,
     error: idsError || error,
     tripIds,
-    refetch: fetchTripsData
+    refetch: fetchTripsData,
   };
 };
 
@@ -174,3 +176,4 @@ export const addUserToDb = async () => {
     console.log(e);
   }
 };
+

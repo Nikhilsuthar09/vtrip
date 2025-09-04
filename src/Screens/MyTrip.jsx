@@ -16,6 +16,7 @@ import ErrorScreen from "../components/ErrorScreen";
 import { useNavigation } from "@react-navigation/native";
 import { useTravellerNames } from "../utils/firebaseTravellerHandler";
 import { formatDate } from "../utils/calendar/handleCurrentDate";
+import * as Haptics from "expo-haptics";
 
 const MyTrip = () => {
   const [modalData, setModalData] = useState(null);
@@ -104,6 +105,7 @@ const MyTrip = () => {
     return <ErrorScreen />;
   }
   const openDrawer = () => {
+    Haptics.selectionAsync();
     navigation.openDrawer();
   };
   const totalTrips = organizedTrips.reduce(

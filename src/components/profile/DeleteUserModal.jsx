@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -12,30 +12,35 @@ import {
   Platform,
   TouchableWithoutFeedback,
   Keyboard,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { COLOR, FONT_SIZE, FONTS } from '../../constants/Theme';
-import { deleteUser, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
-import { useAuth } from '../../Context/AuthContext';
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { COLOR, FONT_SIZE, FONTS } from "../../constants/Theme";
+import {
+  deleteUser,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+} from "firebase/auth";
+import { useAuth } from "../../Context/AuthContext";
+import { deleteUserDataInDb } from "../../utils/removeUserAccount";
 
 const DeleteUserModal = ({ visible, onClose }) => {
-  const { user } = useAuth();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const { user, uid } = useAuth();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   const validateInputs = () => {
     if (!email.trim()) {
-      Alert.alert('Error', 'Please enter your email address');
+      Alert.alert("Error", "Please enter your email address");
       return false;
     }
     if (!password.trim()) {
-      Alert.alert('Error', 'Please enter your password');
+      Alert.alert("Error", "Please enter your password");
       return false;
     }
     if (email.trim().toLowerCase() !== user?.email?.toLowerCase()) {
-      Alert.alert('Error', 'Email address does not match your account');
+      Alert.alert("Error", "Email address does not match your account");
       return false;
     }
     return true;
@@ -48,51 +53,52 @@ const DeleteUserModal = ({ visible, onClose }) => {
       setLoading(true);
 
       // Re-authenticate user before deletion
-      const credential = EmailAuthProvider.credential(email.trim(), password.trim());
+      const credential = EmailAuthProvider.credential(
+        email.trim(),
+        password.trim()
+      );
       await reauthenticateWithCredential(user, credential);
 
       // Delete the user account
+      await deleteUserDataInDb(uid);
       await deleteUser(user);
-      
-      console.log('User account deleted successfully');
-      
       // Close modal and clear fields
       handleClose();
-      
+      console.log("User account deleted successfully");
     } catch (error) {
-      console.error('Delete account error:', error);
-      
-      let errorMessage = 'Failed to delete account. Please try again.';
-      
+      console.error("Delete account error:", error);
+
+      let errorMessage = "Failed to delete account. Please try again.";
+
       switch (error.code) {
-        case 'auth/wrong-password':
-          errorMessage = 'Incorrect password. Please try again.';
+        case "auth/wrong-password":
+          errorMessage = "Incorrect password. Please try again.";
           break;
-        case 'auth/user-not-found':
-          errorMessage = 'User account not found.';
+        case "auth/user-not-found":
+          errorMessage = "User account not found.";
           break;
-        case 'auth/invalid-email':
-          errorMessage = 'Invalid email address.';
+        case "auth/invalid-email":
+          errorMessage = "Invalid email address.";
           break;
-        case 'auth/too-many-requests':
-          errorMessage = 'Too many failed attempts. Please try again later.';
+        case "auth/too-many-requests":
+          errorMessage = "Too many failed attempts. Please try again later.";
           break;
-        case 'auth/network-request-failed':
-          errorMessage = 'Network error. Please check your connection.';
+        case "auth/network-request-failed":
+          errorMessage = "Network error. Please check your connection.";
           break;
         default:
           errorMessage = errorMessage;
       }
-      
-      Alert.alert('Error', errorMessage);
+
+      Alert.alert("Error", errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
   const handleClose = () => {
-    setEmail('');
-    setPassword('');
+    setEmail("");
+    setPassword("");
     setShowPassword(false);
     onClose();
   };
@@ -106,15 +112,18 @@ const DeleteUserModal = ({ visible, onClose }) => {
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.overlay}>
-          <KeyboardAvoidingView 
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
             style={styles.keyboardAvoidingView}
           >
             <View style={styles.modalContainer}>
               {/* Header */}
               <View style={styles.header}>
                 <Text style={styles.title}>Delete Account</Text>
-                <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
+                <TouchableOpacity
+                  onPress={handleClose}
+                  style={styles.closeButton}
+                >
                   <Ionicons name="close" size={24} color={COLOR.textPrimary} />
                 </TouchableOpacity>
               </View>
@@ -123,13 +132,15 @@ const DeleteUserModal = ({ visible, onClose }) => {
               <View style={styles.warningContainer}>
                 <Ionicons name="warning" size={24} color={COLOR.danger} />
                 <Text style={styles.warningText}>
-                  This action is permanent and cannot be undone. All your data will be deleted.
+                  This action is permanent and cannot be undone. All your data
+                  will be deleted.
                 </Text>
               </View>
 
               {/* Confirmation Text */}
               <Text style={styles.confirmationText}>
-                Please enter your email and password to confirm account deletion:
+                Please enter your email and password to confirm account
+                deletion:
               </Text>
 
               {/* Email Input */}
@@ -210,27 +221,27 @@ const DeleteUserModal = ({ visible, onClose }) => {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
   },
   keyboardAvoidingView: {
-    width: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
+    width: "100%",
+    justifyContent: "center",
+    alignItems: "center",
   },
   modalContainer: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 12,
     margin: 20,
-    width: '90%',
+    width: "90%",
     maxWidth: 400,
     padding: 24,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 20,
   },
   title: {
@@ -242,9 +253,9 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   warningContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: '#FFF5F5',
+    flexDirection: "row",
+    alignItems: "flex-start",
+    backgroundColor: "#FFF5F5",
     padding: 12,
     borderRadius: 8,
     marginBottom: 20,
@@ -284,22 +295,22 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZE.body,
     fontFamily: FONTS.regular,
     color: COLOR.textPrimary,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   passwordContainer: {
-    position: 'relative',
+    position: "relative",
   },
   passwordInput: {
     paddingRight: 48,
   },
   eyeButton: {
-    position: 'absolute',
+    position: "absolute",
     right: 12,
     top: 12,
     padding: 4,
   },
   buttonContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginTop: 24,
     gap: 12,
   },
@@ -307,11 +318,11 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 14,
     borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   cancelButton: {
-    backgroundColor: '#f8f9fa',
+    backgroundColor: "#f8f9fa",
     borderWidth: 1,
     borderColor: COLOR.stroke,
   },
@@ -326,7 +337,7 @@ const styles = StyleSheet.create({
   deleteButtonText: {
     fontSize: FONT_SIZE.body,
     fontFamily: FONTS.semiBold,
-    color: '#fff',
+    color: "#fff",
   },
 });
 

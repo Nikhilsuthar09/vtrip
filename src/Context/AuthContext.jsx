@@ -36,15 +36,14 @@ const processUserData = (user) => {
             splitted[0][0] + (splitted[splitted.length - 1][0] || "")
           ).toUpperCase()
       : "U";
-
   return { name, uid, email, firstName, userNameChars, user };
 };
-
 export const AuthProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setLoading] = useState(true);
   const [isRegistering, setIsRegistering] = useState(false);
   const [user, setUser] = useState(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [userDetails, setUserDetails] = useState({
     name: null,
     uid: null,
@@ -52,6 +51,20 @@ export const AuthProvider = ({ children }) => {
     firstName: "User",
     userNameChars: "U",
   });
+
+  const refreshUserData = async () => {
+    setLoading(true);
+    try {
+      if (auth.currentUser) {
+        await auth.currentUser.reload();
+        setRefreshTrigger((prev) => prev + 1);
+      }
+    } catch (e) {
+      console.log(e);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
@@ -63,7 +76,7 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     });
     return unsubscribe;
-  }, [isRegistering]);
+  }, [isRegistering, refreshTrigger]);
 
   const setRegistrationState = (state) => {
     setIsRegistering(state);
@@ -76,6 +89,7 @@ export const AuthProvider = ({ children }) => {
         isRegistering,
         setRegistrationState,
         user,
+        refreshUserData,
         ...userDetails,
       }}
     >

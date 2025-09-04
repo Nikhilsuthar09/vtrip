@@ -31,6 +31,7 @@ import PlanAdventureModal from "../components/home/RoomIdModal";
 import { EmptyTripCard } from "../components/home/EmptyTripCard";
 import { getTripTimingText } from "../utils/home/getTripTimingText";
 import { useFetchNotification } from "../utils/notification/useFetchNotifications";
+import * as Haptics from "expo-haptics";
 
 const TravelApp = ({ onPress }) => {
   const [isRoomModalVisible, setIsRoomModalVisible] = useState(false);
@@ -137,6 +138,7 @@ const TravelApp = ({ onPress }) => {
   }, [safeTripData]);
 
   const openDrawer = () => {
+    Haptics.selectionAsync();
     navigation.openDrawer();
   };
   const onRefresh = async () => {
@@ -177,9 +179,13 @@ const TravelApp = ({ onPress }) => {
         </View>
         <View style={styles.headerRight}>
           <NotificationIcon
-            onPress={() => navigation.navigate("notification")}
+            onPress={() => {
+              Haptics.selectionAsync();
+              navigation.navigate("notification");
+            }}
             badgeCount={unreadDoc.length}
           />
+
           <TouchableOpacity
             onPress={openDrawer}
             activeOpacity={0.8}

@@ -28,7 +28,7 @@ import { uploadProfileImgToCloudinary } from "../utils/tripData/uploadImage";
 import { updateProfile } from "@firebase/auth";
 
 const Profile = () => {
-  const { user, name, email, uid } = useAuth();
+  const { user, name, email, uid, refreshUserData } = useAuth();
   const [displayName, setDisplayName] = useState(name);
   const [emailInput, setEmailInput] = useState(email);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -167,6 +167,7 @@ const Profile = () => {
         if (wasPhotoDeleted) {
           setIsPhotoDeleted(false);
         }
+        await refreshUserData()
         Alert.alert("Success", "Profile updated successfully");
       } else {
         Alert.alert("No Changes", "No changes were made to your profile");
