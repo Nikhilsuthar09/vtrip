@@ -4,7 +4,7 @@ import Foundation from "@expo/vector-icons/Foundation";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { COLOR, FONT_SIZE, FONTS } from "../../constants/Theme";
 
-export const EmptyTripCard = ({ onPress }) => {
+export const EmptyTripCard = ({ onCreatePress, onJoinPress }) => {
   return (
     <View style={styles.emptyTripCard}>
       <LinearGradient
@@ -24,15 +24,35 @@ export const EmptyTripCard = ({ onPress }) => {
           <Text style={styles.emptyTripSubtitle}>
             Join an existing trip or create a new one
           </Text>
-          <TouchableOpacity onPress={onPress} style={styles.createTripButton}>
-            <Text style={styles.createTripButtonText}>Plan New Trip</Text>
-            <Ionicons
-              name="arrow-forward"
-              size={16}
-              color="#667eea"
-              style={styles.buttonIcon}
-            />
-          </TouchableOpacity>
+          <View style={{ flexDirection: "row", gap: 6 }}>
+            <TouchableOpacity
+              onPress={onCreatePress}
+              style={styles.createTripButton}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.createTripButtonText}>Create</Text>
+              <Ionicons
+                name="arrow-forward"
+                size={16}
+                color="#667eea"
+                style={styles.buttonIcon}
+              />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={onJoinPress}
+              style={styles.joinTripButton}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.joinTripButtonText}>Join</Text>
+              <Ionicons
+                name="arrow-forward"
+                size={16}
+                color="#fff"
+                style={styles.buttonIcon}
+              />
+            </TouchableOpacity>
+          </View>
         </View>
       </LinearGradient>
     </View>
@@ -83,16 +103,39 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   createTripButton: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
     backgroundColor: "#fff",
+    paddingHorizontal: 15,
+    borderRadius: 20,
+  },
+  joinTripButton: {
+    backgroundColor: "rgba(255, 255, 255, 0.15)",
     paddingHorizontal: 15,
     paddingVertical: 10,
     borderRadius: 20,
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.3)",
+    shadowColor: "rgba(255, 255, 255, 0.2)",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
   },
   createTripButtonText: {
     color: COLOR.secondary,
+    fontFamily: FONTS.semiBold,
+    fontSize: FONT_SIZE.caption,
+  },
+  joinTripButtonText: {
+    color: "#fff",
     fontFamily: FONTS.semiBold,
     fontSize: FONT_SIZE.caption,
   },

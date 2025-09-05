@@ -284,7 +284,10 @@ const TravelApp = ({ onPress }) => {
             </View>
           </>
         ) : (
-          <EmptyTripCard onPress={onPress} />
+          <EmptyTripCard
+            onCreatePress={onPress}
+            onJoinPress={onRoomModalPress}
+          />
         )}
 
         {/*  Recent Trips */}
