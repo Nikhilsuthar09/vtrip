@@ -25,7 +25,7 @@ import { doc, updateDoc } from "firebase/firestore";
 import { db } from "../Configs/firebaseConfig";
 import ChangePasswordModal from "../components/profile/ChangePasswordModal";
 import { uploadProfileImgToCloudinary } from "../utils/tripData/uploadImage";
-import { updateProfile } from "@firebase/auth";
+import { updateProfile } from "firebase/auth";
 
 const Profile = () => {
   const { user, name, email, uid, refreshUserData } = useAuth();

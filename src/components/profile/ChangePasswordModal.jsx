@@ -10,10 +10,7 @@ import {
   ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import {
-  EmailAuthProvider,
-  reauthenticateWithCredential,
-} from "@firebase/auth";
+import { EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
 import { validateAndUpdateUserPassword } from "../../utils/AuthHandlers";
 import { COLOR, FONT_SIZE, FONTS } from "../../constants/Theme";
 import { useAuth } from "../../Context/AuthContext";
@@ -87,136 +84,133 @@ const ChangePasswordModal = ({ visible, onClose }) => {
       presentationStyle="pageSheet"
       onRequestClose={handleClose}
     >
+      <ScrollView style={styles.container}>
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
+            <Ionicons name="close" size={24} color={COLOR.textPrimary} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Change Password</Text>
+          <View style={styles.placeholder} />
+        </View>
 
-        <ScrollView style={styles.container}>
-          {/* Header */}
-          <View style={styles.header}>
-            <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
-              <Ionicons name="close" size={24} color={COLOR.textPrimary} />
-            </TouchableOpacity>
-            <Text style={styles.headerTitle}>Change Password</Text>
-            <View style={styles.placeholder} />
-          </View>
-
-          {/* Content */}
-          <View style={styles.content}>
-            {/* Current Password */}
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Current Password</Text>
-              <View style={styles.passwordInputContainer}>
-                <TextInput
-                  style={styles.passwordInput}
-                  value={currentPassword}
-                  onChangeText={setCurrentPassword}
-                  placeholder="Enter current password"
-                  placeholderTextColor={COLOR.placeholder}
-                  secureTextEntry={!showCurrentPassword}
-                  editable={!loading}
+        {/* Content */}
+        <View style={styles.content}>
+          {/* Current Password */}
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Current Password</Text>
+            <View style={styles.passwordInputContainer}>
+              <TextInput
+                style={styles.passwordInput}
+                value={currentPassword}
+                onChangeText={setCurrentPassword}
+                placeholder="Enter current password"
+                placeholderTextColor={COLOR.placeholder}
+                secureTextEntry={!showCurrentPassword}
+                editable={!loading}
+              />
+              <TouchableOpacity
+                style={styles.eyeButton}
+                onPress={() => setShowCurrentPassword(!showCurrentPassword)}
+                disabled={loading}
+              >
+                <Ionicons
+                  name={showCurrentPassword ? "eye" : "eye-off"}
+                  size={20}
+                  color={COLOR.grey}
                 />
-                <TouchableOpacity
-                  style={styles.eyeButton}
-                  onPress={() => setShowCurrentPassword(!showCurrentPassword)}
-                  disabled={loading}
-                >
-                  <Ionicons
-                    name={showCurrentPassword ? "eye" : "eye-off"}
-                    size={20}
-                    color={COLOR.grey}
-                  />
-                </TouchableOpacity>
-              </View>
-            </View>
-
-            {/* New Password */}
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>New Password</Text>
-              <View style={styles.passwordInputContainer}>
-                <TextInput
-                  style={styles.passwordInput}
-                  value={newPassword}
-                  onChangeText={setNewPassword}
-                  placeholder="Enter new password"
-                  placeholderTextColor={COLOR.placeholder}
-                  secureTextEntry={!showNewPassword}
-                  editable={!loading}
-                />
-                <TouchableOpacity
-                  style={styles.eyeButton}
-                  onPress={() => setShowNewPassword(!showNewPassword)}
-                  disabled={loading}
-                >
-                  <Ionicons
-                    name={showNewPassword ? "eye" : "eye-off"}
-                    size={20}
-                    color={COLOR.grey}
-                  />
-                </TouchableOpacity>
-              </View>
-            </View>
-
-            {/* Confirm Password */}
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Confirm New Password</Text>
-              <View style={styles.passwordInputContainer}>
-                <TextInput
-                  style={styles.passwordInput}
-                  value={confirmPassword}
-                  onChangeText={setConfirmPassword}
-                  placeholder="Confirm new password"
-                  placeholderTextColor={COLOR.placeholder}
-                  secureTextEntry={!showConfirmPassword}
-                  editable={!loading}
-                />
-                <TouchableOpacity
-                  style={styles.eyeButton}
-                  onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-                  disabled={loading}
-                >
-                  <Ionicons
-                    name={showConfirmPassword ? "eye" : "eye-off"}
-                    size={20}
-                    color={COLOR.grey}
-                  />
-                </TouchableOpacity>
-              </View>
-            </View>
-
-            {/* Password Requirements */}
-            <View style={styles.requirementsContainer}>
-              <Text style={styles.requirementsTitle}>
-                Password Requirements:
-              </Text>
-              <Text style={styles.requirementsText}>
-                • At least 6 characters{"\n"}• One lowercase letter{"\n"}• One
-                uppercase letter
-              </Text>
+              </TouchableOpacity>
             </View>
           </View>
 
-          {/* Footer Buttons */}
-          <View style={styles.footer}>
-            <TouchableOpacity
-              onPress={handleChangePassword}
-              style={[
-                styles.changePasswordButton,
-                loading && styles.disabledButton,
-              ]}
-              disabled={loading}
-            >
-              <Text style={styles.changePasswordButtonText}>
-                {loading ? "Updating..." : "Change Password"}
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={handleClose}
-              style={styles.cancelButton}
-              disabled={loading}
-            >
-              <Text style={styles.cancelButtonText}>Cancel</Text>
-            </TouchableOpacity>
+          {/* New Password */}
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>New Password</Text>
+            <View style={styles.passwordInputContainer}>
+              <TextInput
+                style={styles.passwordInput}
+                value={newPassword}
+                onChangeText={setNewPassword}
+                placeholder="Enter new password"
+                placeholderTextColor={COLOR.placeholder}
+                secureTextEntry={!showNewPassword}
+                editable={!loading}
+              />
+              <TouchableOpacity
+                style={styles.eyeButton}
+                onPress={() => setShowNewPassword(!showNewPassword)}
+                disabled={loading}
+              >
+                <Ionicons
+                  name={showNewPassword ? "eye" : "eye-off"}
+                  size={20}
+                  color={COLOR.grey}
+                />
+              </TouchableOpacity>
+            </View>
           </View>
-        </ScrollView>
+
+          {/* Confirm Password */}
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Confirm New Password</Text>
+            <View style={styles.passwordInputContainer}>
+              <TextInput
+                style={styles.passwordInput}
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                placeholder="Confirm new password"
+                placeholderTextColor={COLOR.placeholder}
+                secureTextEntry={!showConfirmPassword}
+                editable={!loading}
+              />
+              <TouchableOpacity
+                style={styles.eyeButton}
+                onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                disabled={loading}
+              >
+                <Ionicons
+                  name={showConfirmPassword ? "eye" : "eye-off"}
+                  size={20}
+                  color={COLOR.grey}
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Password Requirements */}
+          <View style={styles.requirementsContainer}>
+            <Text style={styles.requirementsTitle}>Password Requirements:</Text>
+            <Text style={styles.requirementsText}>
+              • At least 6 characters{"\n"}• One lowercase letter{"\n"}• One
+              uppercase letter
+            </Text>
+          </View>
+        </View>
+
+        {/* Footer Buttons */}
+        <View style={styles.footer}>
+          <TouchableOpacity
+            onPress={handleChangePassword}
+            style={[
+              styles.changePasswordButton,
+              loading && styles.disabledButton,
+            ]}
+            disabled={loading}
+          >
+            <Text style={styles.changePasswordButtonText}>
+              {loading ? "Updating..." : "Change Password"}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={handleClose}
+            style={styles.cancelButton}
+            disabled={loading}
+          >
+            <Text style={styles.cancelButtonText}>Cancel</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
     </Modal>
   );
 };

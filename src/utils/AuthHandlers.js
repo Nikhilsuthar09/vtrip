@@ -1,4 +1,4 @@
-import { updateEmail, updatePassword, updateProfile } from "@firebase/auth";
+import { updateEmail, updatePassword, updateProfile } from "firebase/auth";
 import { Alert } from "react-native";
 
 const PASSWORD_MESSAGE =
