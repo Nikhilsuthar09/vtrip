@@ -236,6 +236,7 @@ const MyTrip = () => {
       startDate={item.startDate}
       endDate={item.endDate}
       budget={item.budget}
+      createdBy={item.createdBy}
       image={item?.imageUrl}
       openModal={openMenu}
     />

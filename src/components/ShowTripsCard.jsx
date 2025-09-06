@@ -1,4 +1,11 @@
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Alert,
+  Pressable,
+} from "react-native";
 import React from "react";
 import { COLOR, FONT_SIZE, FONTS } from "../constants/Theme";
 import { Image } from "expo-image";
@@ -17,6 +24,7 @@ const ShowTripsCard = ({
   startDate,
   endDate,
   budget,
+  createdBy,
   image,
   openModal,
 }) => {
@@ -103,10 +111,27 @@ const ShowTripsCard = ({
                   Loading
                 </Text>
               ) : (
-                <Text style={styles.noOfTravellers}>
-                  {safeTravellerNames.length}{" "}
-                  {safeTravellerNames.length === 1 ? "Traveller" : "Travellers"}
-                </Text>
+                <Pressable
+                  onPress={() =>
+                    navigation.navigate("traveller", {
+                      id,
+                      title,
+                      safeTravellerNames,
+                      destination,
+                      startDate,
+                      endDate,
+                      createdBy,
+                      budget,
+                    })
+                  }
+                >
+                  <Text style={styles.noOfTravellers}>
+                    {safeTravellerNames.length}{" "}
+                    {safeTravellerNames.length === 1
+                      ? "Traveller"
+                      : "Travellers"}
+                  </Text>
+                </Pressable>
               )}
             </View>
             <TouchableOpacity

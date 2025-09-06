@@ -16,6 +16,7 @@ import CustomDrawerContent from "../components/CustomDrawerContent";
 import InviteCollaborators from "../Screens/InviteCollaborators";
 import NotificationsScreen from "../Screens/Notification";
 import Profile from "../Screens/Profile";
+import TravellersScreen from "../Screens/TravellersScreen";
 
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -109,6 +110,22 @@ export function MainStackNavigator() {
         component={TrackOnTrip}
         options={{
           title: "On-Trip Spending",
+          headerTintColor: "#fff",
+          headerTitleStyle: {
+            fontFamily: FONTS.semiBold,
+            fontSize: FONT_SIZE.H6,
+          },
+          headerTitleAlign: "center",
+          headerStyle: {
+            backgroundColor: COLOR.primary,
+          },
+        }}
+      />
+      <Stack.Screen
+        name="traveller"
+        component={TravellersScreen}
+        options={{
+          title: "Travellers",
           headerTintColor: "#fff",
           headerTitleStyle: {
             fontFamily: FONTS.semiBold,
