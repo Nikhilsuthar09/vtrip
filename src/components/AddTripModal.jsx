@@ -280,7 +280,7 @@ const AddTripModal = ({
               <ImagePickerComponent
                 onImageSelected={(uri) => handleTripDataChange("image", uri)}
                 selectedImage={tripData.image}
-                placeholder="Add Trip Cover Image"
+                placeholder="Add Trip Cover Image (optional)"
               />
               {/* Date Selection Info */}
               <View style={styles.dateInfoContainer}>

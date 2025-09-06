@@ -14,8 +14,8 @@ import {
   useFetchNotification,
   useMarkAsRead,
 } from "../utils/notification/useFetchNotifications";
-import { formatTime } from "../utils/timestamp/formatAndGetTime";
-import { useEffect, useState } from "react";
+import { formatDateTime } from "../utils/timestamp/formatAndGetTime";
+import { useState } from "react";
 import { COLOR, FONT_SIZE, FONTS } from "../constants/Theme";
 import Spinner from "../components/Spinner";
 import NotificationPlaceholder from "../components/notification/Placeholder";
@@ -102,7 +102,7 @@ const NotificationsScreen = () => {
         <View style={styles.headerContent}>
           <Text style={styles.notificationTitle}>{notification?.title}</Text>
           <Text style={styles.notificationTime}>
-            {formatTime(notification?.createdAt)}
+            {formatDateTime(notification?.createdAt)}
           </Text>
         </View>
       </View>

@@ -46,6 +46,18 @@ const formatTime = (date) => {
     hour12: true,
   });
 };
+// Format date and time for display
+const formatDateTime = (date) => {
+  const d = new Date(date);
+  return d.toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+};
 // function to get last edited timestamp
 const getLastEditedForCreated = (items) => {
   if (!items || items.length === 0) return null;
@@ -66,5 +78,6 @@ export {
   formatLastEdited,
   getLastEditedTimestamp,
   formatTime,
+  formatDateTime,
   getLastEditedForCreated,
 };
