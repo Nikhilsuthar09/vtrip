@@ -28,7 +28,7 @@ const ShowTripsCard = ({
   image,
   openModal,
 }) => {
-  const { travellerNames, travellerLoading, travellerError } =
+  const { travellerNames, travellerLoading, travellerError, refetchTraveller } =
     useTravellerNames(id);
   const navigation = useNavigation();
   const safeTravellerNames = travellerNames || [];
@@ -90,33 +90,26 @@ const ShowTripsCard = ({
             </View>
             <Text style={styles.bugdet}>{budget}</Text>
           </View>
-          <View
-            style={{
-              marginTop: 6,
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 5,
-            }}
-          >
-            <View>
+          <View style={styles.buttons}>
+            <>
               {travellerLoading ? (
-                <Text
-                  style={{
-                    fontFamily: FONTS.semiBold,
-                    fontSize: FONT_SIZE.body,
-                    color: COLOR.placeholder,
-                  }}
-                >
-                  {" "}
-                  Loading
-                </Text>
+                <View style={styles.loadingButton}>
+                  <MaterialIcons
+                    name="hourglass-empty"
+                    size={16}
+                    color={COLOR.placeholder}
+                    style={styles.buttonIcon}
+                  />
+                  <Text style={styles.loadingText}>Loading travellers...</Text>
+                </View>
               ) : (
-                <Pressable
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  style={styles.travellerButton}
                   onPress={() =>
                     navigation.navigate("traveller", {
                       id,
                       title,
-                      safeTravellerNames,
                       destination,
                       startDate,
                       endDate,
@@ -125,16 +118,23 @@ const ShowTripsCard = ({
                     })
                   }
                 >
-                  <Text style={styles.noOfTravellers}>
+                  <MaterialIcons
+                    name="people"
+                    size={16}
+                    color="#2196F3"
+                    style={styles.buttonIcon}
+                  />
+                  <Text style={styles.travellerButtonText}>
                     {safeTravellerNames.length}{" "}
                     {safeTravellerNames.length === 1
                       ? "Traveller"
                       : "Travellers"}
                   </Text>
-                </Pressable>
+                </TouchableOpacity>
               )}
-            </View>
+            </>
             <TouchableOpacity
+              activeOpacity={0.8}
               style={styles.planButton}
               onPress={() =>
                 navigation.navigate("TopTabs", {
@@ -146,6 +146,12 @@ const ShowTripsCard = ({
                 })
               }
             >
+              <MaterialIcons
+                name="flight-takeoff"
+                size={16}
+                color="#fff"
+                style={styles.buttonIcon}
+              />
               <Text style={styles.planButtontext}>Start Planning</Text>
             </TouchableOpacity>
           </View>
@@ -218,29 +224,62 @@ const styles = StyleSheet.create({
     color: COLOR.grey,
     fontSize: FONT_SIZE.caption,
   },
-  noOfTravellers: {
-    fontFamily: FONTS.medium,
-    color: COLOR.grey,
-    fontSize: FONT_SIZE.caption,
-    borderWidth: 1,
-    borderRadius: 4,
-    borderColor: COLOR.stroke,
-    alignSelf: "flex-start",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+  buttons: {
+    justifyContent: "center",
+    marginTop: 10,
+    gap: 10,
   },
+  buttonIcon: {
+    marginRight: 8,
+  },
+  loadingButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: COLOR.stroke,
+    borderWidth: 1,
+    borderColor: COLOR.stroke,
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+  },
+  loadingText: {
+    fontFamily: FONTS.medium,
+    fontSize: FONT_SIZE.caption,
+    color: COLOR.placeholder,
+  },
+  travellerButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#edf2fd",
+    borderWidth:0.5,
+    borderColor:"#2196F3",
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+  },
+  travellerButtonText: {
+    fontFamily: FONTS.semiBold,
+    color: "#2196F3",
+    fontSize: FONT_SIZE.caption,
+    textAlign: "center",
+  },
+  // Enhanced plan button
   planButton: {
-    backgroundColor: COLOR.primaryLight,
-    paddingVertical: 5,
-    paddingHorizontal: 12,
-    borderRadius: 4,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: COLOR.primary,
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
   },
   planButtontext: {
     fontFamily: FONTS.semiBold,
     fontSize: FONT_SIZE.body,
-    color: COLOR.primary,
+    color: "#fff",
     textAlign: "center",
   },
 });
-
 export default ShowTripsCard;

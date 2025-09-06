@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -18,7 +18,7 @@ import { useUserTripsData } from "../utils/firebaseUserHandlers";
 import QuickActions from "../components/home/QuickActions";
 import { getTripStatus } from "../utils/calendar/getTripStatus";
 import { useAuth } from "../Context/AuthContext";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { useTravellerNames } from "../utils/firebaseTravellerHandler";
 import { formatDate } from "../utils/calendar/handleCurrentDate";
 import { StatusBar } from "expo-status-bar";
@@ -41,6 +41,11 @@ const TravelApp = ({ onPress }) => {
   const { tripsData, refetch } = useUserTripsData();
   const navigation = useNavigation();
   const safeTripData = tripsData || [];
+  useFocusEffect(
+    useCallback(() => {
+      refetchNotification();
+    }, [refetch])
+  );
   // Get the primary trip to display (ongoing takes priority over upcoming)
   const primaryTrip = useMemo(() => {
     if (safeTripData.length === 0) return null;
@@ -171,7 +176,7 @@ const TravelApp = ({ onPress }) => {
     <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
       <StatusBar style="dark" />
 
-      {/*  Header with Gradient Background */}
+      {/*  Header */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <Text style={styles.greeting}>Hi, {firstName} 👋</Text>
@@ -186,20 +191,33 @@ const TravelApp = ({ onPress }) => {
             badgeCount={unreadDoc.length}
           />
 
-          <TouchableOpacity
-            onPress={openDrawer}
-            activeOpacity={0.8}
-            style={styles.profileContainer}
+          <View
+            style={{
+              width: 48,
+              height: 48,
+              borderRadius: 50,
+              borderWidth: 1,
+              alignItems: "center",
+              justifyContent: "center",
+              borderStyle: "dashed",
+              borderColor: COLOR.primary,
+            }}
           >
-            {user?.photoURL ? (
-              <Image
-                source={{ uri: user.photoURL }}
-                style={styles.avatarImage}
-              />
-            ) : (
-              <Text style={styles.profileText}>{userNameChars}</Text>
-            )}
-          </TouchableOpacity>
+            <TouchableOpacity
+              onPress={openDrawer}
+              activeOpacity={0.8}
+              style={styles.profileContainer}
+            >
+              {user?.photoURL ? (
+                <Image
+                  source={{ uri: user.photoURL }}
+                  style={styles.avatarImage}
+                />
+              ) : (
+                <Text style={styles.profileText}>{userNameChars}</Text>
+              )}
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
 
@@ -211,7 +229,7 @@ const TravelApp = ({ onPress }) => {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        {/* Enhanced Trip Card */}
+        {/*  Trip Card */}
         {primaryTrip ? (
           <>
             <Pressable
@@ -430,8 +448,8 @@ const styles = StyleSheet.create({
   },
   profileText: {
     color: "#fff",
-    fontFamily: FONTS.bold,
-    fontSize: FONT_SIZE.bodyLarge,
+    fontFamily: FONTS.semiBold,
+    fontSize: FONT_SIZE.body,
   },
 
   sectionTitle: {

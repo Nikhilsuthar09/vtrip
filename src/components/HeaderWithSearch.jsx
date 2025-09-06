@@ -28,23 +28,39 @@ const HeaderWithSearch = ({ openDrawer, searchText, setSearchText }) => {
           />
           <FontAwesome name="search" size={18} color={COLOR.grey} />
         </View>
-        <TouchableOpacity onPress={openDrawer} style={styles.userButton}>
-          {user?.photoURL ? (
-            <Image source={{ uri: user.photoURL }} style={styles.avatarImage} />
-          ) : userNameChars && userNameChars !== "U" ? (
-            <Text
-              style={{
-                fontFamily: FONTS.medium,
-                color: "#fff",
-                fontSize: FONT_SIZE.body,
-              }}
-            >
-              {userNameChars}
-            </Text>
-          ) : (
-            <FontAwesome name="user-o" size={18} color="#fff" />
-          )}
-        </TouchableOpacity>
+        <View
+          style={{
+            width: 48,
+            height: 48,
+            borderRadius: 50,
+            borderWidth: 1,
+            alignItems: "center",
+            justifyContent: "center",
+            borderStyle: "dashed",
+            borderColor: COLOR.primary,
+          }}
+        >
+          <TouchableOpacity onPress={openDrawer} style={styles.userButton}>
+            {user?.photoURL ? (
+              <Image
+                source={{ uri: user.photoURL }}
+                style={styles.avatarImage}
+              />
+            ) : userNameChars && userNameChars !== "U" ? (
+              <Text
+                style={{
+                  fontFamily: FONTS.semiBold,
+                  color: "#fff",
+                  fontSize: FONT_SIZE.body,
+                }}
+              >
+                {userNameChars}
+              </Text>
+            ) : (
+              <FontAwesome name="user-o" size={18} color="#fff" />
+            )}
+          </TouchableOpacity>
+        </View>
       </View>
       <SeparationLine />
     </>
@@ -60,9 +76,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   avatarImage: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 42,
+    height: 42,
+    borderRadius: 50,
   },
   searchContainer: {
     flex: 1,
@@ -85,9 +101,9 @@ const styles = StyleSheet.create({
   },
   userButton: {
     backgroundColor: COLOR.primary,
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 42,
+    height: 42,
+    borderRadius: 50,
     alignItems: "center",
     justifyContent: "center",
     elevation: 5,

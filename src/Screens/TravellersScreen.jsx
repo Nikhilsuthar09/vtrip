@@ -16,18 +16,26 @@ import { COLOR, FONT_SIZE, FONTS } from "../constants/Theme";
 import { formatDate } from "../utils/calendar/handleCurrentDate";
 import { arrayRemove, doc, updateDoc } from "firebase/firestore";
 import { db } from "../Configs/firebaseConfig";
+import { useAuth } from "../Context/AuthContext";
+import { useTravellerNames } from "../utils/firebaseTravellerHandler";
 
 const TravellersScreen = ({ route, navigation }) => {
   const {
     id,
     title,
-    safeTravellerNames: travellers,
     destination,
     startDate,
     endDate,
     createdBy,
     budget,
   } = route.params;
+  const { uid } = useAuth();
+  const {
+    travellerNames: travellers,
+    travellerLoading,
+    travellerError,
+    refetchTraveller,
+  } = useTravellerNames(id);
 
   const getUserNameChars = (name) => {
     const splitted = name?.split(" ") || [];
@@ -41,19 +49,24 @@ const TravellersScreen = ({ route, navigation }) => {
         : "U";
     return userNameChars;
   };
-  const removeTraveller = async (uid) => {
+  const removeTraveller = async (userId) => {
     try {
-      const userDocRef = doc(db, "user", uid);
+      const tripDocRef = doc(db, "trip", id);
+      await updateDoc(tripDocRef, {
+        travellers: arrayRemove(userId),
+      });
+      const userDocRef = doc(db, "user", userId);
       await updateDoc(userDocRef, {
         tripIds: arrayRemove(id),
       });
       Alert.alert("Success", "Traveller removed");
+      refetchTraveller();
     } catch (e) {
       console.log(e);
     }
   };
 
-  const handleRemovePress = (uid, name) => {
+  const handleRemovePress = (userId, name) => {
     Alert.alert(
       "Confirm Action",
       `Are you sure you want remove ${name} from this trip?`,
@@ -65,7 +78,7 @@ const TravellersScreen = ({ route, navigation }) => {
         {
           text: "Remove",
           style: "destructive",
-          onPress: async () => await removeTraveller(uid),
+          onPress: async () => await removeTraveller(userId),
         },
       ]
     );
@@ -148,7 +161,7 @@ const TravellersScreen = ({ route, navigation }) => {
                 </View>
 
                 <View style={styles.travellerActions}>
-                  {traveller.uid !== createdBy && (
+                  {uid === createdBy && traveller.uid !== uid && (
                     <TouchableOpacity
                       onPress={() =>
                         handleRemovePress(traveller.uid, traveller.name)
@@ -312,7 +325,6 @@ const styles = StyleSheet.create({
     backgroundColor: COLOR.primaryLight,
     textAlign: "center",
     textAlignVertical: "center",
-    lineHeight: 40,
     fontFamily: FONTS.semiBold,
     fontSize: FONT_SIZE.body,
     color: COLOR.primary,
