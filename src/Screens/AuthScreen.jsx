@@ -28,6 +28,7 @@ import {
 import { Image } from "expo-image";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import Entypo from "@expo/vector-icons/Entypo";
+import { signInGoogle } from "../utils/googleSignin";
 
 export default function AuthScreen() {
   const email = useRef("");
@@ -46,11 +47,7 @@ export default function AuthScreen() {
     }
 
     try {
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
+      await signInWithEmailAndPassword(auth, email, password);
       setIsLoading(false);
       // Signed in
     } catch (error) {
@@ -75,7 +72,7 @@ export default function AuthScreen() {
     }
     try {
       await sendPasswordResetEmail(auth, email.current);
-      console.log("Success")
+      console.log("Success");
     } catch (e) {
       Alert.alert(
         "Error",
@@ -201,7 +198,7 @@ export default function AuthScreen() {
                 <Text style={styles.orText}>Or</Text>
                 <View style={styles.separaterLine}></View>
               </View>
-              <Pressable onPress={() => Alert.alert("To Do")}>
+              <Pressable onPress={signInGoogle}>
                 <View style={styles.googleButtonContainer}>
                   <AntDesign name="google" size={18} color="black" />
                   <Text style={styles.googleButtonText}>

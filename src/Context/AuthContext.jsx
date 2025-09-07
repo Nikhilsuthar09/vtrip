@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { auth } from "../Configs/firebaseConfig";
+import { auth, db } from "../Configs/firebaseConfig";
 import { onAuthStateChanged } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
 
 const AuthContext = createContext();
 
@@ -11,21 +12,14 @@ export const useAuth = () => {
   }
   return context;
 };
-const processUserData = (user) => {
-  if (!user) {
-    return {
-      name: null,
-      uid: null,
-      email: null,
-      firstName: "User",
-      userNameChars: "U",
-    };
-  }
+const processUserData = async (user) => {
+  const docSnap = await getDoc(doc(db, "user", user.uid));
+  if (!docSnap.exists()) return;
+  const data = docSnap.data();
 
-  const displayName = user.displayName;
-  const uid = user.uid;
-  const email = user.email;
-  const name = displayName?.trim().replace(/\s+/g, " ");
+  const uid = docSnap.id;
+  const email = data.email;
+  const name = data.name;
   const splitted = name?.split(" ") || [];
   const firstName = splitted.length > 0 ? splitted[0] : "User";
   const userNameChars =
@@ -67,9 +61,12 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
-      setUserDetails(processUserData(firebaseUser));
+      if (firebaseUser) {
+        const details = await processUserData(firebaseUser);
+        setUserDetails(details);
+      }
       if (!isRegistering) {
         setIsLoggedIn(!!firebaseUser);
       }

@@ -163,17 +163,19 @@ export const AddTripToUser = async (tripId) => {
 export const addUserToDb = async () => {
   try {
     const auth = getAuth();
-    const userId = auth.currentUser.uid;
-    const email = auth.currentUser.email;
-    const name = auth.currentUser.displayName;
+    const userId = auth.currentUser?.uid;
+    const email = auth.currentUser?.email;
+    const name = auth.currentUser?.displayName?.trim().replace(/\s+/g, " ");
+    const imgUrl = auth.currentUser?.photoURL;
     const userDocRef = doc(db, "user", userId);
     const userDetails = {
       name,
       email,
+      imgUrl,
+      tripIds: [],
     };
     await setDoc(userDocRef, userDetails);
   } catch (e) {
     console.log(e);
   }
 };
-
