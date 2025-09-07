@@ -20,15 +20,8 @@ import { useAuth } from "../Context/AuthContext";
 import { useTravellerNames } from "../utils/firebaseTravellerHandler";
 
 const TravellersScreen = ({ route, navigation }) => {
-  const {
-    id,
-    title,
-    destination,
-    startDate,
-    endDate,
-    createdBy,
-    budget,
-  } = route.params;
+  const { id, title, destination, startDate, endDate, createdBy, budget } =
+    route.params;
   const { uid } = useAuth();
   const {
     travellerNames: travellers,
@@ -36,7 +29,6 @@ const TravellersScreen = ({ route, navigation }) => {
     travellerError,
     refetchTraveller,
   } = useTravellerNames(id);
-
   const getUserNameChars = (name) => {
     const splitted = name?.split(" ") || [];
     const userNameChars =

@@ -175,8 +175,8 @@ const MyTrip = () => {
       id: tripDetails.id,
       title: tripDetails.title,
       destination: tripDetails.destination,
-      startDate: formatDate(tripDetails.startDate),
-      endDate: formatDate(tripDetails.endDate),
+      startDate: tripDetails.startDate,
+      endDate: tripDetails.endDate,
       travellers: safeTravellerNames,
       createdBy: tripDetails.createdBy,
     });

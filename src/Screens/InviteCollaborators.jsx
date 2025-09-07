@@ -14,6 +14,7 @@ import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import Entypo from "@expo/vector-icons/Entypo";
 import { COLOR, FONT_SIZE, FONTS } from "../constants/Theme";
 import { StatusBar } from "expo-status-bar";
+import { formatDate } from "../utils/calendar/handleCurrentDate";
 
 const InviteCollaborators = ({ route }) => {
   const { id, title, travellers, destination, startDate, endDate, createdBy } =
@@ -60,7 +61,7 @@ const InviteCollaborators = ({ route }) => {
           <View style={styles.tripInfo}>
             <Text style={styles.tripTitle}>{destination}</Text>
             <Text style={styles.tripDate}>
-              {startDate} - {endDate}
+              {formatDate(startDate)} - {formatDate(endDate)}
             </Text>
           </View>
         </View>

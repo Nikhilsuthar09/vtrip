@@ -4,7 +4,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   Alert,
-  Pressable,
 } from "react-native";
 import React from "react";
 import { COLOR, FONT_SIZE, FONTS } from "../constants/Theme";
@@ -28,7 +27,7 @@ const ShowTripsCard = ({
   image,
   openModal,
 }) => {
-  const { travellerNames, travellerLoading, travellerError, refetchTraveller } =
+  const { travellerNames, travellerLoading, travellerError} =
     useTravellerNames(id);
   const navigation = useNavigation();
   const safeTravellerNames = travellerNames || [];
@@ -143,6 +142,9 @@ const ShowTripsCard = ({
                   destination,
                   startDate,
                   endDate,
+                  createdBy,
+                  budget,
+                  safeTravellerNames,
                 })
               }
             >
@@ -253,8 +255,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "#edf2fd",
-    borderWidth:0.5,
-    borderColor:"#2196F3",
+    borderWidth: 0.5,
+    borderColor: "#2196F3",
     borderRadius: 8,
     paddingHorizontal: 8,
     paddingVertical: 6,
