@@ -22,7 +22,12 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": ["expo-notifications", "expo-font", "expo-router"],
+    "plugins": [
+      "@react-native-google-signin/google-signin/app.plugin.js",
+      "expo-notifications",
+      "expo-font",
+      "expo-router"
+    ],
     "extra": {
       "router": {},
       "eas": {
