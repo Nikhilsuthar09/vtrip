@@ -23,6 +23,7 @@ import {
   updateExpense,
 } from "../../utils/firebase_crud/expenses/expenseCrud";
 import { renderItem } from "../../components/expense/RenderOnTripExpenseList";
+import { getfirstName } from "../../utils/common/processUserData";
 
 const TrackOnTrip = ({ route }) => {
   const { id, budget, safeTravellerNames, travellerLoading } = route.params;
@@ -169,7 +170,6 @@ const TrackOnTrip = ({ route }) => {
     toggleModal();
   };
 
-
   return (
     <SafeAreaView edges={["bottom", "left", "right"]} style={styles.container}>
       <ScrollView
@@ -306,7 +306,7 @@ const TrackOnTrip = ({ route }) => {
               data={safeTravellerNames}
               keyExtractor={(item) => item.uid}
               renderItem={({ item }) => {
-                const firstName = item.name.split(" ")[0];
+                const firstName = getfirstName(item.name);
                 return (
                   <TravellerNames
                     setSelectedName={setSelectedName}

@@ -1,10 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { db } from "../Configs/firebaseConfig";
 import {
-  arrayRemove,
   arrayUnion,
   collection,
-  deleteDoc,
   doc,
   documentId,
   getDoc,
@@ -160,13 +158,12 @@ export const AddTripToUser = async (tripId) => {
 };
 
 // function to create user in firestore
-export const addUserToDb = async () => {
+export const addUserToDb = async (user) => {
   try {
-    const auth = getAuth();
-    const userId = auth.currentUser?.uid;
-    const email = auth.currentUser?.email;
-    const name = auth.currentUser?.displayName?.trim().replace(/\s+/g, " ");
-    const imgUrl = auth.currentUser?.photoURL;
+    const userId = user?.uid;
+    const email = user?.email;
+    let name = user?.displayName?.trim().replace(/\s+/g, " ");
+    const imgUrl = user?.photoURL;
     const userDocRef = doc(db, "user", userId);
     const userDetails = {
       name,
@@ -175,7 +172,9 @@ export const addUserToDb = async () => {
       tripIds: [],
     };
     await setDoc(userDocRef, userDetails);
+    return true;
   } catch (e) {
-    console.log(e);
+    console.error("Error adding user to database:", error);
+    throw error;
   }
 };

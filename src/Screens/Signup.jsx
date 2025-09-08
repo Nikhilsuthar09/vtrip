@@ -31,6 +31,7 @@ import { addUserToDb } from "../utils/firebaseUserHandlers";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import Entypo from "@expo/vector-icons/Entypo";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
+import { getTitleCase } from "../utils/common/processUserData";
 
 export default function Signup() {
   const [email, setEmail] = useState("");
@@ -51,14 +52,7 @@ export default function Signup() {
     setPassword("");
     setName("");
   };
-  const toTitleCase = (str) => {
-    return str
-      .toLowerCase()
-      .trim()
-      .split(/\s+/)
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ");
-  };
+
   const signup = async () => {
     Keyboard.dismiss();
     // input validation
@@ -78,11 +72,11 @@ export default function Signup() {
       // Signed in
       user = userCredential.user;
       userCreated = true;
-      const nameToSave = toTitleCase(name);
+      const nameToSave = getTitleCase(name);
       await updateProfile(user, {
         displayName: nameToSave,
       });
-      await addUserToDb();
+      await addUserToDb(user);
       await signOut(auth);
       resetData();
       setRegistrationState(false);

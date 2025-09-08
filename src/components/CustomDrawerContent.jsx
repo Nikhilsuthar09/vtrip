@@ -17,10 +17,11 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { useState } from "react";
 import DeleteUserModal from "./profile/DeleteUserModal";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
 
 export default function CustomDrawerContent(props) {
   const [modalVisible, setModalVisible] = useState(false);
-  const { name, userNameChars, email, user } = useAuth();
+  const { name, userNameChars, email, user, imageUrl } = useAuth();
   const navigation = useNavigation();
 
   const handleLogout = async () => {
@@ -35,7 +36,9 @@ export default function CustomDrawerContent(props) {
         onPress: async () => {
           try {
             await signOut(auth);
-            console.log("User signed out");
+            if (user?.providerData[0].providerId === "google.com") {
+              await GoogleSignin.signOut();
+            }
           } catch (error) {
             console.error("Logout error:", error);
             Alert.alert("Error", "Failed to logout. Please try again.");
@@ -74,11 +77,8 @@ export default function CustomDrawerContent(props) {
         {/* Profile Section */}
         <View style={styles.profileSection}>
           <View style={styles.profileContainer}>
-            {user?.photoURL ? (
-              <Image
-                source={{ uri: user.photoURL }}
-                style={styles.avatarImage}
-              />
+            {imageUrl ? (
+              <Image source={{ uri: imageUrl }} style={styles.avatarImage} />
             ) : (
               <Text style={styles.profileText}>{userNameChars}</Text>
             )}

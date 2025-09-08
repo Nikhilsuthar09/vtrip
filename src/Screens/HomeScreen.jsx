@@ -20,7 +20,6 @@ import { getTripStatus } from "../utils/calendar/getTripStatus";
 import { useAuth } from "../Context/AuthContext";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { useTravellerNames } from "../utils/firebaseTravellerHandler";
-import { formatDate } from "../utils/calendar/handleCurrentDate";
 import { StatusBar } from "expo-status-bar";
 import Entypo from "@expo/vector-icons/Entypo";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
@@ -32,12 +31,13 @@ import { EmptyTripCard } from "../components/home/EmptyTripCard";
 import { getTripTimingText } from "../utils/home/getTripTimingText";
 import { useFetchNotification } from "../utils/notification/useFetchNotifications";
 import * as Haptics from "expo-haptics";
+import { getTitleCase } from "../utils/common/processUserData";
 
 const TravelApp = ({ onPress }) => {
   const [isRoomModalVisible, setIsRoomModalVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const { unreadDoc, refetch: refetchNotification } = useFetchNotification();
-  const { firstName, userNameChars, user } = useAuth();
+  const { firstName, userNameChars, imageUrl } = useAuth();
   const { tripsData, refetch } = useUserTripsData();
   const navigation = useNavigation();
   const safeTripData = tripsData || [];
@@ -179,7 +179,7 @@ const TravelApp = ({ onPress }) => {
       {/*  Header */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
-          <Text style={styles.greeting}>Hi, {firstName} 👋</Text>
+          <Text style={styles.greeting}>Hi, {getTitleCase(firstName)} 👋</Text>
           <Text style={styles.subtitle}>Ready for your next adventure?</Text>
         </View>
         <View style={styles.headerRight}>
@@ -208,11 +208,8 @@ const TravelApp = ({ onPress }) => {
               activeOpacity={0.8}
               style={styles.profileContainer}
             >
-              {user?.photoURL ? (
-                <Image
-                  source={{ uri: user.photoURL }}
-                  style={styles.avatarImage}
-                />
+              {imageUrl ? (
+                <Image source={{ uri: imageUrl }} style={styles.avatarImage} />
               ) : (
                 <Text style={styles.profileText}>{userNameChars}</Text>
               )}

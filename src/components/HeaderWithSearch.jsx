@@ -12,7 +12,7 @@ import SeparationLine from "./SeparationLine";
 import { useAuth } from "../Context/AuthContext";
 
 const HeaderWithSearch = ({ openDrawer, searchText, setSearchText }) => {
-  const { userNameChars, user } = useAuth();
+  const { userNameChars, imageUrl } = useAuth();
   return (
     <>
       <View style={styles.container}>
@@ -41,11 +41,8 @@ const HeaderWithSearch = ({ openDrawer, searchText, setSearchText }) => {
           }}
         >
           <TouchableOpacity onPress={openDrawer} style={styles.userButton}>
-            {user?.photoURL ? (
-              <Image
-                source={{ uri: user.photoURL }}
-                style={styles.avatarImage}
-              />
+            {imageUrl ? (
+              <Image source={{ uri: imageUrl }} style={styles.avatarImage} />
             ) : userNameChars && userNameChars !== "U" ? (
               <Text
                 style={{
