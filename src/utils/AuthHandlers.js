@@ -1,4 +1,4 @@
-import { updateEmail, updatePassword, updateProfile } from "firebase/auth";
+import {  updatePassword } from "firebase/auth";
 import { Alert } from "react-native";
 
 const PASSWORD_MESSAGE =
@@ -18,6 +18,8 @@ const handleFirebaseAuthErrors = (error) => {
     return "Network error. Please check your internet connection";
   } else if (error.code === "auth/email-already-in-use") {
     return "Email already in use, please login";
+  } else if (error.code === "auth/too-many-requests") {
+    return "Too many failed attempts. Please try again later.";
   }
   return "Authentication failed. Please try again";
 };
@@ -109,19 +111,6 @@ const profileUpdateValidation = (name, email) => {
   return true;
 };
 
-// function to update name
-const updateUsername = async (user, name, updatedName) => {
-  if (name === updatedName) return false;
-  await updateProfile(user, { displayName: updatedName });
-  return true;
-};
-// function to update email
-const updateUserEmail = async (user, email, updatedEmail) => {
-  if (email === updatedEmail) return false;
-  await updateEmail(user, updatedEmail);
-  return true;
-};
-
 // function to validate and update password
 const validateAndUpdateUserPassword = async (
   user,
@@ -172,7 +161,5 @@ export {
   handleSignupValidation,
   handleLoginValidation,
   profileUpdateValidation,
-  updateUsername,
-  updateUserEmail,
   validateAndUpdateUserPassword,
 };

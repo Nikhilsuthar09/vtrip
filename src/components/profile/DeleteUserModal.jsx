@@ -22,6 +22,7 @@ import {
 } from "firebase/auth";
 import { useAuth } from "../../Context/AuthContext";
 import { deleteUserDataInDb } from "../../utils/removeUserAccount";
+import { handleFirebaseAuthErrors } from "../../utils/AuthHandlers";
 
 const DeleteUserModal = ({ visible, onClose }) => {
   const { user, uid } = useAuth();
@@ -51,15 +52,12 @@ const DeleteUserModal = ({ visible, onClose }) => {
 
     try {
       setLoading(true);
-
-      // Re-authenticate user before deletion
       const credential = EmailAuthProvider.credential(
         email.trim(),
         password.trim()
       );
       await reauthenticateWithCredential(user, credential);
 
-      // Delete the user account
       await deleteUserDataInDb(uid);
       await deleteUser(user);
       // Close modal and clear fields
@@ -68,27 +66,7 @@ const DeleteUserModal = ({ visible, onClose }) => {
     } catch (error) {
       console.error("Delete account error:", error);
 
-      let errorMessage = "Failed to delete account. Please try again.";
-
-      switch (error.code) {
-        case "auth/wrong-password":
-          errorMessage = "Incorrect password. Please try again.";
-          break;
-        case "auth/user-not-found":
-          errorMessage = "User account not found.";
-          break;
-        case "auth/invalid-email":
-          errorMessage = "Invalid email address.";
-          break;
-        case "auth/too-many-requests":
-          errorMessage = "Too many failed attempts. Please try again later.";
-          break;
-        case "auth/network-request-failed":
-          errorMessage = "Network error. Please check your connection.";
-          break;
-        default:
-          errorMessage = errorMessage;
-      }
+      let errorMessage = handleFirebaseAuthErrors(error);
 
       Alert.alert("Error", errorMessage);
     } finally {

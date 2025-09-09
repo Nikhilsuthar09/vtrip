@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { auth } from "../Configs/firebaseConfig";
 import { onAuthStateChanged } from "firebase/auth";
+import { getUserData } from "../utils/common/getUserData";
 
 const AuthContext = createContext();
 
@@ -11,46 +12,23 @@ export const useAuth = () => {
   }
   return context;
 };
-const processUserData = (user) => {
-  if (!user) {
-    return {
-      name: null,
-      uid: null,
-      email: null,
-      firstName: "User",
-      userNameChars: "U",
-    };
-  }
 
-  const displayName = user.displayName;
-  const uid = user.uid;
-  const email = user.email;
-  const name = displayName?.trim().replace(/\s+/g, " ");
-  const splitted = name?.split(" ") || [];
-  const firstName = splitted.length > 0 ? splitted[0] : "User";
-  const userNameChars =
-    splitted.length > 0
-      ? splitted.length === 1
-        ? splitted[0][0]
-        : (
-            splitted[0][0] + (splitted[splitted.length - 1][0] || "")
-          ).toUpperCase()
-      : "U";
-  return { name, uid, email, firstName, userNameChars, user };
+const DEFAULT_USER_DETAILS = {
+  name: "User",
+  uid: null,
+  email: null,
+  firstName: "User", 
+  userNameChars: "U",
+  imageUrl: null,
 };
+
 export const AuthProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setLoading] = useState(true);
   const [isRegistering, setIsRegistering] = useState(false);
   const [user, setUser] = useState(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-  const [userDetails, setUserDetails] = useState({
-    name: null,
-    uid: null,
-    email: null,
-    firstName: "User",
-    userNameChars: "U",
-  });
+  const [userDetails, setUserDetails] = useState(DEFAULT_USER_DETAILS);
 
   const refreshUserData = async () => {
     setLoading(true);
@@ -59,40 +37,81 @@ export const AuthProvider = ({ children }) => {
         await auth.currentUser.reload();
         setRefreshTrigger((prev) => prev + 1);
       }
-    } catch (e) {
-      console.log(e);
+    } catch (error) {
+      console.log("Error refreshing user data:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      setUser(firebaseUser);
-      setUserDetails(processUserData(firebaseUser));
-      if (!isRegistering) {
-        setIsLoggedIn(!!firebaseUser);
+  const updateUserState = async (firebaseUser, isMounted) => {
+    if (!isMounted) return;
+
+    if (firebaseUser) {
+      try {
+        const details = await getUserData(firebaseUser);
+        if (isMounted) {
+          setUserDetails(details);
+        }
+      } catch (error) {
+        console.error("Error getting user data:", error);
+        if (isMounted) {
+          setUserDetails(DEFAULT_USER_DETAILS);
+        }
       }
-      setLoading(false);
+    } else {
+      setUserDetails(DEFAULT_USER_DETAILS);
+    }
+
+    // Update login state after processing user data
+    if (!isRegistering) {
+      setIsLoggedIn(!!firebaseUser);
+    }
+  };
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (!isMounted) return;
+
+      try {
+        setUser(firebaseUser);
+        await updateUserState(firebaseUser, isMounted);
+      } catch (error) {
+        console.error("Error in auth state change:", error);
+        if (isMounted && !isRegistering) {
+          setIsLoggedIn(false);
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
     });
-    return unsubscribe;
+
+    return () => {
+      isMounted = false;
+      unsubscribe();
+    };
   }, [isRegistering, refreshTrigger]);
 
   const setRegistrationState = (state) => {
     setIsRegistering(state);
   };
+
+  const contextValue = {
+    isLoggedIn,
+    isLoading,
+    isRegistering,
+    setRegistrationState,
+    user,
+    refreshUserData,
+    ...userDetails,
+  };
+
   return (
-    <AuthContext.Provider
-      value={{
-        isLoggedIn,
-        isLoading,
-        isRegistering,
-        setRegistrationState,
-        user,
-        refreshUserData,
-        ...userDetails,
-      }}
-    >
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );

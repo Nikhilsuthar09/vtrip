@@ -15,29 +15,23 @@ import { Ionicons } from "@expo/vector-icons";
 import { COLOR, FONT_SIZE, FONTS } from "../constants/Theme";
 import { StatusBar } from "expo-status-bar";
 import { useAuth } from "../Context/AuthContext";
-import {
-  profileUpdateValidation,
-  updateUserEmail,
-  updateUsername,
-} from "../utils/AuthHandlers";
+import { profileUpdateValidation } from "../utils/AuthHandlers";
 import * as ImagePicker from "expo-image-picker";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "../Configs/firebaseConfig";
 import ChangePasswordModal from "../components/profile/ChangePasswordModal";
 import { uploadProfileImgToCloudinary } from "../utils/tripData/uploadImage";
-import { updateProfile } from "firebase/auth";
 
 const Profile = () => {
-  const { user, name, email, uid, refreshUserData } = useAuth();
+  const { imageUrl, name, email, uid, refreshUserData } = useAuth();
   const [displayName, setDisplayName] = useState(name);
   const [emailInput, setEmailInput] = useState(email);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [imgLoading, setImgLoading] = useState(false);
-  const [imageSelected, setImageSelected] = useState(user?.photoURL || null);
-  const [originalPhotoURL] = useState(user?.photoURL || null);
+  const [imageSelected, setImageSelected] = useState(imageUrl || null);
+  const [originalPhotoURL] = useState(imageUrl || null);
   const [isPhotoDeleted, setIsPhotoDeleted] = useState(false);
-
   const pickImage = async () => {
     try {
       setImgLoading(true);
@@ -129,29 +123,9 @@ const Profile = () => {
         imageUrl = "";
         photoUpdated = true;
       }
-      // Update Firebase Auth profile if photo changed
-      if (photoUpdated) {
-        try {
-          await updateProfile(user, {
-            photoURL: imageUrl,
-          });
-        } catch (profileError) {
-          console.error("Profile update error:", profileError);
-          Alert.alert(
-            "Error",
-            "Failed to update profile photo. Please try again."
-          );
-          setLoading(false);
-          return;
-        }
-      }
 
-      const nameUpdated = await updateUsername(user, name, displayName.trim());
-      const emailUpdated = await updateUserEmail(
-        user,
-        email,
-        emailInput.trim()
-      );
+      const nameUpdated = name === displayName.trim();
+      const emailUpdated = email === emailInput.trim();
 
       // update name or email if changed
       if (nameUpdated || emailUpdated || photoUpdated) {
@@ -167,7 +141,7 @@ const Profile = () => {
         if (wasPhotoDeleted) {
           setIsPhotoDeleted(false);
         }
-        await refreshUserData()
+        await refreshUserData();
         Alert.alert("Success", "Profile updated successfully");
       } else {
         Alert.alert("No Changes", "No changes were made to your profile");

@@ -1,11 +1,12 @@
 import { Text, StyleSheet, TouchableOpacity } from "react-native";
 import React from "react";
 import { COLOR, FONTS } from "../../constants/Theme";
+import { getTitleCase } from "../../utils/common/processUserData";
 
 const TravellerNames = ({ name, selectedName, setSelectedName, id }) => {
   const toggle = (id) => {
-    setSelectedName((prev) => prev === id ? "" : id)
-  }
+    setSelectedName((prev) => (prev === id ? "" : id));
+  };
   return (
     <TouchableOpacity
       key={id}
@@ -16,7 +17,7 @@ const TravellerNames = ({ name, selectedName, setSelectedName, id }) => {
       ]}
     >
       <Text style={[styles.text, id === selectedName && { color: "#fff" }]}>
-        {name}
+        {getTitleCase(name)}
       </Text>
     </TouchableOpacity>
   );

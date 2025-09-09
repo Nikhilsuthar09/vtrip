@@ -15,8 +15,8 @@ import { useUserTripsData } from "../utils/firebaseUserHandlers";
 import ErrorScreen from "../components/ErrorScreen";
 import { useNavigation } from "@react-navigation/native";
 import { useTravellerNames } from "../utils/firebaseTravellerHandler";
-import { formatDate } from "../utils/calendar/handleCurrentDate";
 import * as Haptics from "expo-haptics";
+import { useAuth } from "../Context/AuthContext";
 
 const MyTrip = () => {
   const [modalData, setModalData] = useState(null);
@@ -25,7 +25,8 @@ const MyTrip = () => {
   const [editTripData, setEditTripData] = useState(null);
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const { tripsData, loading, error, tripIds, refetch } = useUserTripsData();
+  const { uid } = useAuth();
+  const { tripsData, loading, error, refetch } = useUserTripsData(uid);
   const navigation = useNavigation();
   const { travellerNames } = useTravellerNames(modalData?.selectedItemId);
   const safeTripData = tripsData || [];

@@ -18,6 +18,7 @@ import { arrayRemove, doc, updateDoc } from "firebase/firestore";
 import { db } from "../Configs/firebaseConfig";
 import { useAuth } from "../Context/AuthContext";
 import { useTravellerNames } from "../utils/firebaseTravellerHandler";
+import { getuserNameChars } from "../utils/common/processUserData";
 
 const TravellersScreen = ({ route, navigation }) => {
   const { id, title, destination, startDate, endDate, createdBy, budget } =
@@ -29,18 +30,7 @@ const TravellersScreen = ({ route, navigation }) => {
     travellerError,
     refetchTraveller,
   } = useTravellerNames(id);
-  const getUserNameChars = (name) => {
-    const splitted = name?.split(" ") || [];
-    const userNameChars =
-      splitted.length > 0
-        ? splitted.length === 1
-          ? splitted[0][0]
-          : (
-              splitted[0][0] + (splitted[splitted.length - 1][0] || "")
-            ).toUpperCase()
-        : "U";
-    return userNameChars;
-  };
+
   const removeTraveller = async (userId) => {
     try {
       const tripDocRef = doc(db, "trip", id);
@@ -130,7 +120,7 @@ const TravellersScreen = ({ route, navigation }) => {
                       />
                     ) : (
                       <Text style={styles.avatarText}>
-                        {getUserNameChars(traveller?.name)}
+                        {getuserNameChars(traveller?.name)}
                       </Text>
                     )}
                     {traveller.uid === createdBy && (
