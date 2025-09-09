@@ -306,12 +306,11 @@ const TrackOnTrip = ({ route }) => {
               data={safeTravellerNames}
               keyExtractor={(item) => item.uid}
               renderItem={({ item }) => {
-                const firstName = getfirstName(item.name);
                 return (
                   <TravellerNames
                     setSelectedName={setSelectedName}
                     selectedName={selectedName}
-                    name={firstName}
+                    name={item.name ? getfirstName(item.name) : "User"}
                     id={item.uid}
                   />
                 );

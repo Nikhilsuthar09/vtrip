@@ -13,151 +13,130 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
-import { useAuth } from "../Context/AuthContext";
 
-// hook to listen to the changes in tripIds array
-export const useUserTrips = () => {
-  const { uid } = useAuth();
+// hook to fetch user trips data
+export const useUserTripsData = (uid) => {
   const [tripIds, setTripIds] = useState([]);
-  const [idsError, setError] = useState(null);
-  const [idsLoading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (!uid) {
-      setLoading(false);
-      setTripIds([]);
-      return;
-    }
-    const userDocRef = doc(db, "user", uid);
-
-    const unsubscribe = onSnapshot(
-      userDocRef,
-      (docSnapshot) => {
-        if (docSnapshot.exists()) {
-          const userData = docSnapshot.data();
-          const userTripIds = userData.tripIds || [];
-          setLoading(false);
-          setTripIds(userTripIds);
-        } else {
-          setLoading(false);
-          console.log("User document does not exist");
-        }
-      },
-      (err) => {
-        console.log("Error listening to user document: ", err);
-        setError(err.message);
-        setLoading(false);
-      }
-    );
-
-    return () => unsubscribe();
-  }, [uid]);
-  return { tripIds, idsLoading, idsError };
-};
-
-// hook to fetch actual trip data based on trip ids
-export const useUserTripsData = () => {
-  const { tripIds, idsLoading, idsError } = useUserTrips();
   const [tripsData, setTripsData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const fetchTripsData = useCallback(async () => {
+  const fetchTripsData = useCallback(async (ids) => {
+    if (ids.length === 0) {
+      setTripsData([]);
+      return;
+    }
+
     try {
-      setLoading(true);
-      if (tripIds.length == 0) {
-        setTripsData([]);
-        setLoading(false);
-        return;
-      }
-      if (tripIds.length <= 10) {
+      let trips = [];
+
+      if (ids.length <= 10) {
+        // Use 'in' query for 10 or fewer trips
         const tripsQuery = query(
           collection(db, "trip"),
-          where(documentId(), "in", tripIds)
+          where(documentId(), "in", ids)
         );
         const querySnapshot = await getDocs(tripsQuery);
-        const trips = [];
         querySnapshot.forEach((doc) => {
           trips.push({
             id: doc.id,
             ...doc.data(),
           });
         });
-        trips.sort((a, b) => {
-          const dateA = new Date(a.startDate);
-          const dateB = new Date(b.startDate);
-          return dateA - dateB;
-        });
-        setTripsData(trips);
-        setLoading(false);
       } else {
-        // if trips array length is greater than 10
-        const tripPromises = tripIds.map(async (tripId) => {
-          try {
-            const tripDocRef = doc(db, "trip", tripId);
-            const tripDoc = await getDoc(tripDocRef);
-
-            if (tripDoc.exists()) {
-              return {
-                id: tripDoc.id,
-                ...tripDoc.data(),
-              };
-            } else {
-              console.log(`TripId with Id ${tripId} not found`);
-              return null;
-            }
-          } catch (e) {
-            console.log(`Error fetching trip ${tripId}:`, e);
-            return null;
-          }
+        // Use individual document fetches for more than 10 trips
+        const tripPromises = ids.map(async (tripId) => {
+          const tripDocRef = doc(db, "trip", tripId);
+          const tripDoc = await getDoc(tripDocRef);
+          
+          return tripDoc.exists() 
+            ? { id: tripDoc.id, ...tripDoc.data() }
+            : null;
         });
-        const trips = await Promise.all(tripPromises);
-        const validTrips = trips.filter((trip) => trip !== null);
-        validTrips.sort(
-          (a, b) => new Date(a.startDate) - new Date(b.startDate)
-        );
-        setTripsData(validTrips);
+        
+        const results = await Promise.all(tripPromises);
+        trips = results.filter(trip => trip !== null);
       }
+
+      // Sort trips by start date
+      trips.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+      setTripsData(trips);
       setError(null);
     } catch (e) {
-      console.log("Error fetching trips data: ", e);
+      console.error("Error fetching trips data:", e);
       setError(e.message);
-    } finally {
-      setLoading(false);
+      setTripsData([]);
     }
-  }, [tripIds]);
+  }, []);
+
+  // refetch trips
+  const refetch = useCallback(() => {
+    if (tripIds.length > 0) {
+      fetchTripsData(tripIds);
+    }
+  }, [tripIds, fetchTripsData]);
+
   useEffect(() => {
-    if (!idsError && !idsLoading) {
-      fetchTripsData();
+    if (!uid) {
+      setLoading(false);
+      setTripIds([]);
+      setTripsData([]);
+      setError(null);
+      return;
     }
-  }, [tripIds, idsLoading, idsError]);
+
+    const userDocRef = doc(db, "user", uid);
+    
+    const unsubscribe = onSnapshot(
+      userDocRef,
+      async (docSnapshot) => {
+        if (docSnapshot.exists()) {
+          const userData = docSnapshot.data();
+          const userTripIds = userData.tripIds || [];
+          setTripIds(userTripIds);
+          
+          // Fetch trips data when tripIds change
+          await fetchTripsData(userTripIds);
+        } else {
+          console.log("User document does not exist");
+          setTripIds([]);
+          setTripsData([]);
+        }
+        setLoading(false);
+      },
+      (err) => {
+        console.error("Error listening to user document:", err);
+        setError(err.message);
+        setLoading(false);
+      }
+    );
+
+    return () => unsubscribe();
+  }, [uid, fetchTripsData]);
+
   return {
     tripsData,
-    loading: idsLoading || loading,
-    error: idsError || error,
+    loading,
+    error,
     tripIds,
-    refetch: fetchTripsData,
+    refetch,
   };
 };
 
-//  function to add tripId to user's tripId array
-
-export const AddTripToUser = async (tripId) => {
+// Function to add tripId to user's tripId array
+export const AddTripToUser = async (tripId, uid) => {
   try {
-    const auth = getAuth();
-    const userId = auth.currentUser.uid;
-    const userDocRef = doc(db, "user", userId);
-    const userDetails = {
+    const userDocRef = doc(db, "user", uid);
+    await updateDoc(userDocRef, {
       tripIds: arrayUnion(tripId),
-    };
-    await updateDoc(userDocRef, userDetails);
+    });
   } catch (e) {
-    console.log(e.message);
+    console.error("Error adding trip to user:", e);
+    throw e;
   }
 };
 
-// function to create user in firestore
+// Function to create user in firestore
 export const addUserToDb = async (user) => {
   try {
     const userId = user?.uid;
@@ -174,7 +153,7 @@ export const addUserToDb = async (user) => {
     await setDoc(userDocRef, userDetails);
     return true;
   } catch (e) {
-    console.error("Error adding user to database:", error);
-    throw error;
+    console.error("Error adding user to database:", e);
+    throw e;
   }
 };

@@ -18,10 +18,11 @@ import { useNavigation } from "@react-navigation/native";
 import { useState } from "react";
 import DeleteUserModal from "./profile/DeleteUserModal";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
+import { getTitleCase, getuserNameChars } from "../utils/common/processUserData";
 
 export default function CustomDrawerContent(props) {
   const [modalVisible, setModalVisible] = useState(false);
-  const { name, userNameChars, email, user, imageUrl } = useAuth();
+  const { name, email, user, imageUrl } = useAuth();
   const navigation = useNavigation();
 
   const handleLogout = async () => {
@@ -80,10 +81,10 @@ export default function CustomDrawerContent(props) {
             {imageUrl ? (
               <Image source={{ uri: imageUrl }} style={styles.avatarImage} />
             ) : (
-              <Text style={styles.profileText}>{userNameChars}</Text>
+              <Text style={styles.profileText}>{getuserNameChars(name)}</Text>
             )}
           </View>
-          <Text style={styles.userName}>{name}</Text>
+          <Text style={styles.userName}>{getTitleCase(name)}</Text>
           <Text style={styles.userSubtext}>{email}</Text>
         </View>
 

@@ -15,6 +15,7 @@ import Entypo from "@expo/vector-icons/Entypo";
 import { COLOR, FONT_SIZE, FONTS } from "../constants/Theme";
 import { StatusBar } from "expo-status-bar";
 import { formatDate } from "../utils/calendar/handleCurrentDate";
+import { getuserNameChars } from "../utils/common/processUserData";
 
 const InviteCollaborators = ({ route }) => {
   const { id, title, travellers, destination, startDate, endDate, createdBy } =
@@ -34,18 +35,7 @@ const InviteCollaborators = ({ route }) => {
       console.log(e);
     }
   };
-  const getUserNameChars = (name) => {
-    const splitted = name?.split(" ") || [];
-    const userNameChars =
-      splitted.length > 0
-        ? splitted.length === 1
-          ? splitted[0][0]
-          : (
-              splitted[0][0] + (splitted[splitted.length - 1][0] || "")
-            ).toUpperCase()
-        : "User";
-    return userNameChars;
-  };
+
   return (
     <SafeAreaView edges={["bottom", "left", "right"]} style={styles.container}>
       <StatusBar style="light" />
@@ -121,7 +111,7 @@ const InviteCollaborators = ({ route }) => {
                     />
                   ) : (
                     <Text style={styles.avatarText}>
-                      {getUserNameChars(item?.name)}
+                      {getuserNameChars(item?.name)}
                     </Text>
                   )}
                 </View>

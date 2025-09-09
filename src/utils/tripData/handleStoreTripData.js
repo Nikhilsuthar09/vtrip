@@ -5,7 +5,7 @@ import { AddTripToUser } from "../firebaseUserHandlers";
 import { arrayUnion, doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { db } from "../../Configs/firebaseConfig";
 
-const addTripToDb = async (tripData) => {
+const addTripToDb = async (tripData, uid) => {
   if (!tripData.title.trim()) {
     Alert.alert("Please enter a title");
     return false;
@@ -51,7 +51,7 @@ const addTripToDb = async (tripData) => {
     const tripId = generateRandomId();
     const tripDocRef = doc(db, "trip", tripId);
     await setDoc(tripDocRef, tripToStore);
-    await AddTripToUser(tripId);
+    await AddTripToUser(tripId, uid);
     Alert.alert("Success", "Trip created successfully!");
     return true;
   } catch (e) {

@@ -31,14 +31,18 @@ import { EmptyTripCard } from "../components/home/EmptyTripCard";
 import { getTripTimingText } from "../utils/home/getTripTimingText";
 import { useFetchNotification } from "../utils/notification/useFetchNotifications";
 import * as Haptics from "expo-haptics";
-import { getTitleCase } from "../utils/common/processUserData";
+import {
+  getfirstName,
+  getTitleCase,
+  getuserNameChars,
+} from "../utils/common/processUserData";
 
 const TravelApp = ({ onPress }) => {
   const [isRoomModalVisible, setIsRoomModalVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const { unreadDoc, refetch: refetchNotification } = useFetchNotification();
-  const { firstName, userNameChars, imageUrl } = useAuth();
-  const { tripsData, refetch } = useUserTripsData();
+  const { uid, name, imageUrl } = useAuth();
+  const { tripsData, refetch } = useUserTripsData(uid);
   const navigation = useNavigation();
   const safeTripData = tripsData || [];
   useFocusEffect(
@@ -179,7 +183,9 @@ const TravelApp = ({ onPress }) => {
       {/*  Header */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
-          <Text style={styles.greeting}>Hi, {getTitleCase(firstName)} 👋</Text>
+          <Text style={styles.greeting}>
+            Hi, {getTitleCase(getfirstName(name))} 👋
+          </Text>
           <Text style={styles.subtitle}>Ready for your next adventure?</Text>
         </View>
         <View style={styles.headerRight}>
@@ -211,7 +217,7 @@ const TravelApp = ({ onPress }) => {
               {imageUrl ? (
                 <Image source={{ uri: imageUrl }} style={styles.avatarImage} />
               ) : (
-                <Text style={styles.profileText}>{userNameChars}</Text>
+                <Text style={styles.profileText}>{getuserNameChars(name)}</Text>
               )}
             </TouchableOpacity>
           </View>

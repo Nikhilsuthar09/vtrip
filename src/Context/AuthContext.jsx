@@ -1,13 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { auth, db } from "../Configs/firebaseConfig";
+import { auth } from "../Configs/firebaseConfig";
 import { onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
-import {
-  getfirstName,
-  getuserNameChars,
-} from "../utils/common/processUserData";
-import { GoogleSignin } from "@react-native-google-signin/google-signin";
-import { addUserToDb } from "../utils/firebaseUserHandlers";
+import { getUserData } from "../utils/common/getUserData";
 
 const AuthContext = createContext();
 
@@ -18,66 +12,23 @@ export const useAuth = () => {
   }
   return context;
 };
-const getUserData = async (user) => {
-  try {
-    const docSnap = await getDoc(doc(db, "user", user.uid));
-    if (!docSnap.exists()) {
-      if (GoogleSignin.hasPreviousSignIn()) {
-        try {
-          await addUserToDb(user);
-          console.log("Created user document for Google sign-in user");
-        } catch (error) {
-          console.error("Failed to create user document:", error);
-        }
-      }
-      const name = user.displayName;
-      return {
-        name: name || "User",
-        uid: user.uid,
-        email: user.email,
-        firstName: name ? getfirstName(name) : "User",
-        userNameChars: name ? getuserNameChars(name) : "U",
-        user,
-        imageUrl: user.photoURL || null,
-      };
-    }
-    const data = docSnap.data();
 
-    const uid = docSnap.id;
-    const email = data.email;
-    const name = data.name;
-    const imageUrl = data?.imgUrl;
-
-    const firstName = getfirstName(name);
-    const userNameChars = getuserNameChars(name);
-    return { name, uid, email, firstName, userNameChars, user, imageUrl };
-  } catch (e) {
-    console.error("Error processing user data:", e);
-    const name = user.displayName;
-    return {
-      name: name || "User",
-      uid: user.uid,
-      email: user.email,
-      firstName: name ? getfirstName(name) : "User",
-      userNameChars: name ? getuserNameChars(name) : "U",
-      user,
-      imageUrl: user.photoURL || null,
-    };
-  }
+const DEFAULT_USER_DETAILS = {
+  name: "User",
+  uid: null,
+  email: null,
+  firstName: "User", 
+  userNameChars: "U",
+  imageUrl: null,
 };
+
 export const AuthProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setLoading] = useState(true);
   const [isRegistering, setIsRegistering] = useState(false);
   const [user, setUser] = useState(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-  const [userDetails, setUserDetails] = useState({
-    name: null,
-    uid: null,
-    email: null,
-    firstName: "User",
-    userNameChars: "U",
-  });
+  const [userDetails, setUserDetails] = useState(DEFAULT_USER_DETAILS);
 
   const refreshUserData = async () => {
     setLoading(true);
@@ -86,54 +37,53 @@ export const AuthProvider = ({ children }) => {
         await auth.currentUser.reload();
         setRefreshTrigger((prev) => prev + 1);
       }
-    } catch (e) {
-      console.log(e);
+    } catch (error) {
+      console.log("Error refreshing user data:", error);
     } finally {
       setLoading(false);
     }
   };
 
+  const updateUserState = async (firebaseUser, isMounted) => {
+    if (!isMounted) return;
+
+    if (firebaseUser) {
+      try {
+        const details = await getUserData(firebaseUser);
+        if (isMounted) {
+          setUserDetails(details);
+        }
+      } catch (error) {
+        console.error("Error getting user data:", error);
+        if (isMounted) {
+          setUserDetails(DEFAULT_USER_DETAILS);
+        }
+      }
+    } else {
+      setUserDetails(DEFAULT_USER_DETAILS);
+    }
+
+    // Update login state after processing user data
+    if (!isRegistering) {
+      setIsLoggedIn(!!firebaseUser);
+    }
+  };
+
   useEffect(() => {
-    let isMounted = true; // Prevent state updates after unmount
+    let isMounted = true;
 
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (!isMounted) return;
+
       try {
-        if (!isMounted) return;
-
         setUser(firebaseUser);
-
-        if (firebaseUser) {
-          // Get user data first, then update states
-          const details = await getUserData(firebaseUser);
-
-          if (isMounted) {
-            setUserDetails(details);
-          }
-        } else {
-          // Clear user details when no user
-          if (isMounted) {
-            setUserDetails({
-              name: null,
-              uid: null,
-              email: null,
-              firstName: "User",
-              userNameChars: "U",
-              imageUrl: null,
-            });
-          }
-        }
-
-        // Update login state after processing user data
-        if (!isRegistering && isMounted) {
-          setIsLoggedIn(!!firebaseUser);
-        }
+        await updateUserState(firebaseUser, isMounted);
       } catch (error) {
         console.error("Error in auth state change:", error);
         if (isMounted && !isRegistering) {
           setIsLoggedIn(false);
         }
       } finally {
-        // Always set loading to false, but only if component is still mounted
         if (isMounted) {
           setLoading(false);
         }
@@ -149,18 +99,19 @@ export const AuthProvider = ({ children }) => {
   const setRegistrationState = (state) => {
     setIsRegistering(state);
   };
+
+  const contextValue = {
+    isLoggedIn,
+    isLoading,
+    isRegistering,
+    setRegistrationState,
+    user,
+    refreshUserData,
+    ...userDetails,
+  };
+
   return (
-    <AuthContext.Provider
-      value={{
-        isLoggedIn,
-        isLoading,
-        isRegistering,
-        setRegistrationState,
-        user,
-        refreshUserData,
-        ...userDetails,
-      }}
-    >
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );

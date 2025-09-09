@@ -1,4 +1,4 @@
-import { updateEmail, updatePassword, updateProfile } from "firebase/auth";
+import {  updatePassword } from "firebase/auth";
 import { Alert } from "react-native";
 
 const PASSWORD_MESSAGE =
@@ -18,6 +18,8 @@ const handleFirebaseAuthErrors = (error) => {
     return "Network error. Please check your internet connection";
   } else if (error.code === "auth/email-already-in-use") {
     return "Email already in use, please login";
+  } else if (error.code === "auth/too-many-requests") {
+    return "Too many failed attempts. Please try again later.";
   }
   return "Authentication failed. Please try again";
 };

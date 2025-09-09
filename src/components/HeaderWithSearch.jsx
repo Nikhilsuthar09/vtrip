@@ -10,9 +10,10 @@ import { COLOR, FONT_SIZE, FONTS } from "../constants/Theme";
 import { FontAwesome } from "@expo/vector-icons";
 import SeparationLine from "./SeparationLine";
 import { useAuth } from "../Context/AuthContext";
+import { getuserNameChars } from "../utils/common/processUserData";
 
 const HeaderWithSearch = ({ openDrawer, searchText, setSearchText }) => {
-  const { userNameChars, imageUrl } = useAuth();
+  const { imageUrl, name } = useAuth();
   return (
     <>
       <View style={styles.container}>
@@ -43,7 +44,7 @@ const HeaderWithSearch = ({ openDrawer, searchText, setSearchText }) => {
           <TouchableOpacity onPress={openDrawer} style={styles.userButton}>
             {imageUrl ? (
               <Image source={{ uri: imageUrl }} style={styles.avatarImage} />
-            ) : userNameChars && userNameChars !== "U" ? (
+            ) : name ? (
               <Text
                 style={{
                   fontFamily: FONTS.semiBold,
@@ -51,7 +52,7 @@ const HeaderWithSearch = ({ openDrawer, searchText, setSearchText }) => {
                   fontSize: FONT_SIZE.body,
                 }}
               >
-                {userNameChars}
+                {getuserNameChars(name)}
               </Text>
             ) : (
               <FontAwesome name="user-o" size={18} color="#fff" />

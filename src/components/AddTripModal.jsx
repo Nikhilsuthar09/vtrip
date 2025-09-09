@@ -29,6 +29,7 @@ import { doc, serverTimestamp, updateDoc } from "firebase/firestore";
 import { db } from "../Configs/firebaseConfig";
 import ImagePickerComponent from "./ImagePickerComponent";
 import { uploadImageToCloudinary } from "../utils/tripData/uploadImage";
+import { useAuth } from "../Context/AuthContext";
 
 const AddTripModal = ({
   isModalVisible,
@@ -48,6 +49,7 @@ const AddTripModal = ({
     end: "",
   });
   const [loading, setLoading] = useState(false);
+  const {uid} = useAuth()
 
   useEffect(() => {
     if (isEditMode && editTripData) {
@@ -117,7 +119,7 @@ const AddTripModal = ({
           return;
         }
       } else {
-        const success = await addTripToDb(updatedTripData);
+        const success = await addTripToDb(updatedTripData, uid);
         if (success) {
           resetTripData();
           onClose();
