@@ -73,6 +73,10 @@ export default function AuthScreen() {
     try {
       await sendPasswordResetEmail(auth, email.current);
       console.log("Success");
+      Alert.alert(
+        "Password Reset Email Sent",
+        "We’ve sent you a link to reset your password. Please check your inbox (and your spam or junk folder if you don’t see it)."
+      );
     } catch (e) {
       Alert.alert(
         "Error",

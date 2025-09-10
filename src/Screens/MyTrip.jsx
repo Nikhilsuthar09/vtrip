@@ -31,6 +31,7 @@ const MyTrip = () => {
   const { travellerNames } = useTravellerNames(modalData?.selectedItemId);
   const safeTripData = tripsData || [];
   const safeTravellerNames = travellerNames || [];
+
   // Organize and filter trips
   const organizedTrips = useMemo(() => {
     let filteredTrips = safeTripData;

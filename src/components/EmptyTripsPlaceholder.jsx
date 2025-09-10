@@ -16,25 +16,24 @@ const EmptyTripsPlaceholder = ({ onAddTrip, searchText }) => {
           <MaterialIcons name="luggage" size={80} color={COLOR.grey} />
         )}
       </View>
-      
+
       <Text style={styles.title}>
         {isSearching ? "No trips found" : "No trips yet"}
       </Text>
-      
+
       <Text style={styles.subtitle}>
-        {isSearching 
+        {isSearching
           ? `No trips match "${searchText}". Try a different search term.`
-          : "Start planning your next adventure! Create your first trip or join an existing one."
-        }
+          : "Start planning your next adventure! Create your first trip or join an existing one."}
       </Text>
-      
+
       {!isSearching && (
         <TouchableOpacity style={styles.addButton} onPress={onAddTrip}>
           <MaterialIcons name="add" size={24} color="#fff" />
           <Text style={styles.addButtonText}>Add Your First Trip</Text>
         </TouchableOpacity>
       )}
-      
+
       {!isSearching && (
         <View style={styles.featuresContainer}>
           <View style={styles.featureItem}>
